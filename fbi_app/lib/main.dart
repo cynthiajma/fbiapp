@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library.dart';
+import 'home.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,8 +20,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Character',
       theme: ThemeData(primarySwatch: Colors.red),
-      //home: const AvatarPage(),
-      home: const CharacterLibraryPage(),
+      home: const HomePage(),
     );
   }
 }
