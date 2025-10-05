@@ -62,10 +62,12 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/images/gerda-gotta-go.png
-    - assets/images/patricia-poop-pain.png
-    - assets/images/samantha-sweat.png
-    - assets/images/henry-heartbeat.png
+    - data/characters/
+
+  fonts:
+    - family: Scripto
+      fonts:
+        - asset: data/fonts/Scripto-2OR2v.ttf
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
