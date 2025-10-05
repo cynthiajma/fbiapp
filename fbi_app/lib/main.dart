@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
+import 'pages/parent_profile.dart';
 
 void main() {
   runApp(const MyApp());
@@ -32,6 +33,10 @@ class AvatarPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Character'),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.person),
+            onPressed: () => Get.to(() => const ParentProfilePage()),
+          ),
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: FluttermojiCircleAvatar(),
