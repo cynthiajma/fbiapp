@@ -11,13 +11,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Initialize FluttermojiController with GetX
+    
     Get.put(FluttermojiController());
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Fluttermoji Demo',
-      theme: ThemeData(primarySwatch: Colors.blue),
+      title: 'Character',
+      theme: ThemeData(primarySwatch: Colors.red),
       home: const AvatarPage(),
     );
   }
@@ -30,7 +30,7 @@ class AvatarPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Fluttermoji Example'),
+        title: const Text('Character'),
         actions: [
           Padding(
             padding: const EdgeInsets.all(8.0),
