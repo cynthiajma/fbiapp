@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library.dart';
 import 'home.dart';
-import 'heartbeat.dart';
 
 void main() {
   runApp(const MyApp());
