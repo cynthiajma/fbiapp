@@ -64,6 +64,7 @@ flutter:
   assets:
     - data/characters/
 
+
   fonts:
     - family: Scripto
       fonts:
