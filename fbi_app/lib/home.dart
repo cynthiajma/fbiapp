@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library.dart';
-import 'heartbeat.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -109,11 +108,7 @@ class HomePage extends StatelessWidget {
                                   ),
                                   textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
                                 ),
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const HeartbeatPage()),
-                                   );
-                                },
+                                onPressed: () {},
                                 child: const Text('Investigate'),
                               ),
                             ),
