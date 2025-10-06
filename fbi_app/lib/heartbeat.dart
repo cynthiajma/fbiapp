@@ -48,6 +48,11 @@ class _HeartbeatPageState extends State<HeartbeatPage>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xffd2f0f7),
+      appBar: AppBar(
+        backgroundColor: const Color(0xffd2f0f7),
+        elevation: 0,
+        leading: BackButton(onPressed: () => Navigator.of(context).pop()),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20.0),
