@@ -8,25 +8,25 @@ class ParentProfilePage extends StatelessWidget {
   List<Character> _seed() => [
         Character(
           name: 'Henry Heartbeat',
-          imageAsset: '../../../assets/images/henry-heartbeat.png',
+          imageAsset: 'data/characters/henry_heartbeat.png',
           progress: 0.60,
           date: DateTime(2025, 10, 2),
         ),
         Character(
           name: 'Gerda Gotta Go',
-          imageAsset: '../../../assets/images/gerda-gotta-go.png',
+          imageAsset: 'data/characters/gerda_gotta_go.png',
           progress: 0.35,
           date: DateTime(2025, 10, 3),
         ),
         Character(
-          name: 'Samantha Sweat',
-          imageAsset: '../../../assets/images/samantha-sweat.png',
+          name: 'Samatha Sweat',
+          imageAsset: 'data/characters/samatha_sweat.png',
           progress: 0.78,
           date: DateTime(2025, 10, 5),
         ),
         Character(
           name: 'Patricia the Poop Pain',
-          imageAsset: '../../../assets/images/patricia-poop-pain.png',
+          imageAsset: 'data/characters/patricia_the_poop_pain.png',
           progress: 0.50,
           date: DateTime(2025, 11, 20),
         ),

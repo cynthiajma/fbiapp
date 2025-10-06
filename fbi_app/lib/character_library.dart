@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'heartbeat.dart';
+
 
 class CharacterLibraryPage extends StatelessWidget {
   const CharacterLibraryPage({super.key});
@@ -40,6 +42,13 @@ class CharacterLibraryPage extends StatelessWidget {
             return _CharacterCard(
               imageAsset: character["asset"]!,
               label: character["name"]!,
+              onTap: character["name"] == 'Henry Heartbeat'
+                  ? () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+                      );
+                    }
+                  : null,
             );
           }
 
@@ -56,12 +65,16 @@ class CharacterLibraryPage extends StatelessWidget {
 class _CharacterCard extends StatelessWidget {
   final String imageAsset;
   final String label;
+  final VoidCallback? onTap;
 
-  const _CharacterCard({required this.imageAsset, required this.label});
+  const _CharacterCard({required this.imageAsset, required this.label, this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Expanded(
@@ -90,6 +103,7 @@ class _CharacterCard extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
         ),
       ],
+    ),
     );
   }
 }

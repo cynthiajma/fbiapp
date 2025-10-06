@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library.dart';
+import 'pages/parent_profile.dart';
 import 'heartbeat.dart';
 
 class HomePage extends StatelessWidget {
@@ -18,6 +19,14 @@ class HomePage extends StatelessWidget {
         elevation: 0,
         backgroundColor: pastelPink,
         title: const SizedBox.shrink(),
+        leading: IconButton(
+          icon: const Icon(Icons.person_outline, color: Colors.black87),
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const ParentProfilePage()),
+            );
+          },
+        ),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 12),
