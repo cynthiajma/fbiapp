@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS parent_child_link (
 CREATE TABLE IF NOT EXISTS characters (
   character_id          SERIAL PRIMARY KEY,
   character_name        VARCHAR(100) NOT NULL UNIQUE,
-  character_photo       TEXT,
+  character_photo       BYTEA,
   character_description TEXT
 );
 

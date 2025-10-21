@@ -13,7 +13,7 @@ async function initDatabase() {
     console.log('🔄 Initializing database...');
     
     // Read and execute SQL scripts in order
-    const scripts = ['01_init.sql', '02_characters.sql'];
+    const scripts = ['01_init.sql'];
     
     for (const script of scripts) {
       const scriptPath = path.join(__dirname, script);
