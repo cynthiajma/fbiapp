@@ -10,131 +10,203 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color pastelPink = const Color(0xFFFFE4EC);
-    final Color titleBlue = const Color(0xFF5AA7FF);
-
     return Scaffold(
-      backgroundColor: pastelPink,
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: pastelPink,
-        title: const SizedBox.shrink(),
-        leading: IconButton(
-          icon: const Icon(Icons.person_outline, color: Colors.black87),
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const ParentProfilePage()),
-            );
-          },
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: _ProfileButton(),
+      body: Stack(
+        children: [
+          // Corkboard background
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/corkboard.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
           ),
-        ],
-        iconTheme: const IconThemeData(color: Colors.black87),
-      ),
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Text(
-                  'Feelings and Body\nInvestigation',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: titleBlue,
-                    fontFamily: 'Scripto',
-                    fontWeight: FontWeight.w600,
-                    fontSize: 72,
-                    letterSpacing: 0.8,
-                    height: 1.1,
-                    shadows: const [
-                      Shadow(offset: Offset(0, 2), blurRadius: 0, color: Colors.white),
+
+          // Optional semi-transparent overlay
+          Container(color: Colors.brown.withOpacity(0.1)),
+
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: Column(
+                children: [
+                  // Top bar
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.person_pin, color: Colors.brown),
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const ParentProfilePage()),
+                          );
+                        },
+                      ),
+                      const _ProfileButton(),
                     ],
                   ),
-                ),
-                const SizedBox(height: 24),
-                Expanded(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      SizedBox(
-                        height: 64,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: Colors.black87,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            textStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                            elevation: 2,
-                          ),
-                          onPressed: () {
+
+                  const SizedBox(height: 12),
+
+                  // Title
+                  Text(
+                    'Feelings and Body\nInvestigation',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'SpecialElite',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 56,
+                      color: Colors.black87,
+                      height: 1.1,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(2, 3),
+                          blurRadius: 2,
+                          color: Colors.white70,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Pinned notes/buttons
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        _PinnedNoteButton(
+                          text: 'Start Case',
+                          color: const Color(0xFFFFF8DC),
+                          rotation: -1,
+                          onTap: () {
                             Navigator.of(context).push(
                               MaterialPageRoute(builder: (_) => const CharacterLibraryPage()),
                             );
                           },
-                          child: const Text('Start'),
                         ),
-                      ),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 52,
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.black87,
-                                  backgroundColor: Colors.white,
-                                  side: const BorderSide(color: Colors.black26, width: 1.5),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                                ),
-                                onPressed: () {},
-                                child: const Text('Games'),
+                        const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Expanded(
+                              child: _PinnedNoteButton(
+                                text: 'Games',
+                                color: const Color(0xFFFAF0E6),
+                                rotation: 2.5,
+                                onTap: () {},
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: SizedBox(
-                              height: 52,
-                              child: OutlinedButton(
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: Colors.black87,
-                                  backgroundColor: Colors.white,
-                                  side: const BorderSide(color: Colors.black26, width: 1.5),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-                                ),
-                                onPressed: () {
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _PinnedNoteButton(
+                                text: 'Investigate',
+                                color: const Color(0xFFF0E68C),
+                                rotation: -3.5,
+                                onTap: () {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(builder: (_) => const HeartbeatPage()),
-                                   );
+                                  );
                                 },
-                                child: const Text('Investigate'),
                               ),
                             ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Footer pinned note
+                  Transform.rotate(
+                    angle: 0.015,
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: const [
+                          BoxShadow(
+                            offset: Offset(1, 2),
+                            blurRadius: 2,
+                            color: Colors.black26,
                           ),
                         ],
                       ),
-                    ],
+                      child: const Text(
+                        'Detective NameHolder 🕵️‍♀️',
+                        style: TextStyle(
+                          fontFamily: 'SpecialElite',
+                          fontSize: 16,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PinnedNoteButton extends StatelessWidget {
+  final String text;
+  final Color color;
+  final double rotation;
+  final VoidCallback onTap;
+
+  const _PinnedNoteButton({
+    required this.text,
+    required this.color,
+    required this.rotation,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: rotation * 3.1416 / 180,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 64,
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: const [
+              BoxShadow(
+                offset: Offset(3, 3),
+                blurRadius: 5,
+                color: Colors.black26,
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              const Positioned(
+                top: 6,
+                left: 10,
+                child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+              ),
+              Center(
+                child: Text(
+                  text,
+                  style: const TextStyle(
+                    fontFamily: 'SpecialElite',
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 24),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),
@@ -149,13 +221,12 @@ class _ProfileButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Ensures Fluttermoji controller is available and opens Avatar editor
         Get.put(FluttermojiController());
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const _AvatarScaffold()),
         );
       },
-      child: FluttermojiCircleAvatar(radius: 20),
+      child: FluttermojiCircleAvatar(radius: 22),
     );
   }
 }
@@ -187,5 +258,3 @@ class _AvatarScaffold extends StatelessWidget {
     );
   }
 }
-
-
