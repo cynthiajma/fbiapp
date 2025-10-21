@@ -14,6 +14,7 @@ const typeDefs = gql`
     createChild(username: String!, name: String, age: Int): Child
     createParent(username: String!, password: String!, childId: ID): Parent
     loginParent(username: String!, password: String!): Parent
+    linkParentChild(parentId: ID!, childId: ID!): Boolean
   }
 
   type Child {
@@ -71,7 +72,7 @@ const resolvers = {
       return result.rows.map(char => ({
         id: char.character_id.toString(),
         name: char.character_name,
-        photo: char.character_photo ? char.character_photo.toString('base64') : null,
+        photo: char.character_photo ? Buffer.from(char.character_photo).toString('base64') : null,
         description: char.character_description,
       }));
     },
@@ -190,6 +191,13 @@ const resolvers = {
         id: parent.parent_id.toString(),
         username: parent.parent_username,
       };
+    },
+    linkParentChild: async (_, { parentId, childId }) => {
+      await pool.query(
+        'INSERT INTO parent_child_link (parent_id, child_id) VALUES ($1, $2) ON CONFLICT (parent_id, child_id) DO NOTHING',
+        [parentId, childId]
+      );
+      return true;
     },
   },
   

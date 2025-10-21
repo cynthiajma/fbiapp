@@ -8,8 +8,33 @@ GraphQL API for the FBI (Feeling Body Intelligence) app, providing endpoints for
 
 ## Setup
 1. Start database: `docker-compose up database -d`
-2. Start server: `npm start`
-3. Access GraphQL Playground: `http://localhost:4000`
+2. Initialize database: `npm run init-db`
+3. Populate characters: `npm run populate-characters`
+4. Start server: `npm start`
+5. Access GraphQL Playground: `http://localhost:4000`
+
+## Binary Image Storage
+
+Character photos are stored as binary data (BYTEA) in the database and returned as base64 strings through the GraphQL API. This provides:
+
+- **No file system dependencies** - Images stored in database
+- **Atomic transactions** - Image and data together  
+- **Simplified deployment** - No file path issues
+- **Backup included** - Images backed up with database
+
+### Frontend Usage
+```javascript
+// Character photo is returned as base64 string
+const character = {
+  id: "1",
+  name: "Henry the Heartbeat", 
+  photo: "iVBORw0KGgoAAAANSUhEUgAA...", // Base64 string
+  description: "I am a very powerful machine..."
+};
+
+// Display in React/HTML
+<img src={`data:image/png;base64,${character.photo}`} />
+```
 
 ---
 
@@ -57,10 +82,16 @@ type Parent {
 type Character {
   id: ID!
   name: String!
-  photo: String
+  photo: String  # Base64 encoded binary image data
   description: String
 }
 ```
+
+**Note**: The `photo` field contains base64-encoded binary image data stored in the database as BYTEA. This provides:
+- No file system dependencies
+- Atomic transactions with character data
+- Simplified deployment
+- Backup included with database
 
 ### Log
 ```graphql
