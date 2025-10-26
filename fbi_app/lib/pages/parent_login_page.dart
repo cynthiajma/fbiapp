@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
+import '../services/parent_auth_service.dart';
 import 'parent_profile.dart';
 
 class ParentLoginPage extends StatefulWidget {
@@ -10,6 +11,7 @@ class ParentLoginPage extends StatefulWidget {
 }
 
 class _ParentLoginPageState extends State<ParentLoginPage> {
+  final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
@@ -17,16 +19,25 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _passwordController.dispose();
     super.dispose();
   }
 
   Future<void> _login() async {
+    final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
+    
+    if (username.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter your username!';
+      });
+      return;
+    }
     
     if (password.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter the parent password!';
+        _errorMessage = 'Please enter your password!';
       });
       return;
     }
@@ -37,11 +48,21 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
     });
 
     try {
-      // For now, we'll use a simple password check
-      // In a real app, this would be more secure
-      if (password == 'parent123') {
+      // Authenticate parent with backend
+      final parentData = await ParentAuthService.loginParent(username, password, context);
+      
+      if (parentData != null) {
+        // Get current child ID from user state
+        final currentChildId = await UserStateService.getChildId();
+        
+        if (currentChildId != null) {
+          // Link parent to current child
+          await ParentAuthService.linkParentChild(parentData['id'], currentChildId, context);
+        }
+        
         // Save parent authentication state
         await UserStateService.saveParentAuthenticated(true);
+        await UserStateService.saveParentId(parentData['id']);
         
         // Navigate to parent profile page
         if (mounted) {
@@ -51,13 +72,13 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
         }
       } else {
         setState(() {
-          _errorMessage = 'Incorrect password. Please try again.';
+          _errorMessage = 'Invalid username or password. Please try again.';
           _isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error logging in: $e';
+        _errorMessage = 'Login failed: ${e.toString().replaceFirst('Exception: ', '')}';
         _isLoading = false;
       });
     }
@@ -122,7 +143,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                   ),
                   const SizedBox(height: 30),
                   
-                  // Password Input Card
+                  // Login Input Card
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -139,7 +160,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                     child: Column(
                       children: [
                         const Text(
-                          'Enter Parent Password',
+                          'Enter Parent Credentials',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -147,6 +168,20 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                           ),
                         ),
                         const SizedBox(height: 24),
+                        TextField(
+                          controller: _usernameController,
+                          decoration: InputDecoration(
+                            hintText: 'Username...',
+                            prefixIcon: const Icon(Icons.person),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                          ),
+                          onSubmitted: (_) => _login(),
+                        ),
+                        const SizedBox(height: 16),
                         TextField(
                           controller: _passwordController,
                           obscureText: _obscurePassword,

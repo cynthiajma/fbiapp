@@ -24,7 +24,7 @@ class MyApp extends StatelessWidget {
     return GraphQLProvider(
       client: ValueNotifier(
         GraphQLClient(
-          link: HttpLink('http://127.0.0.1:4000/graphql'),
+          link: HttpLink('http://127.0.0.1:3000/graphql'),
           cache: GraphQLCache(),
         ),
       ),
