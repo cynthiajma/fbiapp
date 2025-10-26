@@ -110,7 +110,7 @@ class ChildDataService {
   }
 
   /// Map character names to image file names
-  static String _getCharacterImagePath(String characterName) {
+  static String getCharacterImagePath(String characterName) {
     final Map<String, String> nameMapping = {
       'Henry the Heartbeat': 'henry_heartbeat.png',
       'Samantha Sweat': 'samatha_sweat.png',

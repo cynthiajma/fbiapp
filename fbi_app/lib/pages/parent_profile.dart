@@ -60,7 +60,7 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
         
         return Character(
           name: characterName,
-          imageAsset: 'data/characters/${ChildDataService._getCharacterImagePath(characterName)}',
+          imageAsset: 'data/characters/${ChildDataService.getCharacterImagePath(characterName)}',
           progress: progress,
           date: date,
           averageLevel: level, // This is now the individual level, not average
