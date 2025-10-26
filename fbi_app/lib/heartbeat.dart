@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'services/logging_service.dart';
+import 'services/user_state_service.dart';
 
 class HeartbeatPage extends StatefulWidget {
   const HeartbeatPage({super.key});
@@ -57,9 +58,14 @@ class _HeartbeatPageState extends State<HeartbeatPage>
       // Convert slider value (0-1) to level (0-10)
       final level = (_heartbeatSpeed * 10).round();
       
-      // For now, hardcode childId and characterId. In production, these should come from user context
-      const childId = '1'; // TODO: Get from user context/session
-      const characterId = '1'; // TODO: Get Henry the Heartbeat's ID dynamically
+      // Get childId from user state
+      final childId = await UserStateService.getChildId();
+      if (childId == null) {
+        throw Exception('No child ID found. Please log in first.');
+      }
+      
+      // For now, hardcode characterId to 1 (Henry the Heartbeat)
+      const characterId = '1';
       
       final result = await LoggingService.logFeeling(
         childId: childId,

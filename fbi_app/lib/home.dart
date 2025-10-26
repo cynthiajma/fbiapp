@@ -4,9 +4,32 @@ import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library.dart';
 import 'pages/parent_profile.dart';
 import 'heartbeat.dart';
+import 'services/user_state_service.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  String _detectiveName = 'Detective NameHolder';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadDetectiveName();
+  }
+
+  Future<void> _loadDetectiveName() async {
+    final name = await UserStateService.getChildName();
+    if (name != null) {
+      setState(() {
+        _detectiveName = name;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -135,9 +158,9 @@ class HomePage extends StatelessWidget {
                           ),
                         ],
                       ),
-                      child: const Text(
-                        'Detective NameHolder 🕵️‍♀️',
-                        style: TextStyle(
+                      child: Text(
+                        '$_detectiveName 🕵️‍♀️',
+                        style: const TextStyle(
                           fontFamily: 'SpecialElite',
                           fontSize: 16,
                           color: Colors.black87,
