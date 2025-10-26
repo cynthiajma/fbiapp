@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'character_library.dart';
 import 'home.dart';
 import 'heartbeat.dart';
 
-void main() {
+void main() async {
+  await initHiveForFlutter();
   runApp(const MyApp());
 }
 
@@ -17,11 +19,19 @@ class MyApp extends StatelessWidget {
     
     Get.put(FluttermojiController());
 
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Character',
-      theme: ThemeData(primarySwatch: Colors.red),
-      home: const HomePage(),
+    return GraphQLProvider(
+      client: ValueNotifier(
+        GraphQLClient(
+          link: HttpLink('http://127.0.0.1:4000/graphql'),
+          cache: GraphQLCache(),
+        ),
+      ),
+      child: GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Character',
+        theme: ThemeData(primarySwatch: Colors.red),
+        home: const HomePage(),
+      ),
     );
   }
 }

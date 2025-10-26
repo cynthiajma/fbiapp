@@ -50,7 +50,8 @@ class ParentProfilePage extends StatelessWidget {
             padding: EdgeInsets.only(right: 12),
             child: CircleAvatar(
               radius: 18,
-              backgroundImage: AssetImage('assets/images/avatar.jpg'),
+              backgroundColor: Colors.grey,
+              child: Icon(Icons.person, color: Colors.white),
             ),
           ),
         ],
