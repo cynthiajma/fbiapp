@@ -25,7 +25,47 @@ async function populateCharacters() {
       {
         name: 'Gassy Gus',
         imagePath: '../../fbi_app/data/characters/gassy_gus.png',
-        description: 'I someimes cause sharp pains in your stomach that you can get rid of by doing guess what?? FARTING'
+        description: 'I sometimes cause sharp pains in your stomach that you can get rid of by doing guess what?? FARTING'
+      },
+      {
+        name: 'Betty Butterfly',
+        imagePath: '../../fbi_app/data/characters/betty_butterfly.png',
+        description: 'I flutter in your tummy when you feel excited or nervous. I help you know when something important is happening!'
+      },
+      {
+        name: 'Gerda Gotta Go',
+        imagePath: '../../fbi_app/data/characters/gerda_gotta_go.png',
+        description: 'I let you know when it\'s time to visit the bathroom. Listen to me so you don\'t have any accidents!'
+      },
+      {
+        name: 'Gordon Gotta Go',
+        imagePath: '../../fbi_app/data/characters/gordon_gotta_go.png',
+        description: 'I\'m Gordon and I help you know when you need to use the bathroom. Don\'t ignore me!'
+      },
+      {
+        name: 'Patricia the Poop Pain',
+        imagePath: '../../fbi_app/data/characters/patricia_the_poop_pain.png',
+        description: 'I visit when you haven\'t been drinking enough water or eating enough fiber. I can make going to the bathroom uncomfortable.'
+      },
+      {
+        name: 'Polly Pain',
+        imagePath: '../../fbi_app/data/characters/polly_pain.png',
+        description: 'I\'m Polly and I help you understand when something hurts in your body. I\'m here to help you communicate about pain.'
+      },
+      {
+        name: 'Ricky the Rock',
+        imagePath: '../../fbi_app/data/characters/ricky_the_rock.png',
+        description: 'I\'m Ricky and I represent the strong, solid parts of your body like your bones. I help keep you sturdy and standing tall!'
+      },
+      {
+        name: 'Heart',
+        imagePath: '../../fbi_app/data/characters/heart.png',
+        description: 'I am your heart, the most important muscle in your body. I pump blood to keep you alive and healthy!'
+      },
+      {
+        name: 'Classified',
+        imagePath: '../../fbi_app/data/characters/classified.png',
+        description: 'I\'m a special character that helps you learn about your body in a fun and mysterious way!'
       }
     ];
     

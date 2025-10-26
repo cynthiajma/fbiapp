@@ -10,7 +10,7 @@ const typeDefs = gql`
   }
 
   type Mutation {
-    logFeeling(childId: ID!, characterId: ID!, level: Int!): Log
+    logFeeling(childId: ID!, characterId: ID!, level: Int!, investigation: [String!]): Log
     createChild(username: String!, name: String, age: Int): Child
     createParent(username: String!, password: String!, childId: ID): Parent
     loginParent(username: String!, password: String!): Parent
@@ -45,6 +45,7 @@ const typeDefs = gql`
     characterName: String
     level: Int!
     timestamp: String!
+    investigation: [String!]
   }
 `;
 
@@ -89,7 +90,7 @@ const resolvers = {
       };
     },
     childLogs: async (_, { childId, startTime, endTime }) => {
-      let query = 'SELECT log_id, child_id, character_id, character_name, feeling_level, logging_time FROM logging WHERE child_id = $1';
+      let query = 'SELECT log_id, child_id, character_id, character_name, feeling_level, logging_time, investigation FROM logging WHERE child_id = $1';
       let params = [childId];
       
       if (startTime && endTime) {
@@ -107,11 +108,12 @@ const resolvers = {
         characterName: log.character_name,
         level: log.feeling_level,
         timestamp: log.logging_time.toISOString(),
+        investigation: log.investigation || [],
       }));
     },
   },
   Mutation: {
-    logFeeling: async (_, { childId, characterId, level }) => {
+    logFeeling: async (_, { childId, characterId, level, investigation }) => {
       const charNameResult = await pool.query(
         'SELECT character_name FROM characters WHERE character_id = $1',
         [characterId]
@@ -119,8 +121,8 @@ const resolvers = {
       const characterName = charNameResult.rows[0]?.character_name || null;
 
       const result = await pool.query(
-        'INSERT INTO logging (child_id, character_id, character_name, feeling_level) VALUES ($1, $2, $3, $4) RETURNING log_id, logging_time',
-        [childId, characterId, characterName, level]
+        'INSERT INTO logging (child_id, character_id, character_name, feeling_level, investigation) VALUES ($1, $2, $3, $4, $5) RETURNING log_id, logging_time',
+        [childId, characterId, characterName, level, investigation || null]
       );
       const log = result.rows[0];
       return {
@@ -130,6 +132,7 @@ const resolvers = {
         characterName,
         level,
         timestamp: log.logging_time.toISOString(),
+        investigation: investigation || [],
       };
     },
     createChild: async (_, { username, name, age }) => {
@@ -237,9 +240,16 @@ const resolvers = {
   }
 };
 
-const server = new ApolloServer({ typeDefs, resolvers });
+const server = new ApolloServer({ 
+  typeDefs, 
+  resolvers,
+  cors: {
+    origin: true,
+    credentials: true,
+  },
+});
 
-server.listen().then(({ url }) => {
+server.listen({ port: 3000, host: '0.0.0.0' }).then(({ url }) => {
   console.log(`🚀 Server ready at ${url}`);
 }).catch((error) => {
   console.error('❌ Failed to start server:', error);
