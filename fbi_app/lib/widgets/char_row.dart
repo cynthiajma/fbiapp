@@ -23,7 +23,20 @@ class CharacterRow extends StatelessWidget {
           width: 52, height: 52,
           child: Image.asset(c.imageAsset, fit: BoxFit.contain),
         ),
-        ProgressRing(value: c.progress), // Progress ring in middle
+        Column(
+          children: [
+            ProgressRing(value: c.progress), // Progress ring in middle
+            const SizedBox(height: 4),
+            Text(
+              'Level: ${c.averageLevel}',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey,
+              ),
+            ),
+          ],
+        ),
         Text(
           _date(c.date),
           style: const TextStyle(fontWeight: FontWeight.w800),
