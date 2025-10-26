@@ -32,7 +32,8 @@ CREATE TABLE IF NOT EXISTS logging (
   child_id        INT NOT NULL REFERENCES children(child_id) ON DELETE CASCADE,
   character_id    INT NOT NULL REFERENCES characters(character_id) ON DELETE RESTRICT,
   character_name  VARCHAR(100),
-  feeling_level   INT NOT NULL CHECK (feeling_level BETWEEN 0 AND 10)
+  feeling_level   INT NOT NULL CHECK (feeling_level BETWEEN 0 AND 10),
+  investigation           TEXT[]
 );
 
 COMMIT;
