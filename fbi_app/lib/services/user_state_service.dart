@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 class UserStateService {
   static const String _childNameKey = 'child_name';
   static const String _childIdKey = 'child_id';
+  static const String _parentAuthenticatedKey = 'parent_authenticated';
   
   /// Get the current child's name
   static Future<String?> getChildName() async {
@@ -28,11 +29,24 @@ class UserStateService {
     await prefs.setString(_childIdKey, id);
   }
   
+  /// Check if parent is authenticated
+  static Future<bool> isParentAuthenticated() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_parentAuthenticatedKey) ?? false;
+  }
+  
+  /// Save parent authentication state
+  static Future<void> saveParentAuthenticated(bool authenticated) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_parentAuthenticatedKey, authenticated);
+  }
+  
   /// Clear all saved user data
   static Future<void> clearUserData() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_childNameKey);
     await prefs.remove(_childIdKey);
+    await prefs.remove(_parentAuthenticatedKey);
   }
   
   /// Check if a user is logged in

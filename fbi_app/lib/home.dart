@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library.dart';
-import 'pages/parent_profile.dart';
+import 'pages/parent_login_page.dart';
 import 'heartbeat.dart';
 import 'services/user_state_service.dart';
 
@@ -62,7 +62,7 @@ class _HomePageState extends State<HomePage> {
                         icon: const Icon(Icons.person_pin, color: Colors.brown),
                         onPressed: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const ParentProfilePage()),
+                            MaterialPageRoute(builder: (_) => const ParentLoginPage()),
                           );
                         },
                       ),
