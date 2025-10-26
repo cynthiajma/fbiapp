@@ -1,73 +1,137 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'heartbeat.dart';
+import 'services/character_service.dart';
 
 
-class CharacterLibraryPage extends StatelessWidget {
+class CharacterLibraryPage extends StatefulWidget {
   const CharacterLibraryPage({super.key});
 
-  static const List<Map<String, String>> characters = [
-    {"name": "Betty Butterfly", "asset": "data/characters/betty_butterfly.png"},
-    {"name": "Gassy Gus", "asset": "data/characters/gassy_gus.png"},
-    {"name": "Gerda Gotta Go", "asset": "data/characters/gerda_gotta_go.png"},
-    {"name": "Gordon Gotta Go", "asset": "data/characters/gordon_gotta_go.png"},
-    {"name": "Henry Heartbeat", "asset": "data/characters/henry_heartbeat.png"},
-    {"name": "Patricia the Poop Pain", "asset": "data/characters/patricia_the_poop_pain.png"},
-    {"name": "Polly Pain", "asset": "data/characters/polly_pain.png"},
-    {"name": "Ricky the Rock", "asset": "data/characters/ricky_the_rock.png"},
-    {"name": "Samatha Sweat", "asset": "data/characters/samatha_sweat.png"},
-  ];
+  @override
+  State<CharacterLibraryPage> createState() => _CharacterLibraryPageState();
+}
 
-  static const String classifiedAsset = "data/characters/classified.png";
+class _CharacterLibraryPageState extends State<CharacterLibraryPage> {
+  List<Character> characters = [];
+  bool isLoading = true;
+  String? error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCharacters();
+  }
+
+  Future<void> _loadCharacters() async {
+    try {
+      final fetchedCharacters = await CharacterService.getCharacters();
+      setState(() {
+        characters = fetchedCharacters;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        error = e.toString();
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Character Library'),
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(12),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          mainAxisSpacing: 12,
-          crossAxisSpacing: 12,
-          childAspectRatio: 0.8,
-        ),
-        itemCount: characters.length + 9, // 3 extra rows of CLASSIFIED (3x3)
-        itemBuilder: (context, index) {
-          if (index < characters.length) {
-            final character = characters[index];
-            return _CharacterCard(
-              imageAsset: character["asset"]!,
-              label: character["name"]!,
-              onTap: character["name"] == 'Henry Heartbeat'
-                  ? () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const HeartbeatPage()),
-                      );
-                    }
-                  : null,
-            );
-          }
+      body: _buildBody(),
+    );
+  }
 
-          return const _CharacterCard(
-            imageAsset: classifiedAsset,
-            label: 'CLASSIFIED',
-          );
-        },
+  Widget _buildBody() {
+    if (isLoading) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error, size: 64, color: Colors.red.shade300),
+            const SizedBox(height: 16),
+            Text(
+              'Error loading characters',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error!,
+              textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Colors.grey.shade600,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  isLoading = true;
+                  error = null;
+                });
+                _loadCharacters();
+              },
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(12),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 3,
+        mainAxisSpacing: 12,
+        crossAxisSpacing: 12,
+        childAspectRatio: 0.8,
       ),
+      itemCount: characters.length + 9, // 3 extra rows of CLASSIFIED (3x3)
+      itemBuilder: (context, index) {
+        if (index < characters.length) {
+          final character = characters[index];
+          return _CharacterCard(
+            character: character,
+            onTap: character.name == 'Henry the Heartbeat'
+                ? () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+                    );
+                  }
+                : null,
+          );
+        }
+
+        return const _CharacterCard(
+          character: null,
+          label: 'CLASSIFIED',
+        );
+      },
     );
   }
 }
 
 class _CharacterCard extends StatelessWidget {
-  final String imageAsset;
-  final String label;
+  final Character? character;
+  final String? label;
   final VoidCallback? onTap;
 
-  const _CharacterCard({required this.imageAsset, required this.label, this.onTap});
+  const _CharacterCard({
+    this.character,
+    this.label,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -75,35 +139,66 @@ class _CharacterCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Expanded(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              color: Colors.grey.shade200,
-              child: Image.asset(
-                imageAsset,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) {
-                  return Center(
-                    child: Icon(Icons.broken_image, color: Colors.grey.shade600),
-                  );
-                },
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                color: Colors.grey.shade200,
+                child: _buildImage(),
               ),
             ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          label,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
-      ],
-    ),
+          const SizedBox(height: 8),
+          Text(
+            character?.name ?? label ?? 'Unknown',
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyMedium,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    if (character?.photo != null) {
+      // Display image from database (base64)
+      try {
+        final bytes = base64Decode(character!.photo!);
+        return Image.memory(
+          bytes,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildFallbackImage();
+          },
+        );
+      } catch (e) {
+        return _buildFallbackImage();
+      }
+    } else if (label == 'CLASSIFIED') {
+      // Display classified image from assets
+      return Image.asset(
+        'data/characters/classified.png',
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildFallbackImage();
+        },
+      );
+    } else {
+      return _buildFallbackImage();
+    }
+  }
+
+  Widget _buildFallbackImage() {
+    return Center(
+      child: Icon(
+        Icons.broken_image,
+        color: Colors.grey.shade600,
+        size: 48,
+      ),
     );
   }
 }

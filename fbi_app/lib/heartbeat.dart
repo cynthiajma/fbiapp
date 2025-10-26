@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'services/logging_service.dart';
+import 'services/user_state_service.dart';
 
 class HeartbeatPage extends StatefulWidget {
   const HeartbeatPage({super.key});
@@ -11,6 +13,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
     with SingleTickerProviderStateMixin {
   double _heartbeatSpeed = 0.5;
   late AnimationController _controller;
+  bool _isLogging = false;
 
   @override
   void initState() {
@@ -42,6 +45,59 @@ class _HeartbeatPageState extends State<HeartbeatPage>
       _controller.duration = newDuration;
       _controller.repeat(reverse: true);
     });
+  }
+
+  Future<void> _logFeeling() async {
+    if (_isLogging) return;
+
+    setState(() {
+      _isLogging = true;
+    });
+
+    try {
+      // Convert slider value (0-1) to level (0-10)
+      final level = (_heartbeatSpeed * 10).round();
+      
+      // Get childId from user state
+      final childId = await UserStateService.getChildId();
+      if (childId == null) {
+        throw Exception('No child ID found. Please log in first.');
+      }
+      
+      // For now, hardcode characterId to 1 (Henry the Heartbeat)
+      const characterId = '1';
+      
+      final result = await LoggingService.logFeeling(
+        childId: childId,
+        characterId: characterId,
+        level: level,
+        // investigation will be added as a feature in the future
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Feeling logged successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error logging feeling: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLogging = false;
+        });
+      }
+    }
   }
 
   @override
@@ -153,14 +209,25 @@ class _HeartbeatPageState extends State<HeartbeatPage>
               ),
               const SizedBox(height: 30),
               ElevatedButton.icon(
-                onPressed: () {
-                  // TODO: add navigation later
-                },
-                icon: const Icon(Icons.play_arrow),
-                label: const Text('Next'),
+                onPressed: _isLogging ? null : _logFeeling,
+                icon: _isLogging
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : const Icon(Icons.play_arrow),
+                label: Text(_isLogging ? 'Saving...' : 'Save'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.greenAccent,
+                  backgroundColor: _isLogging
+                      ? Colors.grey
+                      : Colors.greenAccent,
                   foregroundColor: Colors.black,
+                  disabledBackgroundColor: Colors.grey,
+                  disabledForegroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),

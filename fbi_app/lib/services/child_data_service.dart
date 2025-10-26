@@ -1,0 +1,174 @@
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:flutter/material.dart';
+
+class ChildDataService {
+  static const String _getChildProfileQuery = '''
+    query GetChildProfile(\$childId: ID!) {
+      childProfile(id: \$childId) {
+        id
+        username
+        name
+        age
+      }
+    }
+  ''';
+
+  static const String _getChildLogsQuery = '''
+    query GetChildLogs(\$childId: ID!) {
+      childLogs(childId: \$childId) {
+        id
+        childId
+        characterId
+        characterName
+        level
+        timestamp
+        investigation
+      }
+    }
+  ''';
+
+  static const String _getCharacterLibraryQuery = '''
+    query GetCharacterLibrary {
+      characterLibrary {
+        id
+        name
+        photo
+        description
+      }
+    }
+  ''';
+
+  /// Get child profile information
+  static Future<Map<String, dynamic>?> getChildProfile(String childId, BuildContext context) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+      
+      final result = await client.query(
+        QueryOptions(
+          document: gql(_getChildProfileQuery),
+          variables: {
+            'childId': childId,
+          },
+        ),
+      );
+
+      if (result.hasException) {
+        throw Exception(result.exception.toString());
+      }
+
+      return result.data?['childProfile'];
+    } catch (e) {
+      throw Exception('Failed to get child profile: $e');
+    }
+  }
+
+  /// Get child's logging data
+  static Future<List<Map<String, dynamic>>> getChildLogs(String childId, BuildContext context) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+      
+      final result = await client.query(
+        QueryOptions(
+          document: gql(_getChildLogsQuery),
+          variables: {
+            'childId': childId,
+          },
+        ),
+      );
+
+      if (result.hasException) {
+        throw Exception(result.exception.toString());
+      }
+
+      final logs = result.data?['childLogs'] as List<dynamic>?;
+      return logs?.cast<Map<String, dynamic>>() ?? [];
+    } catch (e) {
+      throw Exception('Failed to get child logs: $e');
+    }
+  }
+
+  /// Get character library
+  static Future<List<Map<String, dynamic>>> getCharacterLibrary(BuildContext context) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+      
+      final result = await client.query(
+        QueryOptions(
+          document: gql(_getCharacterLibraryQuery),
+        ),
+      );
+
+      if (result.hasException) {
+        throw Exception(result.exception.toString());
+      }
+
+      final characters = result.data?['characterLibrary'] as List<dynamic>?;
+      return characters?.cast<Map<String, dynamic>>() ?? [];
+    } catch (e) {
+      throw Exception('Failed to get character library: $e');
+    }
+  }
+
+  /// Map character names to image file names
+  static String getCharacterImagePath(String characterName) {
+    final Map<String, String> nameMapping = {
+      'Henry the Heartbeat': 'henry_heartbeat.png',
+      'Samantha Sweat': 'samatha_sweat.png',
+      'Gassy Gus': 'gassy_gus.png',
+      'Betty Butterfly': 'betty_butterfly.png',
+      'Gerda Gotta Go': 'gerda_gotta_go.png',
+      'Gordon Gotta Go': 'gordon_gotta_go.png',
+      'Patricia the Poop Pain': 'patricia_the_poop_pain.png',
+      'Polly Pain': 'polly_pain.png',
+      'Ricky the Rock': 'ricky_the_rock.png',
+      'Heart': 'heart.png',
+      'Classified': 'classified.png',
+    };
+    
+    return nameMapping[characterName] ?? 'classified.png';
+  }
+
+  /// Process logs to create individual log entries (not averaged)
+  static List<Map<String, dynamic>> processLogsToIndividualEntries(
+    List<Map<String, dynamic>> logs,
+    List<Map<String, dynamic>> characters,
+  ) {
+    // Create a map of character ID to character data for quick lookup
+    final Map<String, Map<String, dynamic>> characterMap = {};
+    for (final character in characters) {
+      characterMap[character['id'] as String] = character;
+    }
+
+    // Convert each log to a character entry
+    final List<Map<String, dynamic>> logEntries = [];
+    
+    for (final log in logs) {
+      final characterId = log['characterId'] as String;
+      final character = characterMap[characterId];
+      
+      if (character != null) {
+        final characterName = character['name'] as String;
+        final level = log['level'] as int;
+        final timestamp = DateTime.parse(log['timestamp'] as String);
+        
+        logEntries.add({
+          'character': character,
+          'characterName': characterName,
+          'level': level,
+          'progress': level / 10.0, // Convert level (0-10) to progress (0-1)
+          'date': timestamp,
+          'logId': log['id'],
+        });
+      }
+    }
+    
+    // Sort by timestamp (most recent first)
+    logEntries.sort((a, b) {
+      final dateA = a['date'] as DateTime;
+      final dateB = b['date'] as DateTime;
+      return dateB.compareTo(dateA);
+    });
+    
+    return logEntries;
+  }
+}

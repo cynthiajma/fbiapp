@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'character_library.dart';
 import 'home.dart';
 import 'heartbeat.dart';
+import 'pages/child_login_page.dart';
+import 'services/user_state_service.dart';
 
-void main() {
+void main() async {
+  await initHiveForFlutter();
   runApp(const MyApp());
 }
 
@@ -17,12 +21,59 @@ class MyApp extends StatelessWidget {
     
     Get.put(FluttermojiController());
 
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Character',
-      theme: ThemeData(primarySwatch: Colors.red),
-      home: const HomePage(),
+    return GraphQLProvider(
+      client: ValueNotifier(
+        GraphQLClient(
+          link: HttpLink('http://127.0.0.1:3000/graphql'),
+          cache: GraphQLCache(),
+        ),
+      ),
+      child: GetMaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'Character',
+        theme: ThemeData(primarySwatch: Colors.red),
+        home: const LoginWrapper(),
+      ),
     );
+  }
+}
+
+class LoginWrapper extends StatefulWidget {
+  const LoginWrapper({super.key});
+
+  @override
+  State<LoginWrapper> createState() => _LoginWrapperState();
+}
+
+class _LoginWrapperState extends State<LoginWrapper> {
+  bool _isLoading = true;
+  bool _isLoggedIn = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLoginStatus();
+  }
+
+  Future<void> _checkLoginStatus() async {
+    final isLoggedIn = await UserStateService.isLoggedIn();
+    setState(() {
+      _isLoggedIn = isLoggedIn;
+      _isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
+    return _isLoggedIn ? const HomePage() : const ChildLoginPage();
   }
 }
 
