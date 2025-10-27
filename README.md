@@ -45,11 +45,15 @@ This is the repository where you will keep everything related to this CompSci 40
 
 6. Seed test data:
    ```bash
-   # Populate with test children, parents, and logs
-   node scripts/seed-test-data.js
+   npm run seed-test-data
    ```
 
-7. Start the backend server:
+7. Populate character data:
+   ```bash
+   npm run populate-characters
+   ```
+
+8. Start the backend server:
    ```bash
    npm start
    ```
