@@ -71,6 +71,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         childId: childId,
         characterId: characterId,
         level: level,
+        context: context,
         // investigation will be added as a feature in the future
       );
 

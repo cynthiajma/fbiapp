@@ -4,6 +4,7 @@ const { pool } = require('./db');
 const typeDefs = gql`
   type Query {
     childProfile(id: ID!): Child
+    childByUsername(username: String!): Child
     characterLibrary: [Character]
     parentProfile(id: ID!): Parent
     childLogs(childId: ID!, startTime: String, endTime: String): [Log]
@@ -56,6 +57,20 @@ const resolvers = {
       const result = await pool.query(
         'SELECT child_id, child_username, child_name, child_age FROM children WHERE child_id = $1',
         [id]
+      );
+      if (result.rows.length === 0) return null;
+      const child = result.rows[0];
+      return {
+        id: child.child_id.toString(),
+        username: child.child_username,
+        name: child.child_name,
+        age: child.child_age,
+      };
+    },
+    childByUsername: async (_, { username }) => {
+      const result = await pool.query(
+        'SELECT child_id, child_username, child_name, child_age FROM children WHERE child_username = $1',
+        [username]
       );
       if (result.rows.length === 0) return null;
       const child = result.rows[0];

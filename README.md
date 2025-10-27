@@ -137,6 +137,9 @@ The server provides a GraphQL API at `http://localhost:3000/graphql` with:
 - `linkParentChild(parentId: ID!, childId: ID!)` - Link parent to child
 - `logFeeling(childId: ID!, characterId: ID!, level: Int!, investigation: [String!])` - Log a feeling
 
+### New Queries
+- `childByUsername(username: String!)` - Get child by username for login verification
+
 ### Authentication Flow
 1. Parent logs in with `loginParent` mutation
 2. System automatically links parent to current child with `linkParentChild`
@@ -215,6 +218,18 @@ query {
 ```graphql
 mutation {
   linkParentChild(parentId: "1", childId: "1")
+}
+```
+
+### Verify Child by Username
+```graphql
+query {
+  childByUsername(username: "alice_child") {
+    id
+    username
+    name
+    age
+  }
 }
 ```
 

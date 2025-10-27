@@ -134,26 +134,46 @@ class ChildDataService {
     List<Map<String, dynamic>> characters,
   ) {
     // Create a map of character ID to character data for quick lookup
-    final Map<String, Map<String, dynamic>> characterMap = {};
+    final Map<String, Map<String, dynamic>> characterMapById = {};
+    final Map<String, Map<String, dynamic>> characterMapByName = {};
+    
     for (final character in characters) {
-      characterMap[character['id'] as String] = character;
+      final id = character['id'] as String?;
+      final name = character['name'] as String?;
+      if (id != null) {
+        characterMapById[id] = character;
+      }
+      if (name != null) {
+        characterMapByName[name] = character;
+      }
     }
 
     // Convert each log to a character entry
     final List<Map<String, dynamic>> logEntries = [];
     
     for (final log in logs) {
-      final characterId = log['characterId'] as String;
-      final character = characterMap[characterId];
+      // Try to find character by ID first, then by name
+      final characterId = log['characterId'] as String?;
+      final characterName = log['characterName'] as String?;
       
-      if (character != null) {
-        final characterName = character['name'] as String;
+      Map<String, dynamic>? character;
+      String? displayName;
+      
+      if (characterId != null && characterMapById.containsKey(characterId)) {
+        character = characterMapById[characterId];
+        displayName = character?['name'] as String? ?? characterName;
+      } else if (characterName != null && characterMapByName.containsKey(characterName)) {
+        character = characterMapByName[characterName];
+        displayName = characterName;
+      }
+      
+      if (character != null && displayName != null) {
         final level = log['level'] as int;
         final timestamp = DateTime.parse(log['timestamp'] as String);
         
         logEntries.add({
           'character': character,
-          'characterName': characterName,
+          'characterName': displayName,
           'level': level,
           'progress': level / 10.0, // Convert level (0-10) to progress (0-1)
           'date': timestamp,

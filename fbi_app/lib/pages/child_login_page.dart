@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
+import '../services/child_auth_service.dart';
 import '../home.dart';
 
 class ChildLoginPage extends StatefulWidget {
@@ -36,12 +37,21 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
     });
 
     try {
-      // Save the child's name to state
-      await UserStateService.saveChildName(name);
+      // Verify the child exists in the database
+      // Try to find by username (or match by name as a fallback)
+      final childData = await ChildAuthService.getChildByUsername(name, context);
       
-      // For now, we'll use child ID 1 (Alice) from our test data
-      // In the future, you might want to create a child profile or match by name
-      await UserStateService.saveChildId('1');
+      if (childData == null) {
+        setState(() {
+          _errorMessage = 'Detective name not found. Please try again or contact support.';
+          _isLoading = false;
+        });
+        return;
+      }
+      
+      // Save the child's data to state
+      await UserStateService.saveChildName(childData['name'] ?? name);
+      await UserStateService.saveChildId(childData['id']);
       
       // Navigate to home page
       if (mounted) {
@@ -104,7 +114,7 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Text(
-                      'FBI DETECTIVE AGENCY',
+                      'FBI Feelings and Body Investigation',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -140,11 +150,11 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                             color: Colors.black87,
                           ),
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 16),
                         TextField(
                           controller: _nameController,
                           decoration: InputDecoration(
-                            hintText: 'Your name...',
+                            hintText: 'Enter your username (e.g., alice_child)',
                             prefixIcon: const Icon(Icons.person),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),

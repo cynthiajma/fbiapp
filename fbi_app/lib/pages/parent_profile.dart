@@ -123,7 +123,9 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
                     ],
                   ),
                 )
-              : ListView(
+              : RefreshIndicator(
+                  onRefresh: _loadChildData,
+                  child: ListView(
                   padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                   children: [
                     // Big user glyph
@@ -184,6 +186,7 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
                     ),
                   ],
                 ),
+              ),
     );
   }
 }
