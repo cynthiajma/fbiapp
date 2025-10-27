@@ -1,5 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server');
 const { pool } = require('./db');
+const bcrypt = require('bcrypt');
 
 const typeDefs = gql`
   type Query {
@@ -164,7 +165,7 @@ const resolvers = {
       };
     },
     createParent: async (_, { username, password, childId }) => {
-      const hashedPassword = password; // TODO: Hash the password properly
+      const hashedPassword = await bcrypt.hash(password, 10);
       const result = await pool.query(
         'INSERT INTO parents (parent_username, hashed_password) VALUES ($1, $2) RETURNING parent_id, parent_username',
         [username, hashedPassword]
@@ -195,14 +196,14 @@ const resolvers = {
       );
       
       if (result.rows.length === 0) {
-        throw new Error('Parent not found');
+        throw new Error('Parent account not found. Please check your username and try again.');
       }
       
       const parent = result.rows[0];
       
-      // Basic password check (no hashing yet)
-      if (parent.hashed_password !== password) {
-        throw new Error('Invalid password');
+      const isPasswordValid = await bcrypt.compare(password, parent.hashed_password);
+      if (!isPasswordValid) {
+        throw new Error('Incorrect password. Please try again.');
       }
       
       return {
@@ -211,10 +212,21 @@ const resolvers = {
       };
     },
     linkParentChild: async (_, { parentId, childId }) => {
-      await pool.query(
-        'INSERT INTO parent_child_link (parent_id, child_id) VALUES ($1, $2) ON CONFLICT (parent_id, child_id) DO NOTHING',
+      // Check if this link already exists (parent is already linked to this child)
+      const existingLink = await pool.query(
+        'SELECT parent_id FROM parent_child_link WHERE parent_id = $1 AND child_id = $2',
         [parentId, childId]
       );
+      
+      if (existingLink.rows.length === 0) {
+        // Try to insert the link, but this shouldn't normally happen through the UI
+        // since parents should only be able to link to their own children
+        await pool.query(
+          'INSERT INTO parent_child_link (parent_id, child_id) VALUES ($1, $2)',
+          [parentId, childId]
+        );
+      }
+      
       return true;
     },
   },
