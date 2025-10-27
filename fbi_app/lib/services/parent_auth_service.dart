@@ -48,12 +48,47 @@ class ParentAuthService {
       );
 
       if (result.hasException) {
-        throw Exception(result.exception.toString());
+        // Extract the clean error message from GraphQL response
+        String errorMessage = 'Login failed';
+        if (result.exception != null) {
+          final errorString = result.exception.toString();
+          
+          // Try to extract from GraphQLError format
+          // GraphQLError(message: "...", ...)
+          final graphqlMatch = RegExp(r'message:\s*"([^"]+)"').firstMatch(errorString);
+          if (graphqlMatch != null) {
+            errorMessage = graphqlMatch.group(1)!;
+          } else {
+            // Try to extract message: ... 
+            final messageMatch = RegExp(r'message:\s*([^\n,]+)').firstMatch(errorString);
+            if (messageMatch != null) {
+              // Remove quotes and other unwanted chars
+              errorMessage = messageMatch.group(1)!.trim()
+                .replaceAll('"', '')
+                .replaceAll("'", '')
+                .replaceAll(r'$', '');
+            } else {
+              // Fallback: remove common prefixes
+              errorMessage = errorString
+                  .replaceAll(RegExp(r'^(Exception|Error|GraphQLError|LinkException):\s*'), '')
+                  .split('\n')
+                  .first
+                  .trim();
+            }
+          }
+        }
+        throw Exception(errorMessage);
       }
 
       return result.data?['loginParent'];
     } catch (e) {
-      throw Exception('Login failed: $e');
+      // Extract clean message from exception
+      String errorMsg = e.toString();
+      errorMsg = errorMsg.replaceFirst('Exception: ', '');
+      if (errorMsg.startsWith('Login failed: ')) {
+        errorMsg = errorMsg.substring('Login failed: '.length);
+      }
+      throw Exception(errorMsg);
     }
   }
 

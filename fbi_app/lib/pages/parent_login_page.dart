@@ -55,24 +55,30 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
         // Get parent's children from database
         final children = await ParentAuthService.getParentChildren(parentData['id'], context);
         
-        if (children.isNotEmpty) {
-          // Use the first child
-          final firstChild = children.first;
-          final childId = firstChild['id'];
-          
-          // Link parent to child (this is idempotent, won't fail if already linked)
-          try {
-            await ParentAuthService.linkParentChild(parentData['id'], childId, context);
-          } catch (e) {
-            // Ignore if already linked
-            print('Link parent-child: $e');
-          }
-          
-          // Save child ID to state
-          await UserStateService.saveChildId(childId);
-          if (firstChild['name'] != null) {
-            await UserStateService.saveChildName(firstChild['name']);
-          }
+        if (children.isEmpty) {
+          setState(() {
+            _errorMessage = '❌ No children associated with this parent account. Please contact support or create a child profile.';
+            _isLoading = false;
+          });
+          return;
+        }
+        
+        // Use the first child
+        final firstChild = children.first;
+        final childId = firstChild['id'];
+        
+        // Link parent to child (this is idempotent, won't fail if already linked)
+        try {
+          await ParentAuthService.linkParentChild(parentData['id'], childId, context);
+        } catch (e) {
+          // Ignore if already linked
+          print('Link parent-child: $e');
+        }
+        
+        // Save child ID to state
+        await UserStateService.saveChildId(childId);
+        if (firstChild['name'] != null) {
+          await UserStateService.saveChildName(firstChild['name']);
         }
         
         // Save parent authentication state
@@ -93,7 +99,12 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Login failed: ${e.toString().replaceFirst('Exception: ', '')}';
+        // Extract clean error message
+        String errorMsg = e.toString();
+        errorMsg = errorMsg.replaceFirst('Exception: ', '');
+        errorMsg = errorMsg.replaceFirst('Error: ', '');
+        errorMsg = errorMsg.replaceAll(RegExp(r'^Login failed:\s*'), '');
+        _errorMessage = errorMsg;
         _isLoading = false;
       });
     }
