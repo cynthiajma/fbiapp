@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library.dart';
 import 'pages/parent_login_page.dart';
+import 'pages/child_profile_page.dart';
 import 'heartbeat.dart';
 import 'services/user_state_service.dart';
 
@@ -244,9 +245,8 @@ class _ProfileButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Get.put(FluttermojiController());
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const _AvatarScaffold()),
+          MaterialPageRoute(builder: (_) => const ChildProfilePage()),
         );
       },
       child: FluttermojiCircleAvatar(radius: 22),
