@@ -1,6 +1,7 @@
 
 require('dotenv').config();
 const { Pool } = require('pg');
+const bcrypt = require('bcrypt');
 
 const pool = new Pool({
   connectionString: process.env.DB_CONNECTION_STRING,
@@ -46,9 +47,10 @@ async function seedTestData() {
     
     const parentIds = [];
     for (const parent of parents) {
+      const hashedPassword = await bcrypt.hash(parent.password, 10);
       await pool.query(
         'INSERT INTO parents (parent_id, parent_username, hashed_password) VALUES ($1, $2, $3)',
-        [parent.id, parent.username, parent.password]
+        [parent.id, parent.username, hashedPassword]
       );
       parentIds.push(parent.id);
       console.log(`✅ Created parent: ${parent.username} (ID: ${parent.id})`);

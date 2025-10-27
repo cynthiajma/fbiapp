@@ -1,5 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server');
 const { pool } = require('./db');
+const bcrypt = require('bcrypt');
 
 const typeDefs = gql`
   type Query {
@@ -149,7 +150,7 @@ const resolvers = {
       };
     },
     createParent: async (_, { username, password, childId }) => {
-      const hashedPassword = password; // TODO: Hash the password properly
+      const hashedPassword = await bcrypt.hash(password, 10);
       const result = await pool.query(
         'INSERT INTO parents (parent_username, hashed_password) VALUES ($1, $2) RETURNING parent_id, parent_username',
         [username, hashedPassword]
@@ -185,8 +186,8 @@ const resolvers = {
       
       const parent = result.rows[0];
       
-      // Basic password check (no hashing yet)
-      if (parent.hashed_password !== password) {
+      const isPasswordValid = await bcrypt.compare(password, parent.hashed_password);
+      if (!isPasswordValid) {
         throw new Error('Invalid password');
       }
       
