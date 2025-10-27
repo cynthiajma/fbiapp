@@ -172,9 +172,9 @@ The backend comes with pre-seeded test data:
 - **Charlie** (ID: 3) - Username: `charlie_child`, Age: 9
 
 ### Test Parents
-- **Alice's Mom** - Username: `alice_mom`, Password: `password123`
-- **Alice's Dad** - Username: `alice_dad`, Password: `password123`
-- **Bob's Mom** - Username: `bob_mom`, Password: `password123`
+- **Alice's Mom** (ID: 1) - Username: `alice_mom`, Password: `password123` → Linked to Alice (ID: 1)
+- **Alice's Dad** (ID: 2) - Username: `alice_dad`, Password: `password123` → Linked to Alice (ID: 1)
+- **Bob's Mom** (ID: 3) - Username: `bob_mom`, Password: `password123` → Linked to Bob (ID: 2)
 
 ### Test Characters
 - Henry the Heartbeat (heart rate feelings)

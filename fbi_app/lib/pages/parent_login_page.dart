@@ -52,12 +52,27 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
       final parentData = await ParentAuthService.loginParent(username, password, context);
       
       if (parentData != null) {
-        // Get current child ID from user state
-        final currentChildId = await UserStateService.getChildId();
+        // Get parent's children from database
+        final children = await ParentAuthService.getParentChildren(parentData['id'], context);
         
-        if (currentChildId != null) {
-          // Link parent to current child
-          await ParentAuthService.linkParentChild(parentData['id'], currentChildId, context);
+        if (children.isNotEmpty) {
+          // Use the first child
+          final firstChild = children.first;
+          final childId = firstChild['id'];
+          
+          // Link parent to child (this is idempotent, won't fail if already linked)
+          try {
+            await ParentAuthService.linkParentChild(parentData['id'], childId, context);
+          } catch (e) {
+            // Ignore if already linked
+            print('Link parent-child: $e');
+          }
+          
+          // Save child ID to state
+          await UserStateService.saveChildId(childId);
+          if (firstChild['name'] != null) {
+            await UserStateService.saveChildName(firstChild['name']);
+          }
         }
         
         // Save parent authentication state
