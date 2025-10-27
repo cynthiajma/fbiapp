@@ -53,13 +53,6 @@ This is the repository where you will keep everything related to this CompSci 40
    npm run populate-characters
    ```
 
-8. Start the backend server:
-   ```bash
-   npm start
-   ```
-
-The backend will be available at `http://localhost:3000/graphql`
-
 ### Frontend Setup (Flutter)
 
 1. Navigate to the Flutter app directory:
@@ -76,32 +69,6 @@ The backend will be available at `http://localhost:3000/graphql`
    ```bash
    flutter run
    ```
-
-#### Platform-specific Setup
-
-**For iOS:**
-```bash
-cd ios
-pod install
-cd ..
-flutter run
-```
-
-**For Android:**
-Make sure you have Android Studio and Android SDK installed, then:
-```bash
-flutter run
-```
-
-**For Web:**
-```bash
-flutter run -d chrome
-```
-
-**For Desktop (macOS):**
-```bash
-flutter run -d macos
-```
 
 ## Development
 
