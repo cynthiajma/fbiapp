@@ -6,6 +6,7 @@ import '../services/user_state_service.dart';
 import '../services/child_data_service.dart';
 import '../features/character.dart';
 import '../widgets/char_row.dart';
+import '../home.dart';
 
 class ChildProfilePage extends StatefulWidget {
   const ChildProfilePage({super.key});
@@ -96,272 +97,283 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error, size: 64, color: Colors.red[300]),
-                      const SizedBox(height: 16),
-                      Text(
-                        _errorMessage!,
-                        style: TextStyle(color: Colors.red[700], fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadChildData,
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                )
-              : SingleChildScrollView(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-                  child: Column(
-                    children: [
-                      // App Bar-like header
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 32),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            // Title
-                            Text(
-                              'MY PROFILE',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: 3,
-                                  ),
-                            ),
-                            // Edit button
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: _openCustomization,
-                              tooltip: 'Customize Avatar',
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Avatar Section
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(32),
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              const Color(0xffe67268).withOpacity(0.1),
-                              const Color(0xffe67268).withOpacity(0.05),
-                            ],
+      body: Stack(
+        children: [
+          // Corkboard background
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/corkboard.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // Optional semi-transparent overlay
+          Container(color: Colors.brown.withOpacity(0.1)),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error, size: 64, color: Colors.red[300]),
+                          const SizedBox(height: 16),
+                          Text(
+                            _errorMessage!,
+                            style: TextStyle(color: Colors.red[700], fontSize: 16),
+                            textAlign: TextAlign.center,
                           ),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: const Color(0xffe67268).withOpacity(0.3),
-                            width: 2,
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _loadChildData,
+                            child: const Text('Retry'),
                           ),
-                        ),
+                        ],
+                      ),
+                    )
+                  : SafeArea(
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                         child: Column(
                           children: [
-                            // Large Avatar
-                            GestureDetector(
-                              onTap: _openCustomization,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  border: Border.all(
-                                    color: const Color(0xffe67268),
-                                    width: 3,
-                                  ),
+                            // Top bar
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.arrow_back, color: Colors.brown),
+                                  onPressed: () {
+                                    Navigator.of(context).pushReplacement(
+                                      MaterialPageRoute(builder: (_) => const HomePage()),
+                                    );
+                                  },
+                                  tooltip: 'Back to Home',
                                 ),
-                                child: ClipOval(
-                                  child: Container(
-                                    width: 120,
-                                    height: 120,
-                                    decoration: BoxDecoration(
-                                      shape: BoxShape.circle,
-                                      color: Colors.grey[100],
-                                    ),
-                                    child: FluttermojiCircleAvatar(radius: 60),
-                                  ),
+                                IconButton(
+                                  icon: const Icon(Icons.edit, color: Colors.brown),
+                                  onPressed: _openCustomization,
+                                  tooltip: 'Customize Avatar',
                                 ),
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            // Child Name
-                            Text(
-                              _childName.toUpperCase(),
-                              style: const TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 28,
-                                letterSpacing: 2,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            // Detective badge
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xffe67268),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(Icons.verified_user,
-                                      color: Colors.white, size: 20),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'DETECTIVE',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 14,
-                                      letterSpacing: 1,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-                            // Customize button
-                            ElevatedButton.icon(
-                              onPressed: _openCustomization,
-                              icon: const Icon(Icons.palette, size: 20),
-                              label: const Text('Customize Avatar'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                foregroundColor: const Color(0xffe67268),
-                                elevation: 2,
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      // Stats Section
-                      Container(
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(20),
-                          boxShadow: [
-                            BoxShadow(
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                              color: Colors.black.withOpacity(0.08),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceAround,
-                          children: [
-                            _StatItem(
-                              icon: Icons.psychology,
-                              number: _characters.length,
-                              label: 'Feelings Investigated',
-                            ),
-                            Container(
-                              width: 1,
-                              height: 60,
-                              color: Colors.grey[300],
-                            ),
-                            _StatItem(
-                              icon: Icons.star,
-                              number: _calculateTotalStars(),
-                              label: 'Stars Earned',
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 32),
-
-                      // My Characters Section
-                      if (_characters.isNotEmpty) ...[
-                        Text(
-                          'MY CHARACTERS',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE5E4E2)),
-                            boxShadow: [
-                              BoxShadow(
-                                blurRadius: 12,
-                                offset: const Offset(0, 4),
-                                color: Colors.black.withOpacity(0.04),
-                              ),
-                            ],
-                          ),
-                          child: Column(
-                            children: [
-                              for (int i = 0; i < _characters.length; i++) ...[
-                                CharacterRow(c: _characters[i]),
-                                if (i != _characters.length - 1)
-                                  const Divider(
-                                      height: 1,
-                                      thickness: 1,
-                                      color: Color(0xFFEDEBEA)),
                               ],
-                            ],
-                          ),
-                        ),
-                      ] else
-                        Container(
-                          padding: const EdgeInsets.all(48),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: const Color(0xFFE5E4E2)),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(Icons.emoji_emotions_outlined,
-                                  size: 64, color: Colors.grey[400]),
-                              const SizedBox(height: 16),
-                              Text(
-                                'Start your first investigation!',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
+                            ),
+                            const SizedBox(height: 20),
+                            
+                            // Title
+                            Transform.rotate(
+                              angle: -2 * 3.1416 / 180,
+                              child: Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFFFF8DC),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      offset: Offset(3, 3),
+                                      blurRadius: 5,
+                                      color: Colors.black26,
+                                    ),
+                                  ],
+                                ),
+                                child: Stack(
+                                  children: [
+                                    const Positioned(
+                                      top: 10,
+                                      left: 10,
+                                      child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+                                    ),
+                                    Column(
+                                      children: [
+                                        const SizedBox(height: 20),
+                                        GestureDetector(
+                                          onTap: _openCustomization,
+                                          child: FluttermojiCircleAvatar(radius: 50),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        Text(
+                                          _childName.toUpperCase(),
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontFamily: 'SpecialElite',
+                                            fontWeight: FontWeight.w700,
+                                            fontSize: 32,
+                                            color: Colors.black87,
+                                            height: 1.1,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 12),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 8,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: const Color(0xffe67268),
+                                            borderRadius: BorderRadius.circular(20),
+                                          ),
+                                          child: const Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(Icons.verified_user,
+                                                  color: Colors.white, size: 16),
+                                              SizedBox(width: 6),
+                                              Text(
+                                                'DETECTIVE',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                  letterSpacing: 1,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
                                 ),
                               ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'Log your feelings to see them here',
-                                style: TextStyle(
-                                  color: Colors.grey[500],
-                                  fontSize: 14,
+                            ),
+                            const SizedBox(height: 32),
+
+                            // Stats
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Expanded(
+                                  child: _PinnedStatsNote(
+                                    number: _characters.length,
+                                    label: 'Investigations',
+                                    rotation: 1.5,
+                                  ),
                                 ),
-                                textAlign: TextAlign.center,
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: _PinnedStatsNote(
+                                    number: _calculateTotalStars(),
+                                    label: 'Stars',
+                                    rotation: -2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 32),
+
+                            // My Characters Section
+                            if (_characters.isNotEmpty) ...[
+                              Transform.rotate(
+                                angle: 1 * 3.1416 / 180,
+                                child: Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.95),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        offset: Offset(3, 3),
+                                        blurRadius: 5,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      const Positioned(
+                                        top: 8,
+                                        left: 10,
+                                        child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 24),
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'MY CHARACTERS',
+                                              style: TextStyle(
+                                                fontFamily: 'SpecialElite',
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 18,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 16),
+                                            for (int i = 0; i < _characters.length; i++) ...[
+                                              CharacterRow(c: _characters[i]),
+                                              if (i != _characters.length - 1)
+                                                const SizedBox(height: 12),
+                                            ],
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ),
-                            ],
-                          ),
+                            ] else
+                              Transform.rotate(
+                                angle: -0.5 * 3.1416 / 180,
+                                child: Container(
+                                  padding: const EdgeInsets.all(24),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.95),
+                                    borderRadius: BorderRadius.circular(12),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        offset: Offset(3, 3),
+                                        blurRadius: 5,
+                                        color: Colors.black26,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Stack(
+                                    children: [
+                                      const Positioned(
+                                        top: 8,
+                                        left: 10,
+                                        child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.only(top: 24),
+                                        child: Column(
+                                          children: [
+                                            Icon(Icons.emoji_emotions_outlined,
+                                                size: 48, color: Colors.grey[400]),
+                                            const SizedBox(height: 16),
+                                            Text(
+                                              'Start your first investigation!',
+                                              style: TextStyle(
+                                                fontFamily: 'SpecialElite',
+                                                color: Colors.grey[700],
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 8),
+                                            Text(
+                                              'Log your feelings to see them here',
+                                              style: TextStyle(
+                                                fontFamily: 'SpecialElite',
+                                                color: Colors.grey[500],
+                                                fontSize: 14,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 32),
+                          ],
                         ),
-                    ],
-                  ),
-                ),
+                      ),
+                    ),
+        ],
+      ),
     );
   }
 
@@ -373,42 +385,70 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
   }
 }
 
-class _StatItem extends StatelessWidget {
-  final IconData icon;
+class _PinnedStatsNote extends StatelessWidget {
   final int number;
   final String label;
+  final double rotation;
 
-  const _StatItem({
-    required this.icon,
+  const _PinnedStatsNote({
     required this.number,
     required this.label,
+    required this.rotation,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(icon, size: 32, color: const Color(0xffe67268)),
-        const SizedBox(height: 8),
-        Text(
-          number.toString(),
-          style: const TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
+    return Transform.rotate(
+      angle: rotation * 3.1416 / 180,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF0E68C),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              offset: Offset(3, 3),
+              blurRadius: 5,
+              color: Colors.black26,
+            ),
+          ],
         ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w500,
-          ),
-          textAlign: TextAlign.center,
+        child: Stack(
+          children: [
+            const Positioned(
+              top: 6,
+              left: 10,
+              child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: Column(
+                children: [
+                  Text(
+                    number.toString(),
+                    style: const TextStyle(
+                      fontFamily: 'SpecialElite',
+                      fontSize: 36,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    label,
+                    style: const TextStyle(
+                      fontFamily: 'SpecialElite',
+                      fontSize: 14,
+                      color: Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
