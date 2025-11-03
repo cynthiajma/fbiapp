@@ -5,6 +5,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'character_library.dart';
 import 'home.dart';
 import 'heartbeat.dart';
+import 'opening_page.dart'; // ✅ added missing semicolon here
 import 'pages/child_login_page.dart';
 import 'services/user_state_service.dart';
 
@@ -18,7 +19,6 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     Get.put(FluttermojiController());
 
     return GraphQLProvider(
@@ -32,7 +32,16 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         title: 'Character',
         theme: ThemeData(primarySwatch: Colors.red),
-        home: const LoginWrapper(),
+
+        // 👇 Step 1: Start with the OpeningPage as your initial screen
+        home: const OpeningPage(),
+
+        // 👇 Step 2: Define your routes so we can navigate after animation
+        getPages: [
+          GetPage(name: '/', page: () => const OpeningPage()),
+          GetPage(name: '/loginWrapper', page: () => const LoginWrapper()),
+          GetPage(name: '/home', page: () => const HomePage()),
+        ],
       ),
     );
   }
@@ -67,9 +76,7 @@ class _LoginWrapperState extends State<LoginWrapper> {
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
-        ),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
