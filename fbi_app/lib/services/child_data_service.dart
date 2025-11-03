@@ -34,6 +34,7 @@ class ChildDataService {
         name
         photo
         description
+        audio
       }
     }
   ''';

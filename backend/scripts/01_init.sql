@@ -23,7 +23,8 @@ CREATE TABLE IF NOT EXISTS characters (
   character_id          SERIAL PRIMARY KEY,
   character_name        VARCHAR(100) NOT NULL UNIQUE,
   character_photo       BYTEA,
-  character_description TEXT
+  character_description TEXT,
+  audio_file            BYTEA
 );
 
 CREATE TABLE IF NOT EXISTS logging (

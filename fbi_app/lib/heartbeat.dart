@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'dart:convert';
+import 'dart:io';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
 import 'services/logging_service.dart';
 import 'services/user_state_service.dart';
+import 'services/character_service.dart';
 
 class HeartbeatPage extends StatefulWidget {
   const HeartbeatPage({super.key});
@@ -14,6 +20,11 @@ class _HeartbeatPageState extends State<HeartbeatPage>
   double _heartbeatSpeed = 0.5;
   late AnimationController _controller;
   bool _isLogging = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  String? _characterAudio;
+  bool _isLoadingAudio = false;
+  bool _isPlayingAudio = false;
+  bool _hasPlayedOnce = false;
 
   @override
   void initState() {
@@ -29,12 +40,153 @@ class _HeartbeatPageState extends State<HeartbeatPage>
       });
 
     _controller.repeat(reverse: true);
+    _loadCharacterAudio();
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCharacterAudio() async {
+    setState(() {
+      _isLoadingAudio = true;
+    });
+
+    try {
+      // Fetch characters from backend
+      final characters = await CharacterService.getCharacters();
+      
+      // Find Henry the Heartbeat (character ID = 1)
+      final henry = characters.firstWhere(
+        (char) => char.id == '1',
+        orElse: () => characters.first,
+      );
+
+      setState(() {
+        _characterAudio = henry.audio;
+        _isLoadingAudio = false;
+      });
+    } catch (e) {
+      print('Error loading character audio: $e');
+      setState(() {
+        _isLoadingAudio = false;
+      });
+    }
+  }
+
+  Future<void> _toggleAudio() async {
+    if (_characterAudio == null) return;
+
+    // If already playing, pause it
+    if (_isPlayingAudio) {
+      await _audioPlayer.pause();
+      setState(() {
+        _isPlayingAudio = false;
+      });
+      // Clear the snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Audio paused'),
+            duration: Duration(seconds: 1),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Otherwise, play or resume
+    setState(() {
+      _isPlayingAudio = true;
+      _hasPlayedOnce = true;
+    });
+
+    try {
+      final audioBytes = base64Decode(_characterAudio!);
+      
+      Source audioSource;
+      
+      // Use different approach for web vs mobile
+      if (kIsWeb) {
+        // For web: Use data URL (base64)
+        final base64Audio = base64Encode(audioBytes);
+        audioSource = UrlSource('data:audio/mp3;base64,$base64Audio');
+      } else {
+        // For mobile/desktop: Use temporary file
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/temp_audio.mp3');
+        await tempFile.writeAsBytes(audioBytes);
+        audioSource = DeviceFileSource(tempFile.path);
+      }
+      
+      await _audioPlayer.play(audioSource);
+      
+      // Show "audio playing" snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Audio playing...'),
+            duration: Duration(seconds: 2), 
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+      
+      // Listen for completion
+      _audioPlayer.onPlayerComplete.listen((_) {
+        setState(() {
+          _isPlayingAudio = false;
+          _hasPlayedOnce = false; // Reset so speaker icon shows again
+        });
+        // Clear the snackbar when audio completes
+        if (mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+        }
+      });
+      
+    } catch (e) {
+      print('Error playing audio: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error playing audio: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      setState(() {
+        _isPlayingAudio = false;
+      });
+    }
+  }
+
+  Future<void> _replayAudio() async {
+    if (_characterAudio == null) return;
+
+    // Stop current playback and reset to initial state
+    await _audioPlayer.stop();
+    
+    setState(() {
+      _isPlayingAudio = false;
+      _hasPlayedOnce = false;
+    });
+    
+    // Clear any existing snackbars
+    if (mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Audio reset to beginning'),
+          duration: Duration(seconds: 1),
+          backgroundColor: Colors.blue,
+        ),
+      );
+    }
   }
 
   void _updateSpeed(double value) {
@@ -67,7 +219,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
       // For now, hardcode characterId to 1 (Henry the Heartbeat)
       const characterId = '1';
       
-      final result = await LoggingService.logFeeling(
+      await LoggingService.logFeeling(
         childId: childId,
         characterId: characterId,
         level: level,
@@ -109,6 +261,68 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         backgroundColor: const Color(0xffd2f0f7),
         elevation: 0,
         leading: BackButton(onPressed: () => Navigator.of(context).pop()),
+        actions: [
+          // Play/Pause button
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: const Color(0xffe67268),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(
+                _isPlayingAudio 
+                    ? Icons.pause_rounded 
+                    : (_hasPlayedOnce ? Icons.play_arrow_rounded : Icons.volume_up_rounded),
+                color: Colors.white,
+              ),
+              onPressed: _characterAudio == null || _isLoadingAudio
+                  ? null
+                  : _toggleAudio,
+              tooltip: _isLoadingAudio 
+                  ? 'Loading audio...' 
+                  : (_characterAudio == null 
+                      ? 'No audio available' 
+                      : (_isPlayingAudio ? 'Pause audio' : 'Play character voiceover')),
+            ),
+          ),
+          // Replay button
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: const Color(0xffe67268),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(
+                Icons.replay_rounded,
+                color: Colors.white,
+              ),
+              onPressed: _characterAudio == null || _isLoadingAudio
+                  ? null
+                  : _replayAudio,
+              tooltip: _isLoadingAudio 
+                  ? 'Loading audio...' 
+                  : (_characterAudio == null 
+                      ? 'No audio available' 
+                      : 'Replay audio from beginning'),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -116,7 +330,33 @@ class _HeartbeatPageState extends State<HeartbeatPage>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 30),
+              // Audio instruction text for mobile
+              if (!_isLoadingAudio && _characterAudio != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 4, bottom: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.volume_up_rounded,
+                        size: 18,
+                        color: const Color(0xffe67268),
+                      ),
+                      const SizedBox(width: 6),
+                      const Text(
+                        'Tap the buttons above to listen to Henry!',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontStyle: FontStyle.italic,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              else
+                const SizedBox(height: 16),
+              const SizedBox(height: 10),
               Container(
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
