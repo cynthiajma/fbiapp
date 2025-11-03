@@ -74,11 +74,98 @@ async function seedTestData() {
       console.log(`✅ Linked parent ${link.parentId} to child ${link.childId}`);
     }
     
+    // Get character IDs from the database
+    const characterResult = await pool.query(
+      'SELECT character_id, character_name FROM characters ORDER BY character_id LIMIT 5'
+    );
+    const characters = characterResult.rows;
+    
+    let logCount = 0;
+    if (characters.length === 0) {
+      console.log('⚠️  No characters found in database. Please run populate-characters.js first.');
+    } else {
+      console.log(`📝 Found ${characters.length} characters for logging`);
+      
+      // Create fake logs with various timestamps
+      const now = new Date();
+      const logs = [
+        // Alice's logs (child_id: 1)
+        {
+          childId: 1,
+          characterId: characters[0]?.character_id || 1,
+          characterName: characters[0]?.character_name || 'Henry the Heartbeat',
+          level: 7,
+          timestamp: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
+        },
+        {
+          childId: 1,
+          characterId: characters[1]?.character_id || 2,
+          characterName: characters[1]?.character_name || 'Samantha Sweat',
+          level: 5,
+          timestamp: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+        },
+        {
+          childId: 1,
+          characterId: characters[2]?.character_id || 3,
+          characterName: characters[2]?.character_name || 'Gassy Gus',
+          level: 3,
+          timestamp: new Date(now.getTime() - 12 * 60 * 60 * 1000), // 12 hours ago
+        },
+        {
+          childId: 1,
+          characterId: characters[0]?.character_id || 1,
+          characterName: characters[0]?.character_name || 'Henry the Heartbeat',
+          level: 8,
+          timestamp: new Date(now.getTime() - 6 * 60 * 60 * 1000), // 6 hours ago
+        },
+        // Bob's logs (child_id: 2)
+        {
+          childId: 2,
+          characterId: characters[3]?.character_id || 4,
+          characterName: characters[3]?.character_name || 'Betty Butterfly',
+          level: 6,
+          timestamp: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+        },
+        {
+          childId: 2,
+          characterId: characters[4]?.character_id || 5,
+          characterName: characters[4]?.character_name || 'Gerda Gotta Go',
+          level: 4,
+          timestamp: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
+        },
+      ];
+      
+      for (const log of logs) {
+        try {
+          await pool.query(
+            `INSERT INTO logging (child_id, character_id, character_name, feeling_level, logging_time) 
+             VALUES ($1, $2, $3, $4, $5)`,
+            [
+              log.childId,
+              log.characterId,
+              log.characterName,
+              log.level,
+              log.timestamp
+            ]
+          );
+          logCount++;
+          console.log(`✅ Created log: ${log.characterName} (Level: ${log.level}) for child ${log.childId}`);
+        } catch (error) {
+          console.error(`⚠️  Failed to create log for ${log.characterName}:`, error.message);
+        }
+      }
+      
+      console.log(`📊 Created ${logCount} log entries`);
+    }
+    
     console.log('🎉 Test data seeded successfully!');
     console.log('\n📊 Summary:');
     console.log(`   - ${childIds.length} children created`);
     console.log(`   - ${parentIds.length} parents created`);
     console.log(`   - ${links.length} parent-child links created`);
+    if (logCount > 0) {
+      console.log(`   - ${logCount} log entries created`);
+    }
     
   } catch (error) {
     console.error('❌ Error seeding test data:', error);

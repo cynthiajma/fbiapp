@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library.dart';
 import 'pages/parent_login_page.dart';
+import 'pages/child_login_page.dart';
 import 'pages/child_profile_page.dart';
 import 'heartbeat.dart';
 import 'services/user_state_service.dart';
@@ -59,13 +60,29 @@ class _HomePageState extends State<HomePage> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.person_pin, color: Colors.brown),
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const ParentLoginPage()),
-                          );
-                        },
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.person_pin, color: Colors.brown),
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const ParentLoginPage()),
+                              );
+                            },
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.logout, color: Colors.brown),
+                            onPressed: () async {
+                              await UserStateService.clearUserData();
+                              if (mounted) {
+                                Navigator.of(context).pushReplacement(
+                                  MaterialPageRoute(builder: (_) => const ChildLoginPage()),
+                                );
+                              }
+                            },
+                            tooltip: 'Logout',
+                          ),
+                        ],
                       ),
                       const _ProfileButton(),
                     ],

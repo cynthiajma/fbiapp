@@ -14,8 +14,8 @@ class ChildDataService {
   ''';
 
   static const String _getChildLogsQuery = '''
-    query GetChildLogs(\$childId: ID!) {
-      childLogs(childId: \$childId) {
+    query GetChildLogs(\$childId: ID!, \$startTime: String, \$endTime: String) {
+      childLogs(childId: \$childId, startTime: \$startTime, endTime: \$endTime) {
         id
         childId
         characterId
@@ -63,16 +63,30 @@ class ChildDataService {
   }
 
   /// Get child's logging data
-  static Future<List<Map<String, dynamic>>> getChildLogs(String childId, BuildContext context) async {
+  static Future<List<Map<String, dynamic>>> getChildLogs(
+    String childId,
+    BuildContext context, {
+    String? startTime,
+    String? endTime,
+  }) async {
     try {
       final client = GraphQLProvider.of(context).value;
+      
+      final variables = <String, dynamic>{
+        'childId': childId,
+      };
+      
+      if (startTime != null) {
+        variables['startTime'] = startTime;
+      }
+      if (endTime != null) {
+        variables['endTime'] = endTime;
+      }
       
       final result = await client.query(
         QueryOptions(
           document: gql(_getChildLogsQuery),
-          variables: {
-            'childId': childId,
-          },
+          variables: variables,
         ),
       );
 
