@@ -107,17 +107,16 @@ class _HeartbeatPageState extends State<HeartbeatPage>
     });
 
     try {
-      final audioBytes = base64Decode(_characterAudio!);
-      
       Source audioSource;
       
-      // Use different approach for web vs mobile
-      if (kIsWeb) {
-        // For web: Use data URL (base64)
-        final base64Audio = base64Encode(audioBytes);
-        audioSource = UrlSource('data:audio/mp3;base64,$base64Audio');
+      // Use different approach for web/macOS vs mobile/other desktop
+      if (kIsWeb || Platform.isMacOS) {
+        // For web (Chrome) and macOS: Use data URL (base64)
+        // _characterAudio is already base64 encoded from the backend
+        audioSource = UrlSource('data:audio/mp3;base64,${_characterAudio!}');
       } else {
-        // For mobile/desktop: Use temporary file
+        // For mobile (iOS/Android) and other desktop: Use temporary file
+        final audioBytes = base64Decode(_characterAudio!);
         final tempDir = await getTemporaryDirectory();
         final tempFile = File('${tempDir.path}/temp_audio.mp3');
         await tempFile.writeAsBytes(audioBytes);
