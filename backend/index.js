@@ -38,6 +38,7 @@ const typeDefs = gql`
     name: String!
     photo: String
     description: String
+    audio: String
   }
 
   type Log {
@@ -84,13 +85,14 @@ const resolvers = {
     },
     characterLibrary: async () => {
       const result = await pool.query(
-        'SELECT character_id, character_name, character_photo, character_description FROM characters'
+        'SELECT character_id, character_name, character_photo, character_description, audio_file FROM characters'
       );
       return result.rows.map(char => ({
         id: char.character_id.toString(),
         name: char.character_name,
         photo: char.character_photo ? Buffer.from(char.character_photo).toString('base64') : null,
         description: char.character_description,
+        audio: char.audio_file ? Buffer.from(char.audio_file).toString('base64') : null,
       }));
     },
     parentProfile: async (_, { id }) => {

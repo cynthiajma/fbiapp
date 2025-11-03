@@ -1,5 +1,4 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:flutter/material.dart';
 
 class CharacterService {
   static const String _graphqlEndpoint = 'http://localhost:3000/graphql';
@@ -19,6 +18,7 @@ class CharacterService {
         name
         photo
         description
+        audio
       }
     }
   ''';
@@ -49,12 +49,14 @@ class Character {
   final String name;
   final String? photo; // Base64 encoded image
   final String? description;
+  final String? audio; // Base64 encoded MP3 audio
 
   Character({
     required this.id,
     required this.name,
     this.photo,
     this.description,
+    this.audio,
   });
 
   factory Character.fromJson(Map<String, dynamic> json) {
@@ -63,6 +65,7 @@ class Character {
       name: json['name'] as String,
       photo: json['photo'] as String?,
       description: json['description'] as String?,
+      audio: json['audio'] as String?,
     );
   }
 
@@ -72,6 +75,7 @@ class Character {
       'name': name,
       'photo': photo,
       'description': description,
+      'audio': audio,
     };
   }
 }

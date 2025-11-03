@@ -7,7 +7,8 @@
     "start": "node index.js",
     "init-db": "node scripts/init-db.js",
     "populate-characters": "node scripts/populate-characters.js",
-    "seed-test-data": "node scripts/seed-test-data.js"
+    "seed-test-data": "node scripts/seed-test-data.js",
+    "upload-audio": "node scripts/upload-audio.js"
   },
   "dependencies": {
     "apollo-server": "^3.13.0",

@@ -53,6 +53,11 @@ This is the repository where you will keep everything related to this CompSci 40
    npm run populate-characters
    ```
 
+8. Populate character audio data: 
+   ```bash
+   npm run upload-audio
+   ```
+
 ### Frontend Setup (Flutter)
 
 1. Navigate to the Flutter app directory:
