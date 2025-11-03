@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/child_auth_service.dart';
 import '../home.dart';
+import 'child_create_account_page.dart';
 
 class ChildLoginPage extends StatefulWidget {
   const ChildLoginPage({super.key});
@@ -212,6 +213,24 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                           ),
                         ),
                       ],
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  
+                  // Create account button
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (context) => const ChildCreateAccountPage()),
+                      );
+                    },
+                    child: const Text(
+                      'Create New Account',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.black87,
+                        decoration: TextDecoration.underline,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

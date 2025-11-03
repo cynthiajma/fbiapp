@@ -11,6 +11,15 @@ class ParentAuthService {
     }
   ''';
 
+  static const String _createParentMutation = '''
+    mutation CreateParent(\$username: String!, \$password: String!, \$childId: ID) {
+      createParent(username: \$username, password: \$password, childId: \$childId) {
+        id
+        username
+      }
+    }
+  ''';
+
   static const String _linkParentChildMutation = '''
     mutation LinkParentChild(\$parentId: ID!, \$childId: ID!) {
       linkParentChild(parentId: \$parentId, childId: \$childId)
@@ -104,6 +113,37 @@ class ParentAuthService {
       return children?.cast<Map<String, dynamic>>() ?? [];
     } catch (e) {
       throw Exception('Failed to get parent children: $e');
+    }
+  }
+
+  /// Create a new parent account
+  static Future<Map<String, dynamic>?> createParent(
+    String username,
+    String password,
+    String? childId,
+    BuildContext context,
+  ) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+      
+      final result = await client.mutate(
+        MutationOptions(
+          document: gql(_createParentMutation),
+          variables: {
+            'username': username,
+            'password': password,
+            'childId': childId,
+          },
+        ),
+      );
+
+      if (result.hasException) {
+        throw Exception(result.exception.toString());
+      }
+
+      return result.data?['createParent'];
+    } catch (e) {
+      throw Exception('Failed to create parent account: $e');
     }
   }
 }

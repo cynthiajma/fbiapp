@@ -1,46 +1,59 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
-import '../services/parent_auth_service.dart';
-import 'parent_profile.dart';
-import 'parent_create_account_page.dart';
+import '../services/child_auth_service.dart';
+import '../home.dart';
+import 'child_login_page.dart';
 
-class ParentLoginPage extends StatefulWidget {
-  const ParentLoginPage({super.key});
+class ChildCreateAccountPage extends StatefulWidget {
+  const ChildCreateAccountPage({super.key});
 
   @override
-  State<ParentLoginPage> createState() => _ParentLoginPageState();
+  State<ChildCreateAccountPage> createState() => _ChildCreateAccountPageState();
 }
 
-class _ParentLoginPageState extends State<ParentLoginPage> {
+class _ChildCreateAccountPageState extends State<ChildCreateAccountPage> {
   final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
+  final _nameController = TextEditingController();
+  final _ageController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
-  bool _obscurePassword = true;
 
   @override
   void dispose() {
     _usernameController.dispose();
-    _passwordController.dispose();
+    _nameController.dispose();
+    _ageController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  Future<void> _createAccount() async {
     final username = _usernameController.text.trim();
-    final password = _passwordController.text.trim();
+    final name = _nameController.text.trim();
+    final ageText = _ageController.text.trim();
     
     if (username.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter your username!';
+        _errorMessage = 'Please enter a username!';
       });
       return;
     }
     
-    if (password.isEmpty) {
+    if (name.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter your password!';
+        _errorMessage = 'Please enter your name!';
       });
       return;
+    }
+
+    int? age;
+    if (ageText.isNotEmpty) {
+      age = int.tryParse(ageText);
+      if (age == null || age < 0) {
+        setState(() {
+          _errorMessage = 'Please enter a valid age (or leave it empty)!';
+        });
+        return;
+      }
     }
 
     setState(() {
@@ -49,52 +62,35 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
     });
 
     try {
-      // Authenticate parent with backend
-      final parentData = await ParentAuthService.loginParent(username, password, context);
+      // Create the child account
+      final childData = await ChildAuthService.createChild(
+        username,
+        name.isEmpty ? null : name,
+        age,
+        context,
+      );
       
-      if (parentData != null) {
-        // Get parent's children from database
-        final children = await ParentAuthService.getParentChildren(parentData['id'], context);
-        
-        if (children.isNotEmpty) {
-          // Use the first child
-          final firstChild = children.first;
-          final childId = firstChild['id'];
-          
-          // Link parent to child (this is idempotent, won't fail if already linked)
-          try {
-            await ParentAuthService.linkParentChild(parentData['id'], childId, context);
-          } catch (e) {
-            // Ignore if already linked
-            print('Link parent-child: $e');
-          }
-          
-          // Save child ID to state
-          await UserStateService.saveChildId(childId);
-          if (firstChild['name'] != null) {
-            await UserStateService.saveChildName(firstChild['name']);
-          }
-        }
-        
-        // Save parent authentication state
-        await UserStateService.saveParentAuthenticated(true);
-        await UserStateService.saveParentId(parentData['id']);
-        
-        // Navigate to parent profile page
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const ParentProfilePage()),
-          );
-        }
-      } else {
+      if (childData == null) {
         setState(() {
-          _errorMessage = 'Invalid username or password. Please try again.';
+          _errorMessage = 'Failed to create account. Please try again.';
           _isLoading = false;
         });
+        return;
+      }
+      
+      // Save the child's data to state
+      await UserStateService.saveChildName(childData['name'] ?? name);
+      await UserStateService.saveChildId(childData['id']);
+      
+      // Navigate to home page
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Login failed: ${e.toString().replaceFirst('Exception: ', '')}';
+        _errorMessage = 'Error creating account: ${e.toString().replaceFirst('Exception: ', '')}';
         _isLoading = false;
       });
     }
@@ -117,7 +113,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Parent Icon
+                  // Logo or Image
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -132,22 +128,22 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                       ],
                     ),
                     child: const Icon(
-                      Icons.family_restroom,
+                      Icons.person_add,
                       size: 80,
-                      color: Color(0xff4a90e2),
+                      color: Color(0xffe67268),
                     ),
                   ),
                   const SizedBox(height: 40),
                   
-                  // Parent Access Text
+                  // Create Account Text
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     decoration: BoxDecoration(
-                      color: const Color(0xff4a90e2),
+                      color: const Color(0xffe67268),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Text(
-                      'PARENT ACCESS',
+                      'Create Your Detective Profile',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -159,7 +155,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                   ),
                   const SizedBox(height: 30),
                   
-                  // Login Input Card
+                  // Form Card
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -176,7 +172,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                     child: Column(
                       children: [
                         const Text(
-                          'Enter Parent Credentials',
+                          'Enter Your Information',
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -187,7 +183,8 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                         TextField(
                           controller: _usernameController,
                           decoration: InputDecoration(
-                            hintText: 'Username...',
+                            hintText: 'Username (e.g., alice_detective)',
+                            labelText: 'Username *',
                             prefixIcon: const Icon(Icons.person),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -195,32 +192,38 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                             filled: true,
                             fillColor: Colors.grey[50],
                           ),
-                          onSubmitted: (_) => _login(),
+                          onSubmitted: (_) => _createAccount(),
                         ),
                         const SizedBox(height: 16),
                         TextField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
+                          controller: _nameController,
                           decoration: InputDecoration(
-                            hintText: 'Password...',
-                            prefixIcon: const Icon(Icons.lock),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword ? Icons.visibility : Icons.visibility_off,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
+                            hintText: 'Your name',
+                            labelText: 'Name *',
+                            prefixIcon: const Icon(Icons.badge),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                             filled: true,
                             fillColor: Colors.grey[50],
                           ),
-                          onSubmitted: (_) => _login(),
+                          onSubmitted: (_) => _createAccount(),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _ageController,
+                          decoration: InputDecoration(
+                            hintText: 'Your age (optional)',
+                            labelText: 'Age',
+                            prefixIcon: const Icon(Icons.cake),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                          ),
+                          keyboardType: TextInputType.number,
+                          onSubmitted: (_) => _createAccount(),
                         ),
                         const SizedBox(height: 16),
                         if (_errorMessage != null)
@@ -240,9 +243,9 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : _login,
+                            onPressed: _isLoading ? null : _createAccount,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xff4a90e2),
+                              backgroundColor: const Color(0xffe67268),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -261,7 +264,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                                     ),
                                   )
                                 : const Text(
-                                    'Access Child Data',
+                                    'Create Account',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -274,31 +277,15 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                   ),
                   const SizedBox(height: 20),
                   
-                  // Create account button
+                  // Back to login button
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => const ParentCreateAccountPage()),
+                      Navigator.of(context).pushReplacement(
+                        MaterialPageRoute(builder: (context) => const ChildLoginPage()),
                       );
                     },
                     child: const Text(
-                      'Create New Account',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  
-                  // Back to child mode button
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text(
-                      'Back to Child Mode',
+                      'Already have an account? Login',
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.black87,
@@ -314,12 +301,12 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                     child: Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: Colors.blue[50],
+                        color: Colors.yellow[100],
                         borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.blue[300]!),
+                        border: Border.all(color: Colors.orange[300]!),
                       ),
                       child: const Text(
-                        '👨‍👩‍👧‍👦 Parents can view their child\'s progress and character data here.',
+                        '🕵️‍♀️ Create your detective profile to start investigating!',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'SpecialElite',
@@ -338,3 +325,4 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
     );
   }
 }
+
