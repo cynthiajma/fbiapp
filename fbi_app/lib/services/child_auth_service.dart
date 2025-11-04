@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 class ChildAuthService {
+  static const String _createChildMutation = '''
+    mutation CreateChild(\$username: String!, \$name: String, \$age: Int) {
+      createChild(username: \$username, name: \$name, age: \$age) {
+        id
+        username
+        name
+        age
+      }
+    }
+  ''';
   static const String _getChildByUsernameQuery = '''
     query GetChildByUsername(\$username: String!) {
       childByUsername(username: \$username) {
@@ -37,6 +47,37 @@ class ChildAuthService {
       return result.data?['childByUsername'];
     } catch (e) {
       throw Exception('Failed to verify child username: $e');
+    }
+  }
+
+  /// Create a new child profile
+  static Future<Map<String, dynamic>?> createChild({
+    required String username,
+    String? name,
+    int? age,
+    required BuildContext context,
+  }) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+
+      final result = await client.mutate(
+        MutationOptions(
+          document: gql(_createChildMutation),
+          variables: {
+            'username': username,
+            'name': name,
+            'age': age,
+          },
+        ),
+      );
+
+      if (result.hasException) {
+        throw Exception(result.exception.toString());
+      }
+
+      return result.data?['createChild'];
+    } catch (e) {
+      throw Exception('Failed to create child: $e');
     }
   }
 }
