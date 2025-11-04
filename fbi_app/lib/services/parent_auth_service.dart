@@ -2,6 +2,14 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:flutter/material.dart';
 
 class ParentAuthService {
+  static const String _createParentMutation = '''
+    mutation CreateParent(\$username: String!, \$password: String!, \$childId: ID) {
+      createParent(username: \$username, password: \$password, childId: \$childId) {
+        id
+        username
+      }
+    }
+  ''';
   static const String _loginParentMutation = '''
     mutation LoginParent(\$username: String!, \$password: String!) {
       loginParent(username: \$username, password: \$password) {
@@ -88,6 +96,53 @@ class ParentAuthService {
       if (errorMsg.startsWith('Login failed: ')) {
         errorMsg = errorMsg.substring('Login failed: '.length);
       }
+      throw Exception(errorMsg);
+    }
+  }
+
+  /// Create a new parent and optionally link to a childId
+  static Future<Map<String, dynamic>?> createParent({
+    required String username,
+    required String password,
+    String? childId,
+    required BuildContext context,
+  }) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+
+      final result = await client.mutate(
+        MutationOptions(
+          document: gql(_createParentMutation),
+          variables: {
+            'username': username,
+            'password': password,
+            'childId': childId,
+          },
+        ),
+      );
+
+      if (result.hasException) {
+        String errorMessage = 'Create parent failed';
+        if (result.exception != null) {
+          final errorString = result.exception.toString();
+          final graphqlMatch = RegExp(r'message:\s*"([^"]+)"').firstMatch(errorString);
+          if (graphqlMatch != null) {
+            errorMessage = graphqlMatch.group(1)!;
+          } else {
+            errorMessage = errorString
+                .replaceAll(RegExp(r'^(Exception|Error|GraphQLError|LinkException):\s*'), '')
+                .split('\n')
+                .first
+                .trim();
+          }
+        }
+        throw Exception(errorMessage);
+      }
+
+      return result.data?['createParent'];
+    } catch (e) {
+      String errorMsg = e.toString();
+      errorMsg = errorMsg.replaceFirst('Exception: ', '');
       throw Exception(errorMsg);
     }
   }

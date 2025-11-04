@@ -6,6 +6,8 @@ import '../features/character.dart';
 import '../widgets/char_row.dart';
 import '../services/user_state_service.dart';
 import '../services/child_data_service.dart';
+import '../services/parent_auth_service.dart';
+import '../services/child_auth_service.dart';
 
 class ParentProfilePage extends StatefulWidget {
   const ParentProfilePage({super.key});
@@ -84,6 +86,82 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
         _errorMessage = 'Failed to load data: $e';
         _isLoading = false;
       });
+    }
+  }
+
+  Future<void> _linkAnotherChild() async {
+    final parentId = await UserStateService.getParentId();
+    if (parentId == null) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Parent not authenticated')),
+      );
+      return;
+    }
+
+    final controller = TextEditingController();
+    final childUsername = await showDialog<String?>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Link a Child'),
+          content: TextField(
+            controller: controller,
+            decoration: const InputDecoration(
+              labelText: 'Child username',
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(controller.text.trim()),
+              child: const Text('Link'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (childUsername == null || childUsername.isEmpty) return;
+
+    try {
+      // Find child ID by username
+      final child = await ChildAuthService.getChildByUsername(childUsername, context);
+      if (child == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Child username not found')),
+        );
+        return;
+      }
+
+      final childId = child['id'] as String;
+      final success = await ParentAuthService.linkParentChild(parentId, childId, context);
+      if (!mounted) return;
+      if (success) {
+        // Save newly selected child for viewing
+        await UserStateService.saveChildId(childId);
+        if (child['name'] != null) {
+          await UserStateService.saveChildName(child['name']);
+        }
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Child linked successfully')),
+        );
+        _loadChildData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to link child')),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString().replaceFirst('Exception: ', '')}')),
+      );
     }
   }
 
@@ -413,10 +491,19 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
                                     },
                                     tooltip: 'Back',
                                   ),
+                                  Row(
+                                    children: [
+                                      IconButton(
+                                        icon: const Icon(Icons.link, color: Colors.brown),
+                                        onPressed: _linkAnotherChild,
+                                        tooltip: 'Link a child',
+                                      ),
                                   IconButton(
                                     icon: const Icon(Icons.refresh, color: Colors.brown),
                                     onPressed: _loadChildData,
                                     tooltip: 'Refresh',
+                                  ),
+                                    ],
                                   ),
                                 ],
                               ),

@@ -1,33 +1,41 @@
 import 'package:flutter/material.dart';
-import '../services/user_state_service.dart';
 import '../services/child_auth_service.dart';
+import '../services/user_state_service.dart';
 import '../home.dart';
-import 'child_signup_page.dart';
+import 'child_login_page.dart';
 
-class ChildLoginPage extends StatefulWidget {
-  const ChildLoginPage({super.key});
+class ChildSignupPage extends StatefulWidget {
+  const ChildSignupPage({super.key});
 
   @override
-  State<ChildLoginPage> createState() => _ChildLoginPageState();
+  State<ChildSignupPage> createState() => _ChildSignupPageState();
 }
 
-class _ChildLoginPageState extends State<ChildLoginPage> {
+class _ChildSignupPageState extends State<ChildSignupPage> {
+  final _usernameController = TextEditingController();
   final _nameController = TextEditingController();
+  final _ageController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
 
   @override
   void dispose() {
+    _usernameController.dispose();
     _nameController.dispose();
+    _ageController.dispose();
     super.dispose();
   }
 
-  Future<void> _login() async {
+  Future<void> _signup() async {
+    final username = _usernameController.text.trim();
     final name = _nameController.text.trim();
-    
-    if (name.isEmpty) {
+    final ageText = _ageController.text.trim();
+    int? age = int.tryParse(ageText.isEmpty ? '-1' : ageText);
+    if (age != null && age < 0) age = null;
+
+    if (username.isEmpty) {
       setState(() {
-        _errorMessage = 'Please enter your detective name!';
+        _errorMessage = 'Please enter a detective username';
       });
       return;
     }
@@ -38,31 +46,33 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
     });
 
     try {
-      // Verify the child exists in the database
-      // Try to find by username (or match by name as a fallback)
-      final childData = await ChildAuthService.getChildByUsername(name, context);
-      
-      if (childData == null) {
+      final child = await ChildAuthService.createChild(
+        username: username,
+        name: name.isEmpty ? null : name,
+        age: age,
+        context: context,
+      );
+
+      if (child == null) {
         setState(() {
-          _errorMessage = 'Detective name not found. Please try again or contact support.';
+          _errorMessage = 'Failed to create child account';
           _isLoading = false;
         });
         return;
       }
-      
-      // Save the child's data to state
-      await UserStateService.saveChildName(childData['name'] ?? name);
-      await UserStateService.saveChildId(childData['id']);
-      
-      // Navigate to home page
+
+      await UserStateService.saveChildId(child['id']);
+      await UserStateService.saveChildName(child['name'] ?? username);
+
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const HomePage()),
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+          (route) => false,
         );
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Error logging in: $e';
+        _errorMessage = e.toString().replaceFirst('Exception: ', '');
         _isLoading = false;
       });
     }
@@ -85,7 +95,6 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo or Image
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -106,8 +115,6 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 40),
-                  
-                  // Welcome Text
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     decoration: BoxDecoration(
@@ -115,7 +122,7 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Text(
-                      'FBI Feelings and Body Investigation',
+                      'CREATE DETECTIVE ACCOUNT',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -126,8 +133,6 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                     ),
                   ),
                   const SizedBox(height: 30),
-                  
-                  // Name Input Card
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -143,19 +148,10 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                     ),
                     child: Column(
                       children: [
-                        const Text(
-                          'Enter Your Detective Name',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
                         TextField(
-                          controller: _nameController,
+                          controller: _usernameController,
                           decoration: InputDecoration(
-                            hintText: 'Enter your username (e.g., alice_child)',
+                            hintText: 'Detective username',
                             prefixIcon: const Icon(Icons.person),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -163,7 +159,33 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                             filled: true,
                             fillColor: Colors.grey[50],
                           ),
-                          onSubmitted: (_) => _login(),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _nameController,
+                          decoration: InputDecoration(
+                            hintText: 'Detective display name (optional)',
+                            prefixIcon: const Icon(Icons.badge),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _ageController,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            hintText: 'Age (optional)',
+                            prefixIcon: const Icon(Icons.cake),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                          ),
                         ),
                         const SizedBox(height: 16),
                         if (_errorMessage != null)
@@ -183,7 +205,7 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                         SizedBox(
                           width: double.infinity,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : _login,
+                            onPressed: _isLoading ? null : _signup,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xffe67268),
                               foregroundColor: Colors.white,
@@ -199,12 +221,11 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                                     width: 20,
                                     child: CircularProgressIndicator(
                                       strokeWidth: 2,
-                                      valueColor:
-                                          AlwaysStoppedAnimation<Color>(Colors.white),
+                                      valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                                     ),
                                   )
                                 : const Text(
-                                    'Start Investigating',
+                                    'Create Account',
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold,
@@ -212,46 +233,16 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                                   ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ChildSignupPage()),
-                      );
-                    },
-                    child: const Text(
-                      'Create a new child account',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  
-                  // Optional: Fun fact or instruction
-                  Transform.rotate(
-                    angle: -0.05,
-                    child: Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.yellow[100],
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.orange[300]!),
-                      ),
-                      child: const Text(
-                        '🕵️‍♀️ You are about to become a detective!\nListen to your body and investigate.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontFamily: 'SpecialElite',
-                          fontSize: 14,
-                          color: Colors.black87,
+                        const SizedBox(height: 12),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (_) => const ChildLoginPage()),
+                            );
+                          },
+                          child: const Text('Already have an account? Log in'),
                         ),
-                      ),
+                      ],
                     ),
                   ),
                 ],
@@ -263,3 +254,5 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
     );
   }
 }
+
+
