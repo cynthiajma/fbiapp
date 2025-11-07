@@ -15,6 +15,7 @@ class ParentSignupPage extends StatefulWidget {
 class _ParentSignupPageState extends State<ParentSignupPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _emailController = TextEditingController();
   final _childUsernameController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -24,6 +25,7 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
   void dispose() {
     _usernameController.dispose();
     _passwordController.dispose();
+    _emailController.dispose();
     _childUsernameController.dispose();
     super.dispose();
   }
@@ -31,6 +33,7 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
   Future<void> _signup() async {
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
+    final email = _emailController.text.trim();
     final childUsername = _childUsernameController.text.trim();
 
     if (username.isEmpty) {
@@ -42,6 +45,18 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
     if (password.isEmpty) {
       setState(() {
         _errorMessage = 'Please enter a password';
+      });
+      return;
+    }
+    if (email.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter an email address';
+      });
+      return;
+    }
+    if (!email.contains('@')) {
+      setState(() {
+        _errorMessage = 'Please enter a valid email address (must contain @)';
       });
       return;
     }
@@ -71,6 +86,7 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
       final parent = await ParentAuthService.createParent(
         username: username,
         password: password,
+        email: email,
         childId: childId,
         context: context,
       );
@@ -218,6 +234,20 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
                                 });
                               },
                             ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            hintText: 'Email address',
+                            prefixIcon: const Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),

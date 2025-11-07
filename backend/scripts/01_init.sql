@@ -3,7 +3,8 @@ BEGIN;
 CREATE TABLE IF NOT EXISTS parents (
   parent_id        SERIAL PRIMARY KEY,
   parent_username  VARCHAR(100) NOT NULL UNIQUE,
-  hashed_password  VARCHAR(255) NOT NULL
+  hashed_password  VARCHAR(255) NOT NULL,
+  email            VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS children (

@@ -14,7 +14,7 @@ const typeDefs = gql`
   type Mutation {
     logFeeling(childId: ID!, characterId: ID!, level: Int!, investigation: [String!]): Log
     createChild(username: String!, name: String, age: Int): Child
-    createParent(username: String!, password: String!, childId: ID): Parent
+    createParent(username: String!, password: String!, email: String, childId: ID): Parent
     loginParent(username: String!, password: String!): Parent
     linkParentChild(parentId: ID!, childId: ID!): Boolean
   }
@@ -30,6 +30,7 @@ const typeDefs = gql`
   type Parent {
     id: ID!
     username: String!
+    email: String
     children: [Child!]
   }
 
@@ -97,7 +98,7 @@ const resolvers = {
     },
     parentProfile: async (_, { id }) => {
       const result = await pool.query(
-        'SELECT parent_id, parent_username FROM parents WHERE parent_id = $1',
+        'SELECT parent_id, parent_username, email FROM parents WHERE parent_id = $1',
         [id]
       );
       if (result.rows.length === 0) return null;
@@ -105,6 +106,7 @@ const resolvers = {
       return {
         id: parent.parent_id.toString(),
         username: parent.parent_username,
+        email: parent.email,
       };
     },
     childLogs: async (_, { childId, startTime, endTime }) => {
@@ -166,11 +168,11 @@ const resolvers = {
         age: child.child_age,
       };
     },
-    createParent: async (_, { username, password, childId }) => {
+    createParent: async (_, { username, password, email, childId }) => {
       const hashedPassword = await bcrypt.hash(password, 10);
       const result = await pool.query(
-        'INSERT INTO parents (parent_username, hashed_password) VALUES ($1, $2) RETURNING parent_id, parent_username',
-        [username, hashedPassword]
+        'INSERT INTO parents (parent_username, hashed_password, email) VALUES ($1, $2, $3) RETURNING parent_id, parent_username, email',
+        [username, hashedPassword, email || null]
       );
       const parent = result.rows[0];
       
@@ -189,6 +191,7 @@ const resolvers = {
       return {
         id: parent.parent_id.toString(),
         username: parent.parent_username,
+        email: parent.email,
       };
     },
     loginParent: async (_, { username, password }) => {

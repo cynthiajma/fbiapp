@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 
 class ParentAuthService {
   static const String _createParentMutation = '''
-    mutation CreateParent(\$username: String!, \$password: String!, \$childId: ID) {
-      createParent(username: \$username, password: \$password, childId: \$childId) {
+    mutation CreateParent(\$username: String!, \$password: String!, \$email: String, \$childId: ID) {
+      createParent(username: \$username, password: \$password, email: \$email, childId: \$childId) {
         id
         username
+        email
       }
     }
   ''';
@@ -104,6 +105,7 @@ class ParentAuthService {
   static Future<Map<String, dynamic>?> createParent({
     required String username,
     required String password,
+    String? email,
     String? childId,
     required BuildContext context,
   }) async {
@@ -116,6 +118,7 @@ class ParentAuthService {
           variables: {
             'username': username,
             'password': password,
+            'email': email,
             'childId': childId,
           },
         ),

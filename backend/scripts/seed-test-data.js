@@ -40,20 +40,20 @@ async function seedTestData() {
     
     // Insert parents with explicit IDs
     const parents = [
-      { id: 1, username: 'alice_mom', password: 'password123' },
-      { id: 2, username: 'alice_dad', password: 'password123' },
-      { id: 3, username: 'bob_mom', password: 'password123' },
+      { id: 1, username: 'alice_mom', password: 'password123', email: 'heartcoded214@gmail.com' },
+      { id: 2, username: 'alice_dad', password: 'password123', email: null },
+      { id: 3, username: 'bob_mom', password: 'password123', email: null },
     ];
     
     const parentIds = [];
     for (const parent of parents) {
       const hashedPassword = await bcrypt.hash(parent.password, 10);
       await pool.query(
-        'INSERT INTO parents (parent_id, parent_username, hashed_password) VALUES ($1, $2, $3)',
-        [parent.id, parent.username, hashedPassword]
+        'INSERT INTO parents (parent_id, parent_username, hashed_password, email) VALUES ($1, $2, $3, $4)',
+        [parent.id, parent.username, hashedPassword, parent.email]
       );
       parentIds.push(parent.id);
-      console.log(`✅ Created parent: ${parent.username} (ID: ${parent.id})`);
+      console.log(`✅ Created parent: ${parent.username} (ID: ${parent.id})${parent.email ? ` with email: ${parent.email}` : ''}`);
     }
     
     // Reset the parent sequence
