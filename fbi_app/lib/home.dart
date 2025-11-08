@@ -263,7 +263,25 @@ class _ProfileButton extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => const ChildProfilePage()),
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) => const ChildProfilePage(),
+            transitionDuration: const Duration(milliseconds: 300),
+            reverseTransitionDuration: const Duration(milliseconds: 300),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              // When pushing: child profile slides in from right (1.0 -> 0.0)
+              // When popping: animation reverses, so child profile slides out to right (0.0 -> 1.0)
+              return SlideTransition(
+                position: Tween(
+                  begin: const Offset(1.0, 0.0), // Start from right
+                  end: Offset.zero, // End at center
+                ).animate(CurvedAnimation(
+                  parent: animation,
+                  curve: Curves.easeInOut,
+                )),
+                child: child,
+              );
+            },
+          ),
         );
       },
       child: FluttermojiCircleAvatar(radius: 22),

@@ -144,9 +144,7 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
                                 IconButton(
                                   icon: const Icon(Icons.arrow_back, color: Colors.brown),
                                   onPressed: () {
-                                    Navigator.of(context).pushReplacement(
-                                      MaterialPageRoute(builder: (_) => const HomePage()),
-                                    );
+                                    Navigator.of(context).pop();
                                   },
                                   tooltip: 'Back to Home',
                                 ),
