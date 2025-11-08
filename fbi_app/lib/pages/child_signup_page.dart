@@ -138,13 +138,41 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
           ),
         ),
         child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
+          child: Stack(
+            children: [
+              // Back button
+              Positioned(
+                top: 12,
+                left: 12,
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.9),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        offset: const Offset(2, 2),
+                        blurRadius: 4,
+                        color: Colors.black.withOpacity(0.2),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    icon: const Icon(Icons.arrow_back, color: Color(0xffe67268), size: 24),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    tooltip: 'Back',
+                  ),
+                ),
+              ),
+              // Main content
+              Center(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.95),
@@ -280,10 +308,12 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
                         ),
                       ],
                     ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
         ),
       ),
