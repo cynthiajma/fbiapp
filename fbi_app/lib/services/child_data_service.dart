@@ -7,7 +7,6 @@ class ChildDataService {
       childProfile(id: \$childId) {
         id
         username
-        name
         age
         parents {
           id

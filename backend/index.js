@@ -17,7 +17,7 @@ const typeDefs = gql`
 
   type Mutation {
     logFeeling(childId: ID!, characterId: ID!, level: Int!, investigation: [String!]): Log
-    createChild(username: String!, name: String, age: Int): Child
+    createChild(username: String!, age: Int): Child
     createParent(username: String!, email: String!, password: String!, childId: ID): Parent
     loginParent(username: String!, password: String!): Parent
     linkParentChild(parentId: ID!, childId: ID!): Boolean
@@ -28,7 +28,6 @@ const typeDefs = gql`
   type Child {
     id: ID!
     username: String!
-    name: String
     age: Int
     parents: [Parent!]
   }
@@ -64,7 +63,7 @@ const resolvers = {
   Query: {
     childProfile: async (_, { id }) => {
       const result = await pool.query(
-        'SELECT child_id, child_username, child_name, child_age FROM children WHERE child_id = $1',
+        'SELECT child_id, child_username, child_age FROM children WHERE child_id = $1',
         [id]
       );
       if (result.rows.length === 0) return null;
@@ -72,13 +71,12 @@ const resolvers = {
       return {
         id: child.child_id.toString(),
         username: child.child_username,
-        name: child.child_name,
         age: child.child_age,
       };
     },
     childByUsername: async (_, { username }) => {
       const result = await pool.query(
-        'SELECT child_id, child_username, child_name, child_age FROM children WHERE child_username = $1',
+        'SELECT child_id, child_username, child_age FROM children WHERE child_username = $1',
         [username]
       );
       if (result.rows.length === 0) return null;
@@ -86,7 +84,6 @@ const resolvers = {
       return {
         id: child.child_id.toString(),
         username: child.child_username,
-        name: child.child_name,
         age: child.child_age,
       };
     },
@@ -117,7 +114,7 @@ const resolvers = {
     },
     parentChildren: async (_, { parentId }) => {
       const result = await pool.query(`
-        SELECT c.child_id, c.child_username, c.child_name, c.child_age 
+        SELECT c.child_id, c.child_username, c.child_age 
         FROM children c
         JOIN parent_child_link pcl ON c.child_id = pcl.child_id
         WHERE pcl.parent_id = $1
@@ -126,7 +123,6 @@ const resolvers = {
       return result.rows.map(child => ({
         id: child.child_id.toString(),
         username: child.child_username,
-        name: child.child_name,
         age: child.child_age,
       }));
     },
@@ -183,16 +179,15 @@ const resolvers = {
         investigation: investigation || [],
       };
     },
-    createChild: async (_, { username, name, age }) => {
+    createChild: async (_, { username, age }) => {
       const result = await pool.query(
-        'INSERT INTO children (child_username, child_name, child_age) VALUES ($1, $2, $3) RETURNING child_id, child_username, child_name, child_age',
-        [username, name, age]
+        'INSERT INTO children (child_username, child_age) VALUES ($1, $2) RETURNING child_id, child_username, child_age',
+        [username, age]
       );
       const child = result.rows[0];
       return {
         id: child.child_id.toString(),
         username: child.child_username,
-        name: child.child_name,
         age: child.child_age,
       };
     },
@@ -378,7 +373,7 @@ const resolvers = {
   Parent: {
     children: async (parent) => {
       const result = await pool.query(`
-        SELECT c.child_id, c.child_username, c.child_name, c.child_age 
+        SELECT c.child_id, c.child_username, c.child_age 
         FROM children c
         JOIN parent_child_link pcl ON c.child_id = pcl.child_id
         WHERE pcl.parent_id = $1
@@ -387,7 +382,6 @@ const resolvers = {
       return result.rows.map(child => ({
         id: child.child_id.toString(),
         username: child.child_username,
-        name: child.child_name,
         age: child.child_age,
       }));
     },

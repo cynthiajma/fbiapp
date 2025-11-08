@@ -12,7 +12,6 @@ CREATE TABLE IF NOT EXISTS parents (
 CREATE TABLE IF NOT EXISTS children (
   child_id         SERIAL PRIMARY KEY,
   child_username   VARCHAR(100) NOT NULL UNIQUE,
-  child_name       VARCHAR(100),
   child_age        INT CHECK (child_age BETWEEN 0 AND 200)
 );
 

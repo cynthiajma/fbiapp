@@ -7,7 +7,6 @@ class ParentDataService {
       parentChildren(parentId: \$parentId) {
         id
         username
-        name
         age
       }
     }
@@ -24,7 +23,6 @@ class ParentDataService {
       childByUsername(username: \$username) {
         id
         username
-        name
         age
       }
     }

@@ -13,7 +13,6 @@ class ChildSignupPage extends StatefulWidget {
 
 class _ChildSignupPageState extends State<ChildSignupPage> {
   final _usernameController = TextEditingController();
-  final _nameController = TextEditingController();
   final _ageController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
@@ -21,14 +20,12 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
   @override
   void dispose() {
     _usernameController.dispose();
-    _nameController.dispose();
     _ageController.dispose();
     super.dispose();
   }
 
   Future<void> _signup() async {
     final username = _usernameController.text.trim();
-    final name = _nameController.text.trim();
     final ageText = _ageController.text.trim();
     int? age = int.tryParse(ageText.isEmpty ? '-1' : ageText);
     if (age != null && age < 0) age = null;
@@ -48,7 +45,6 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
     try {
       final child = await ChildAuthService.createChild(
         username: username,
-        name: name.isEmpty ? null : name,
         age: age,
         context: context,
       );
@@ -62,11 +58,11 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
       }
 
       await UserStateService.saveChildId(child['id']);
-      await UserStateService.saveChildName(child['name'] ?? username);
+      await UserStateService.saveChildName(username);
 
       if (mounted) {
         // Show dialog asking if they want to create/link a parent account
-        _showParentLinkingDialog(child['id'], child['name'] ?? username);
+        _showParentLinkingDialog(child['id'], username);
       }
     } catch (e) {
       setState(() {
@@ -76,7 +72,7 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
     }
   }
 
-  void _showParentLinkingDialog(String childId, String childName) {
+  void _showParentLinkingDialog(String childId, String username) {
     setState(() {
       _isLoading = false;
     });
@@ -206,19 +202,6 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
                           decoration: InputDecoration(
                             hintText: 'Detective username',
                             prefixIcon: const Icon(Icons.person),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[50],
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        TextField(
-                          controller: _nameController,
-                          decoration: InputDecoration(
-                            hintText: 'Detective display name (optional)',
-                            prefixIcon: const Icon(Icons.badge),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
