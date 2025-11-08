@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/parent_auth_service.dart';
+import '../services/parent_data_service.dart';
 import 'parent_profile.dart';
-import 'parent_signup_page.dart';
+import 'forgot_password_page.dart';
 
 class ParentLoginPage extends StatefulWidget {
-  const ParentLoginPage({super.key});
+  final String? childIdToLink;
+  
+  const ParentLoginPage({super.key, this.childIdToLink});
 
   @override
   State<ParentLoginPage> createState() => _ParentLoginPageState();
@@ -53,12 +56,77 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
       final parentData = await ParentAuthService.loginParent(username, password, context);
       
       if (parentData != null) {
+        // Check if there's a currently logged-in child
+        final currentChildId = await UserStateService.getChildId();
+        
+        // If childIdToLink is provided, we're in "add another parent" mode
+        // In this case, allow linking even if not already linked
+        if (widget.childIdToLink != null) {
+          // Save parent authentication state
+          await UserStateService.saveParentAuthenticated(true);
+          await UserStateService.saveParentId(parentData['id']);
+          try {
+            await ParentDataService.linkParentToChild(
+              parentData['id'], 
+              widget.childIdToLink!, 
+              context
+            );
+            
+            // Save this child as the active child
+            await UserStateService.saveChildId(widget.childIdToLink!);
+            
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('✓ Parent account linked successfully!'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+              
+              // Just pop back - the parent profile page should reload automatically
+              Navigator.of(context).pop();
+            }
+          } catch (e) {
+            setState(() {
+              _errorMessage = 'Failed to link parent to child: ${e.toString()}';
+              _isLoading = false;
+            });
+          }
+          return;
+        }
+        
+        // If a child is logged in (but not in "add another parent" mode), 
+        // verify parent is linked to this child
+        if (currentChildId != null) {
+          final isLinked = await ParentDataService.isParentLinkedToChild(
+            parentData['id'],
+            currentChildId,
+            context,
+          );
+          
+          if (!isLinked) {
+            // Get child name for better error message
+            final childName = await UserStateService.getChildName() ?? 'this child';
+            setState(() {
+              _errorMessage = 'This parent account is not linked to $childName. Please use a parent account that is already associated with the current child, or ask an existing parent to add you.';
+              _isLoading = false;
+            });
+            return;
+          }
+        }
+        
+        // Save parent authentication state
+        await UserStateService.saveParentAuthenticated(true);
+        await UserStateService.saveParentId(parentData['id']);
+        
+        // Normal login flow (no specific child to link)
         // Get parent's children from database
         final children = await ParentAuthService.getParentChildren(parentData['id'], context);
         
         if (children.isEmpty) {
           setState(() {
-            _errorMessage = '❌ No children associated with this parent account. Please contact support or create a child profile.';
+            _errorMessage = 'No children associated with this parent account. Please contact support or create a child profile.';
             _isLoading = false;
           });
           return;
@@ -81,10 +149,6 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
         if (firstChild['name'] != null) {
           await UserStateService.saveChildName(firstChild['name']);
         }
-        
-        // Save parent authentication state
-        await UserStateService.saveParentAuthenticated(true);
-        await UserStateService.saveParentId(parentData['id']);
         
         // Navigate to parent profile page
         if (mounted) {
@@ -168,7 +232,33 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 16),
+                  
+                  // Show linking indicator if childIdToLink is provided
+                  if (widget.childIdToLink != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green[300]!),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.link, color: Colors.green[700], size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Linking to child account',
+                            style: TextStyle(
+                              color: Colors.green[700],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 14),
                   
                   // Login Input Card
                   Container(
@@ -280,27 +370,27 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                                   ),
                           ),
                         ),
+                        const SizedBox(height: 12),
+                        // Forgot password link
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
+                            );
+                          },
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Color(0xff4a90e2),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 20),
-                  // Create account
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ParentSignupPage()),
-                      );
-                    },
-                    child: const Text(
-                      'Create a parent account',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                        decoration: TextDecoration.underline,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
                   
                   // Back to child mode button
                   TextButton(

@@ -8,6 +8,8 @@ import '../services/user_state_service.dart';
 import '../services/child_data_service.dart';
 import '../services/parent_auth_service.dart';
 import '../services/child_auth_service.dart';
+import 'parent_signup_page.dart';
+import 'parent_login_page.dart';
 
 class ParentProfilePage extends StatefulWidget {
   const ParentProfilePage({super.key});
@@ -163,6 +165,87 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
         SnackBar(content: Text('Error: ${e.toString().replaceFirst('Exception: ', '')}')),
       );
     }
+  }
+
+  void _showAddParentDialog() {
+    if (_childId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No child selected')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.family_restroom, color: Color(0xff4a90e2)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Add Parent to $_childName',
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Choose how to add another parent:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 12),
+            Text(
+              '• Create a new account and link it automatically\n'
+              '• Or login with an existing parent account to link it',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ParentLoginPage(childIdToLink: _childId!),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[700],
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Login'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ParentSignupPage(childId: _childId!),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff4a90e2),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Create Account'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _showExportDialog() async {
@@ -557,6 +640,25 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
                                         ),
                                       ),
                                     ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Add Another Parent Button
+                              SizedBox(
+                                width: double.infinity,
+                                child: OutlinedButton.icon(
+                                  onPressed: _showAddParentDialog,
+                                  icon: const Icon(Icons.person_add),
+                                  label: const Text('Add Another Parent'),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: const Color(0xff4a90e2),
+                                    side: const BorderSide(color: Color(0xff4a90e2), width: 2),
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
                                 ),
                               ),

@@ -9,6 +9,10 @@ class ChildDataService {
         username
         name
         age
+        parents {
+          id
+          username
+        }
       }
     }
   ''';

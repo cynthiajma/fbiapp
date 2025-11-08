@@ -23,6 +23,44 @@ class ChildAuthService {
     }
   ''';
 
+  static const String _getChildByIdQuery = '''
+    query GetChildProfile(\$id: ID!) {
+      childProfile(id: \$id) {
+        id
+        username
+        name
+        age
+      }
+    }
+  ''';
+
+  /// Get child by ID
+  static Future<Map<String, dynamic>?> getChildById(
+    String id,
+    BuildContext context,
+  ) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+      
+      final result = await client.query(
+        QueryOptions(
+          document: gql(_getChildByIdQuery),
+          variables: {
+            'id': id,
+          },
+        ),
+      );
+
+      if (result.hasException) {
+        throw Exception(result.exception.toString());
+      }
+
+      return result.data?['childProfile'];
+    } catch (e) {
+      throw Exception('Failed to get child by ID: $e');
+    }
+  }
+
   /// Get child by username for login verification
   static Future<Map<String, dynamic>?> getChildByUsername(
     String username,
