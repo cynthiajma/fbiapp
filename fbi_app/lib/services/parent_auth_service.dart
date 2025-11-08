@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 
 class ParentAuthService {
   static const String _createParentMutation = '''
-    mutation CreateParent(\$username: String!, \$password: String!, \$childId: ID) {
-      createParent(username: \$username, password: \$password, childId: \$childId) {
+    mutation CreateParent(\$username: String!, \$email: String!, \$password: String!, \$childId: ID) {
+      createParent(username: \$username, email: \$email, password: \$password, childId: \$childId) {
         id
         username
+        email
       }
     }
   ''';
@@ -15,7 +16,20 @@ class ParentAuthService {
       loginParent(username: \$username, password: \$password) {
         id
         username
+        email
       }
+    }
+  ''';
+  
+  static const String _requestPasswordResetMutation = '''
+    mutation RequestPasswordReset(\$email: String!) {
+      requestPasswordReset(email: \$email)
+    }
+  ''';
+  
+  static const String _resetPasswordMutation = '''
+    mutation ResetPassword(\$token: String!, \$newPassword: String!) {
+      resetPassword(token: \$token, newPassword: \$newPassword)
     }
   ''';
 
@@ -103,6 +117,7 @@ class ParentAuthService {
   /// Create a new parent and optionally link to a childId
   static Future<Map<String, dynamic>?> createParent({
     required String username,
+    required String email,
     required String password,
     String? childId,
     required BuildContext context,
@@ -115,6 +130,7 @@ class ParentAuthService {
           document: gql(_createParentMutation),
           variables: {
             'username': username,
+            'email': email,
             'password': password,
             'childId': childId,
           },
@@ -194,6 +210,83 @@ class ParentAuthService {
       return children?.cast<Map<String, dynamic>>() ?? [];
     } catch (e) {
       throw Exception('Failed to get parent children: $e');
+    }
+  }
+
+  /// Request password reset email
+  static Future<bool> requestPasswordReset(String email, BuildContext context) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+      
+      final result = await client.mutate(
+        MutationOptions(
+          document: gql(_requestPasswordResetMutation),
+          variables: {
+            'email': email,
+          },
+        ),
+      );
+
+      if (result.hasException) {
+        // Extract clean error message
+        String errorMessage = 'No account found with this email address';
+        if (result.exception != null) {
+          final errorString = result.exception.toString();
+          final graphqlMatch = RegExp(r'message:\s*"([^"]+)"').firstMatch(errorString);
+          if (graphqlMatch != null) {
+            errorMessage = graphqlMatch.group(1)!;
+          } else {
+            errorMessage = errorString
+                .replaceAll(RegExp(r'^(Exception|Error|GraphQLError|LinkException):\s*'), '')
+                .split('\n')
+                .first
+                .trim();
+          }
+        }
+        throw Exception(errorMessage);
+      }
+
+      return result.data?['requestPasswordReset'] ?? false;
+    } catch (e) {
+      String errorMsg = e.toString();
+      errorMsg = errorMsg.replaceFirst('Exception: ', '');
+      errorMsg = errorMsg.replaceFirst('Failed to request password reset: ', '');
+      throw Exception(errorMsg);
+    }
+  }
+
+  /// Reset password with token
+  static Future<bool> resetPassword(String token, String newPassword, BuildContext context) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+      
+      final result = await client.mutate(
+        MutationOptions(
+          document: gql(_resetPasswordMutation),
+          variables: {
+            'token': token,
+            'newPassword': newPassword,
+          },
+        ),
+      );
+
+      if (result.hasException) {
+        String errorMessage = 'Password reset failed';
+        if (result.exception != null) {
+          final errorString = result.exception.toString();
+          final graphqlMatch = RegExp(r'message:\s*"([^"]+)"').firstMatch(errorString);
+          if (graphqlMatch != null) {
+            errorMessage = graphqlMatch.group(1)!;
+          }
+        }
+        throw Exception(errorMessage);
+      }
+
+      return result.data?['resetPassword'] ?? false;
+    } catch (e) {
+      String errorMsg = e.toString();
+      errorMsg = errorMsg.replaceFirst('Exception: ', '');
+      throw Exception(errorMsg);
     }
   }
 }

@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:email_validator/email_validator.dart';
 import '../services/parent_auth_service.dart';
 import '../services/child_auth_service.dart';
 import '../services/user_state_service.dart';
 import 'parent_login_page.dart';
-import 'parent_profile.dart';
 
 class ParentSignupPage extends StatefulWidget {
-  const ParentSignupPage({super.key});
+  final String? childId;
+  
+  const ParentSignupPage({super.key, this.childId});
 
   @override
   State<ParentSignupPage> createState() => _ParentSignupPageState();
@@ -14,15 +16,40 @@ class ParentSignupPage extends StatefulWidget {
 
 class _ParentSignupPageState extends State<ParentSignupPage> {
   final _usernameController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _childUsernameController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
+  String? _childName;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.childId != null) {
+      _loadChildName();
+    }
+  }
+
+  Future<void> _loadChildName() async {
+    try {
+      final childProfile = await ChildAuthService.getChildById(widget.childId!, context);
+      if (childProfile != null) {
+        setState(() {
+          _childName = childProfile['name'] as String? ?? childProfile['username'] as String;
+        });
+      }
+    } catch (e) {
+      // If we can't load the child name, just continue without it
+      print('Error loading child name: $e');
+    }
+  }
 
   @override
   void dispose() {
     _usernameController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     _childUsernameController.dispose();
     super.dispose();
@@ -30,12 +57,25 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
 
   Future<void> _signup() async {
     final username = _usernameController.text.trim();
+    final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     final childUsername = _childUsernameController.text.trim();
 
     if (username.isEmpty) {
       setState(() {
         _errorMessage = 'Please enter a username';
+      });
+      return;
+    }
+    if (email.isEmpty) {
+      setState(() {
+        _errorMessage = 'Please enter an email address';
+      });
+      return;
+    }
+    if (!EmailValidator.validate(email)) {
+      setState(() {
+        _errorMessage = 'Please enter a valid email address';
       });
       return;
     }
@@ -52,10 +92,11 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
     });
 
     try {
-      String? childId;
-      String? childName;
+      String? childId = widget.childId; // Use provided childId if available
+      String? childName = _childName;
 
-      if (childUsername.isNotEmpty) {
+      // If no childId was provided to the widget, check if user entered a child username
+      if (childId == null && childUsername.isNotEmpty) {
         final child = await ChildAuthService.getChildByUsername(childUsername, context);
         if (child == null) {
           setState(() {
@@ -70,6 +111,7 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
 
       final parent = await ParentAuthService.createParent(
         username: username,
+        email: email,
         password: password,
         childId: childId,
         context: context,
@@ -88,17 +130,23 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
       await UserStateService.saveParentId(parent['id']);
 
       if (childId != null) {
-        // If linked to a child, save child state and go to profile
+        // If linked to a child, save child state and go back
         await UserStateService.saveChildId(childId);
         if (childName != null && childName.isNotEmpty) {
           await UserStateService.saveChildName(childName);
         }
 
         if (mounted) {
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const ParentProfilePage()),
-            (route) => false,
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('✓ Parent account created and linked successfully!'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
           );
+          
+          // Pop back to the previous page (parent profile)
+          Navigator.of(context).pop();
         }
       } else {
         // If not linked, send them to login with a hint
@@ -175,7 +223,34 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
+                  const SizedBox(height: 16),
+                  // Show linking indicator if childId is provided
+                  if (widget.childId != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.green[50],
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.green[300]!),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.link, color: Colors.green[700], size: 20),
+                          const SizedBox(width: 8),
+                          Text(
+                            _childName != null
+                                ? 'Linking to: $_childName'
+                                : 'Linking to child account',
+                            style: TextStyle(
+                              color: Colors.green[700],
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  const SizedBox(height: 14),
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
@@ -196,6 +271,20 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
                           decoration: InputDecoration(
                             hintText: 'Parent username',
                             prefixIcon: const Icon(Icons.person),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey[50],
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _emailController,
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            hintText: 'Email address',
+                            prefixIcon: const Icon(Icons.email),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -226,19 +315,22 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
                           ),
                         ),
                         const SizedBox(height: 16),
-                        TextField(
-                          controller: _childUsernameController,
-                          decoration: InputDecoration(
-                            hintText: 'Child username to link (optional)',
-                            prefixIcon: const Icon(Icons.child_care),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                        // Only show child username field if childId not provided
+                        if (widget.childId == null) ...[
+                          TextField(
+                            controller: _childUsernameController,
+                            decoration: InputDecoration(
+                              hintText: 'Child username to link (optional)',
+                              prefixIcon: const Icon(Icons.child_care),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey[50],
                             ),
-                            filled: true,
-                            fillColor: Colors.grey[50],
                           ),
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
+                        ],
                         if (_errorMessage != null)
                           Container(
                             padding: const EdgeInsets.all(12),

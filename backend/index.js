@@ -1,6 +1,8 @@
 const { ApolloServer, gql } = require('apollo-server');
 const { pool } = require('./db');
 const bcrypt = require('bcrypt');
+const crypto = require('crypto');
+const { sendPasswordResetEmail } = require('./email-config');
 
 const typeDefs = gql`
   type Query {
@@ -8,15 +10,19 @@ const typeDefs = gql`
     childByUsername(username: String!): Child
     characterLibrary: [Character]
     parentProfile(id: ID!): Parent
+    parentChildren(parentId: ID!): [Child!]
     childLogs(childId: ID!, startTime: String, endTime: String): [Log]
+    isParentLinkedToChild(parentId: ID!, childId: ID!): Boolean!
   }
 
   type Mutation {
     logFeeling(childId: ID!, characterId: ID!, level: Int!, investigation: [String!]): Log
     createChild(username: String!, name: String, age: Int): Child
-    createParent(username: String!, password: String!, childId: ID): Parent
+    createParent(username: String!, email: String!, password: String!, childId: ID): Parent
     loginParent(username: String!, password: String!): Parent
     linkParentChild(parentId: ID!, childId: ID!): Boolean
+    requestPasswordReset(email: String!): Boolean
+    resetPassword(token: String!, newPassword: String!): Boolean
   }
 
   type Child {
@@ -30,6 +36,7 @@ const typeDefs = gql`
   type Parent {
     id: ID!
     username: String!
+    email: String!
     children: [Child!]
   }
 
@@ -97,7 +104,7 @@ const resolvers = {
     },
     parentProfile: async (_, { id }) => {
       const result = await pool.query(
-        'SELECT parent_id, parent_username FROM parents WHERE parent_id = $1',
+        'SELECT parent_id, parent_username, parent_email FROM parents WHERE parent_id = $1',
         [id]
       );
       if (result.rows.length === 0) return null;
@@ -105,7 +112,23 @@ const resolvers = {
       return {
         id: parent.parent_id.toString(),
         username: parent.parent_username,
+        email: parent.parent_email,
       };
+    },
+    parentChildren: async (_, { parentId }) => {
+      const result = await pool.query(`
+        SELECT c.child_id, c.child_username, c.child_name, c.child_age 
+        FROM children c
+        JOIN parent_child_link pcl ON c.child_id = pcl.child_id
+        WHERE pcl.parent_id = $1
+      `, [parentId]);
+      
+      return result.rows.map(child => ({
+        id: child.child_id.toString(),
+        username: child.child_username,
+        name: child.child_name,
+        age: child.child_age,
+      }));
     },
     childLogs: async (_, { childId, startTime, endTime }) => {
       let query = 'SELECT log_id, child_id, character_id, character_name, feeling_level, logging_time, investigation FROM logging WHERE child_id = $1';
@@ -128,6 +151,13 @@ const resolvers = {
         timestamp: log.logging_time.toISOString(),
         investigation: log.investigation || [],
       }));
+    },
+    isParentLinkedToChild: async (_, { parentId, childId }) => {
+      const result = await pool.query(
+        'SELECT parent_id FROM parent_child_link WHERE parent_id = $1 AND child_id = $2',
+        [parentId, childId]
+      );
+      return result.rows.length > 0;
     },
   },
   Mutation: {
@@ -166,11 +196,20 @@ const resolvers = {
         age: child.child_age,
       };
     },
-    createParent: async (_, { username, password, childId }) => {
+    createParent: async (_, { username, email, password, childId }) => {
+      // Check if email already exists
+      const emailCheck = await pool.query(
+        'SELECT parent_id FROM parents WHERE parent_email = $1',
+        [email]
+      );
+      if (emailCheck.rows.length > 0) {
+        throw new Error('Email address already registered');
+      }
+
       const hashedPassword = await bcrypt.hash(password, 10);
       const result = await pool.query(
-        'INSERT INTO parents (parent_username, hashed_password) VALUES ($1, $2) RETURNING parent_id, parent_username',
-        [username, hashedPassword]
+        'INSERT INTO parents (parent_username, parent_email, hashed_password) VALUES ($1, $2, $3) RETURNING parent_id, parent_username, parent_email',
+        [username, email, hashedPassword]
       );
       const parent = result.rows[0];
       
@@ -189,11 +228,12 @@ const resolvers = {
       return {
         id: parent.parent_id.toString(),
         username: parent.parent_username,
+        email: parent.parent_email,
       };
     },
     loginParent: async (_, { username, password }) => {
       const result = await pool.query(
-        'SELECT parent_id, parent_username, hashed_password FROM parents WHERE parent_username = $1',
+        'SELECT parent_id, parent_username, parent_email, hashed_password FROM parents WHERE parent_username = $1',
         [username]
       );
       
@@ -211,25 +251,126 @@ const resolvers = {
       return {
         id: parent.parent_id.toString(),
         username: parent.parent_username,
+        email: parent.parent_email,
       };
     },
     linkParentChild: async (_, { parentId, childId }) => {
-      // Check if this link already exists (parent is already linked to this child)
-      const existingLink = await pool.query(
-        'SELECT parent_id FROM parent_child_link WHERE parent_id = $1 AND child_id = $2',
-        [parentId, childId]
-      );
-      
-      if (existingLink.rows.length === 0) {
-        // Try to insert the link, but this shouldn't normally happen through the UI
-        // since parents should only be able to link to their own children
-        await pool.query(
-          'INSERT INTO parent_child_link (parent_id, child_id) VALUES ($1, $2)',
+      try {
+        // Verify parent exists
+        const parentCheck = await pool.query(
+          'SELECT parent_id FROM parents WHERE parent_id = $1',
+          [parentId]
+        );
+        if (parentCheck.rows.length === 0) {
+          throw new Error('Parent account not found');
+        }
+        
+        // Verify child exists
+        const childCheck = await pool.query(
+          'SELECT child_id FROM children WHERE child_id = $1',
+          [childId]
+        );
+        if (childCheck.rows.length === 0) {
+          throw new Error('Child account not found');
+        }
+        
+        // Check if this link already exists
+        const existingLink = await pool.query(
+          'SELECT parent_id FROM parent_child_link WHERE parent_id = $1 AND child_id = $2',
           [parentId, childId]
         );
+        
+        if (existingLink.rows.length === 0) {
+          // Create the link
+          // Security Note: Currently allows any parent to link to any child if they know the child ID
+          // In production, consider adding: child approval, invitation codes, or email verification
+          await pool.query(
+            'INSERT INTO parent_child_link (parent_id, child_id) VALUES ($1, $2)',
+            [parentId, childId]
+          );
+          console.log(`✓ Linked parent ${parentId} to child ${childId}`);
+        } else {
+          console.log(`Link already exists between parent ${parentId} and child ${childId}`);
+        }
+        
+        return true;
+      } catch (error) {
+        console.error('Error linking parent and child:', error);
+        throw error;
       }
-      
-      return true;
+    },
+    requestPasswordReset: async (_, { email }) => {
+      try {
+        // Find parent by email
+        const result = await pool.query(
+          'SELECT parent_id, parent_email FROM parents WHERE parent_email = $1',
+          [email]
+        );
+        
+        // Check if email exists and throw error if not
+        if (result.rows.length === 0) {
+          console.log('Password reset requested for non-existent email:', email);
+          throw new Error('No account found with this email address. Please check your email or create a new account.');
+        }
+        
+        const parent = result.rows[0];
+        
+        // Generate 6-digit numerical code
+        const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Code expires in 15 minutes
+        const expiryTime = new Date(Date.now() + 15 * 60 * 1000);
+        
+        // Store code in database
+        await pool.query(
+          'UPDATE parents SET reset_token = $1, reset_token_expiry = $2 WHERE parent_id = $3',
+          [resetCode, expiryTime, parent.parent_id]
+        );
+        
+        // Send reset email with code
+        await sendPasswordResetEmail(email, resetCode);
+        
+        console.log('Password reset code sent to:', email);
+        return true;
+      } catch (error) {
+        console.error('Error requesting password reset:', error);
+        throw error;
+      }
+    },
+    resetPassword: async (_, { token, newPassword }) => {
+      try {
+        // Find parent by reset token
+        const result = await pool.query(
+          'SELECT parent_id, parent_email, reset_token_expiry FROM parents WHERE reset_token = $1',
+          [token]
+        );
+        
+        if (result.rows.length === 0) {
+          throw new Error('Invalid or expired reset token');
+        }
+        
+        const parent = result.rows[0];
+        
+        // Check if token has expired
+        if (new Date() > new Date(parent.reset_token_expiry)) {
+          throw new Error('Reset token has expired. Please request a new password reset.');
+        }
+        
+        // Hash new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        
+        // Update password and clear reset token
+        await pool.query(
+          'UPDATE parents SET hashed_password = $1, reset_token = NULL, reset_token_expiry = NULL WHERE parent_id = $2',
+          [hashedPassword, parent.parent_id]
+        );
+        
+        console.log('Password reset successful for:', parent.parent_email);
+        return true;
+      } catch (error) {
+        console.error('Error resetting password:', error);
+        throw error;
+      }
     },
   },
   
@@ -249,7 +390,8 @@ const resolvers = {
         name: child.child_name,
         age: child.child_age,
       }));
-    }
+    },
+    email: (parent) => parent.email,
   },
   
   Child: {

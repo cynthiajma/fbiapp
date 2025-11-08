@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../services/child_auth_service.dart';
 import '../services/user_state_service.dart';
-import '../home.dart';
 import 'child_login_page.dart';
+import 'parent_signup_page.dart';
 
 class ChildSignupPage extends StatefulWidget {
   const ChildSignupPage({super.key});
@@ -65,10 +65,8 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
       await UserStateService.saveChildName(child['name'] ?? username);
 
       if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const HomePage()),
-          (route) => false,
-        );
+        // Show dialog asking if they want to create/link a parent account
+        _showParentLinkingDialog(child['id'], child['name'] ?? username);
       }
     } catch (e) {
       setState(() {
@@ -76,6 +74,61 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
         _isLoading = false;
       });
     }
+  }
+
+  void _showParentLinkingDialog(String childId, String childName) {
+    setState(() {
+      _isLoading = false;
+    });
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.family_restroom, color: Color(0xff4a90e2)),
+            SizedBox(width: 8),
+            Text('Create Parent Account'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Detective account created successfully!',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Please create a parent account to continue. This allows parents to monitor progress and is required to complete setup.',
+            ),
+          ],
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(); // Close dialog
+              Navigator.of(context).pushReplacement(
+                MaterialPageRoute(
+                  builder: (_) => ParentSignupPage(childId: childId),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff4a90e2),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text('Create Parent Account'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
