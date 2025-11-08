@@ -3,11 +3,10 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 
 class ChildAuthService {
   static const String _createChildMutation = '''
-    mutation CreateChild(\$username: String!, \$name: String, \$age: Int) {
-      createChild(username: \$username, name: \$name, age: \$age) {
+    mutation CreateChild(\$username: String!, \$age: Int) {
+      createChild(username: \$username, age: \$age) {
         id
         username
-        name
         age
       }
     }
@@ -17,7 +16,6 @@ class ChildAuthService {
       childByUsername(username: \$username) {
         id
         username
-        name
         age
       }
     }
@@ -28,7 +26,6 @@ class ChildAuthService {
       childProfile(id: \$id) {
         id
         username
-        name
         age
       }
     }
@@ -91,7 +88,6 @@ class ChildAuthService {
   /// Create a new child profile
   static Future<Map<String, dynamic>?> createChild({
     required String username,
-    String? name,
     int? age,
     required BuildContext context,
   }) async {
@@ -103,7 +99,6 @@ class ChildAuthService {
           document: gql(_createChildMutation),
           variables: {
             'username': username,
-            'name': name,
             'age': age,
           },
         ),

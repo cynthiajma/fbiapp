@@ -20,19 +20,19 @@ async function seedTestData() {
     
     // Insert children with explicit IDs
     const children = [
-      { id: 1, username: 'alice_child', name: 'Alice', age: 8 },
-      { id: 2, username: 'bob_child', name: 'Bob', age: 7 },
-      { id: 3, username: 'charlie_child', name: 'Charlie', age: 9 },
+      { id: 1, username: 'alice_child', age: 8 },
+      { id: 2, username: 'bob_child', age: 7 },
+      { id: 3, username: 'charlie_child', age: 9 },
     ];
     
     const childIds = [];
     for (const child of children) {
       await pool.query(
-        'INSERT INTO children (child_id, child_username, child_name, child_age) VALUES ($1, $2, $3, $4)',
-        [child.id, child.username, child.name, child.age]
+        'INSERT INTO children (child_id, child_username, child_age) VALUES ($1, $2, $3)',
+        [child.id, child.username, child.age]
       );
       childIds.push(child.id);
-      console.log(`✅ Created child: ${child.name} (ID: ${child.id})`);
+      console.log(`✅ Created child: ${child.username} (ID: ${child.id})`);
     }
     
     // Reset the child sequence
