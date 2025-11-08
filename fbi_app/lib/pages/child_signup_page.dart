@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../services/child_auth_service.dart';
 import '../services/user_state_service.dart';
 import 'child_login_page.dart';
@@ -241,6 +242,10 @@ class _ChildSignupPageState extends State<ChildSignupPage> {
                         TextField(
                           controller: _ageController,
                           keyboardType: TextInputType.number,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.digitsOnly,
+                            LengthLimitingTextInputFormatter(3),
+                          ],
                           decoration: InputDecoration(
                             hintText: 'Age (optional)',
                             prefixIcon: const Icon(Icons.cake),
