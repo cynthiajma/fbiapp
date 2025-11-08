@@ -141,17 +141,43 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                IconButton(
-                                  icon: const Icon(Icons.arrow_back, color: Colors.brown),
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                  },
-                                  tooltip: 'Back to Home',
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.9),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        offset: const Offset(2, 2),
+                                        blurRadius: 4,
+                                        color: Colors.black.withOpacity(0.2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.arrow_back, color: Color(0xff4a90e2), size: 24),
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    tooltip: 'Back to Home',
+                                  ),
                                 ),
-                                IconButton(
-                                  icon: const Icon(Icons.edit, color: Colors.brown),
-                                  onPressed: _openCustomization,
-                                  tooltip: 'Customize Avatar',
+                                Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.9),
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        offset: const Offset(2, 2),
+                                        blurRadius: 4,
+                                        color: Colors.black.withOpacity(0.2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.edit, color: Color(0xffe67268), size: 24),
+                                    onPressed: _openCustomization,
+                                    tooltip: 'Customize Avatar',
+                                  ),
                                 ),
                               ],
                             ),
