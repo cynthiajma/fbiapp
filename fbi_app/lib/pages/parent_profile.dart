@@ -54,7 +54,7 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
 
       if (childProfile != null) {
         setState(() {
-          _childName = childProfile['name'] ?? 'Unknown Child';
+          _childName = childProfile['username'] ?? 'Unknown Child';
         });
       }
 
@@ -147,8 +147,8 @@ class _ParentProfilePageState extends State<ParentProfilePage> {
       if (success) {
         // Save newly selected child for viewing
         await UserStateService.saveChildId(childId);
-        if (child['name'] != null) {
-          await UserStateService.saveChildName(child['name']);
+        if (child['username'] != null) {
+          await UserStateService.saveChildName(child['username']);
         }
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Child linked successfully')),
