@@ -146,8 +146,8 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
         
         // Save child ID to state
         await UserStateService.saveChildId(childId);
-        if (firstChild['name'] != null) {
-          await UserStateService.saveChildName(firstChild['name']);
+        if (firstChild['username'] != null) {
+          await UserStateService.saveChildName(firstChild['username']);
         }
         
         // Navigate to parent profile page

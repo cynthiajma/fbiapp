@@ -41,15 +41,10 @@ class ParentAuthService {
 
   static const String _getParentChildrenQuery = '''
     query GetParentChildren(\$parentId: ID!) {
-      parentProfile(id: \$parentId) {
+      parentChildren(parentId: \$parentId) {
         id
         username
-        children {
-          id
-          username
-          name
-          age
-        }
+        age
       }
     }
   ''';
@@ -206,7 +201,7 @@ class ParentAuthService {
         throw Exception(result.exception.toString());
       }
 
-      final children = result.data?['parentProfile']?['children'] as List<dynamic>?;
+      final children = result.data?['parentChildren'] as List<dynamic>?;
       return children?.cast<Map<String, dynamic>>() ?? [];
     } catch (e) {
       throw Exception('Failed to get parent children: $e');
