@@ -46,7 +46,7 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
 
       if (childProfile != null) {
         setState(() {
-          _childName = childProfile['name'] ?? 'Unknown Child';
+          _childName = childProfile['username'] ?? 'Unknown Child';
         });
       }
 
