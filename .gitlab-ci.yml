@@ -20,7 +20,7 @@ variables:
 # Test stage - Run Flutter tests
 test:flutter:
   stage: test
-  image: subosito/flutter:3.24.0
+  image: cirrusci/flutter:latest
   before_script:
     - cd fbi_app
     - flutter pub get
