@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import '../services/parent_data_service.dart';
 import '../services/user_state_service.dart';
-import '../services/child_data_service.dart';
 import 'parent_view_child_page.dart';
 import 'parent_login_page.dart';
 import 'parent_signup_page.dart';
@@ -68,9 +64,9 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
     await UserStateService.saveChildName(childName);
     
     if (mounted) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => ParentViewChildPage(
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => ParentViewChildPage(
             childId: childId,
             childName: childName,
           ),
@@ -240,28 +236,28 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
           // Optional semi-transparent overlay
           Container(color: Colors.brown.withOpacity(0.1)),
           _isLoading
-              ? const Center(child: CircularProgressIndicator())
-              : _errorMessage != null
-                  ? Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.error, size: 64, color: Colors.red[300]),
-                          const SizedBox(height: 16),
-                          Text(
-                            _errorMessage!,
-                            style: TextStyle(color: Colors.red[700], fontSize: 16),
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _loadChildren,
-                            child: const Text('Retry'),
-                          ),
-                        ],
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.error, size: 64, color: Colors.red[300]),
+                      const SizedBox(height: 16),
+                      Text(
+                        _errorMessage!,
+                        style: TextStyle(color: Colors.red[700], fontSize: 16),
+                        textAlign: TextAlign.center,
                       ),
-                    )
-                  : _children.isEmpty
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _loadChildren,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+              : _children.isEmpty
                       ? SafeArea(
                           child: Center(
                             child: Transform.rotate(
@@ -289,38 +285,38 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                                     ),
                                     Padding(
                                       padding: const EdgeInsets.only(top: 24),
-                                      child: Column(
+                      child: Column(
                                         mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.child_care,
+                        children: [
+                          Icon(
+                            Icons.child_care,
                                             size: 64,
-                                            color: Colors.grey[400],
-                                          ),
-                                          const SizedBox(height: 24),
-                                          Text(
-                                            'No Children Linked',
-                                            style: TextStyle(
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'No Children Linked',
+                            style: TextStyle(
                                               fontFamily: 'SpecialElite',
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.grey[700],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 12),
-                                          Padding(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[700],
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Padding(
                                             padding: const EdgeInsets.symmetric(horizontal: 24),
-                                            child: Text(
-                                              'You haven\'t linked any children to your account yet. Create a child account or link an existing one.',
-                                              textAlign: TextAlign.center,
-                                              style: TextStyle(
+                            child: Text(
+                              'You haven\'t linked any children to your account yet. Create a child account or link an existing one.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
                                                 fontFamily: 'SpecialElite',
-                                                fontSize: 16,
-                                                color: Colors.grey[600],
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                fontSize: 16,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                          ),
+                        ],
                                       ),
                                     ),
                                   ],
@@ -360,15 +356,37 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                                       ),
                                       Row(
                                         children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.person_add, color: Colors.brown),
-                                            onPressed: _showAddParentDialog,
-                                            tooltip: 'Add a parent',
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withOpacity(0.9),
+                                              shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  offset: const Offset(2, 2),
+                                                  blurRadius: 4,
+                                                  color: Colors.black.withOpacity(0.2),
+                                                ),
+                                              ],
+                                            ),
+                                            child: IconButton(
+                                              icon: const Icon(Icons.person_add, color: Colors.brown, size: 24),
+                                              onPressed: _showAddParentDialog,
+                                              tooltip: 'Add a parent',
+                                            ),
                                           ),
-                                          IconButton(
-                                            icon: const Icon(Icons.refresh, color: Colors.brown),
-                                            onPressed: _loadChildren,
-                                            tooltip: 'Refresh',
+                                          const SizedBox(width: 8),
+                                          Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.white.withOpacity(0.9),
+                                              shape: BoxShape.circle,
+                                              boxShadow: [
+                                                BoxShadow(
+                                                  offset: const Offset(2, 2),
+                                                  blurRadius: 4,
+                                                  color: Colors.black.withOpacity(0.2),
+                                                ),
+                                              ],
+                                            ),
                                           ),
                                         ],
                                       ),
@@ -454,7 +472,7 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                           ),
                         ),
         ],
-      ),
+                    ),
     );
   }
 }
@@ -475,9 +493,9 @@ class _ChildCard extends StatelessWidget {
     final age = child['age'] as int?;
 
     return GestureDetector(
-      onTap: onTap,
+        onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.95),
           borderRadius: BorderRadius.circular(12),
@@ -498,64 +516,64 @@ class _ChildCard extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(top: 24),
-              child: Row(
-                children: [
-                  // Avatar
-                  CircleAvatar(
-                    radius: 32,
-                    backgroundColor: const Color(0xff4a90e2).withOpacity(0.1),
+          child: Row(
+            children: [
+              // Avatar
+              CircleAvatar(
+                radius: 32,
+                backgroundColor: const Color(0xff4a90e2).withOpacity(0.1),
                     child: const Icon(
-                      Icons.child_care,
-                      size: 32,
+                  Icons.child_care,
+                  size: 32,
                       color: Color(0xff4a90e2),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  // Child info
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          name.toUpperCase(),
-                          style: const TextStyle(
-                            fontFamily: 'SpecialElite',
-                            fontSize: 20,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '@$username',
-                          style: TextStyle(
-                            fontFamily: 'SpecialElite',
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                        if (age != null) ...[
-                          const SizedBox(height: 4),
-                          Text(
-                            'Age: $age',
-                            style: TextStyle(
-                              fontFamily: 'SpecialElite',
-                              fontSize: 14,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  // Arrow
-                  const Icon(
-                    Icons.arrow_forward_ios,
-                    size: 20,
-                    color: Colors.grey,
-                  ),
-                ],
+                ),
               ),
+              const SizedBox(width: 16),
+              // Child info
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                          name.toUpperCase(),
+                      style: const TextStyle(
+                            fontFamily: 'SpecialElite',
+                        fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '@$username',
+                      style: TextStyle(
+                            fontFamily: 'SpecialElite',
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                    if (age != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Age: $age',
+                        style: TextStyle(
+                              fontFamily: 'SpecialElite',
+                          fontSize: 14,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              // Arrow
+              const Icon(
+                Icons.arrow_forward_ios,
+                size: 20,
+                color: Colors.grey,
+              ),
+            ],
+          ),
             ),
           ],
         ),
@@ -563,4 +581,5 @@ class _ChildCard extends StatelessWidget {
     );
   }
 }
+
 
