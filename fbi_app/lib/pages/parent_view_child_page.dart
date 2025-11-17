@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/child_data_service.dart';
 import '../features/character.dart';
 import '../widgets/char_row.dart';
@@ -27,7 +30,13 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
   void initState() {
     super.initState();
     _childName = widget.childName;
-    _loadChildData();
+    // Wait for the widget to be fully built before loading data
+    // This ensures the GraphQL context is available
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _loadChildData();
+      }
+    });
   }
 
   Future<void> _loadChildData() async {
@@ -37,9 +46,16 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
         _errorMessage = null;
       });
 
+      // Small delay to ensure GraphQL context is fully available
+      await Future.delayed(const Duration(milliseconds: 100));
+
+      if (!mounted) return;
+
       // Load child profile and logs
       final childProfile = await ChildDataService.getChildProfile(widget.childId, context);
+      if (!mounted) return;
       final childLogs = await ChildDataService.getChildLogs(widget.childId, context);
+      if (!mounted) return;
       final characterLibrary = await ChildDataService.getCharacterLibrary(context);
 
       if (childProfile != null) {
@@ -144,35 +160,58 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
                                     tooltip: 'Back',
                                   ),
                                 ),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 12,
-                                    vertical: 6,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.9),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(color: const Color(0xff4a90e2)),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: const [
-                                      Icon(
-                                        Icons.remove_red_eye,
-                                        size: 16,
-                                        color: Color(0xff4a90e2),
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 6,
                                       ),
-                                      SizedBox(width: 4),
-                                      Text(
-                                        'Parent View',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Color(0xff4a90e2),
-                                          fontWeight: FontWeight.bold,
-                                        ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.9),
+                                        borderRadius: BorderRadius.circular(20),
+                                        border: Border.all(color: const Color(0xff4a90e2)),
                                       ),
-                                    ],
-                                  ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: const [
+                                          Icon(
+                                            Icons.remove_red_eye,
+                                            size: 16,
+                                            color: Color(0xff4a90e2),
+                                          ),
+                                          SizedBox(width: 4),
+                                          Text(
+                                            'Parent View',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Color(0xff4a90e2),
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.9),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            offset: const Offset(2, 2),
+                                            blurRadius: 4,
+                                            color: Colors.black.withOpacity(0.2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.download, color: Colors.brown),
+                                        onPressed: _exportToCsv,
+                                        tooltip: 'Export to CSV',
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
@@ -402,6 +441,90 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
       0,
       (sum, character) => sum + character.averageLevel,
     );
+  }
+
+  Future<void> _exportToCsv() async {
+    try {
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Fetch logs
+      final childLogs = await ChildDataService.getChildLogs(widget.childId, context);
+
+      if (childLogs.isEmpty) {
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No logs found for this child')),
+        );
+        return;
+      }
+
+      // Generate CSV content
+      final csvBuffer = StringBuffer();
+      
+      // CSV Header
+      csvBuffer.writeln('Log ID,Character Name,Level,Timestamp');
+      
+      // CSV Rows
+      for (final log in childLogs) {
+        final logId = log['id'] ?? '';
+        final charName = log['characterName'] ?? '';
+        final level = log['level'] ?? '';
+        final timestamp = log['timestamp'] ?? '';
+        
+        // Escape commas and quotes in CSV
+        String escapeCsv(String value) {
+          if (value.contains(',') || value.contains('"') || value.contains('\n')) {
+            return '"${value.replaceAll('"', '""')}"';
+          }
+          return value;
+        }
+        
+        csvBuffer.writeln('${escapeCsv(logId.toString())},'
+            '${escapeCsv(charName.toString())},'
+            '${escapeCsv(level.toString())},'
+            '${escapeCsv(timestamp.toString())}');
+      }
+
+      final csvContent = csvBuffer.toString();
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
+      final fileName = 'child_logs_${_childName.replaceAll(' ', '_')}_$timestamp.csv';
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      // Save to temporary file and share
+      final directory = await getTemporaryDirectory();
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsString(csvContent);
+      
+      final xFile = XFile(file.path);
+      await Share.shareXFiles(
+        [xFile],
+        subject: 'Child Logs Export - $_childName',
+        text: 'Exported logs for $_childName',
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('CSV exported successfully!')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog if open
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error exporting CSV: $e')),
+      );
+    }
   }
 }
 
