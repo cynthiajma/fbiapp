@@ -27,11 +27,6 @@ test:flutter:
     - flutter doctor
   script:
     - flutter test --reporter expanded
-  artifacts:
-    when: always
-    paths:
-      - fbi_app/test-results/
-    expire_in: 1 week
   only:
     - merge_requests
     - main
