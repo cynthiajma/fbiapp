@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fbi_app/home.dart';
+import 'package:fbi_app/pages/home_page.dart';
 import 'package:fbi_app/pages/child_profile_page.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 

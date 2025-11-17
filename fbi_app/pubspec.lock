@@ -93,10 +93,10 @@ packages:
     dependency: "direct main"
     description:
       name: avatar_maker
-      sha256: ca182e33343846427da68fc226325f630063da2de2f0bdb49e683f0c843b80c2
+      sha256: "9b147ae54d81d6ddea240bf7ac9920f0dbacdb138dabf119bb769f109ba05f8f"
       url: "https://pub.dev"
     source: hosted
-    version: "0.4.0"
+    version: "0.2.1"
   boolean_selector:
     dependency: transitive
     description:
@@ -605,14 +605,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.5.1"
-  nested:
-    dependency: transitive
-    description:
-      name: nested
-      sha256: "03bac4c528c64c95c722ec99280375a6f2fc708eec17c7b3f07253b626cd2a20"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   nm:
     dependency: transitive
     description:
@@ -733,14 +725,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.2"
-  provider:
-    dependency: transitive
-    description:
-      name: provider
-      sha256: "4e82183fa20e5ca25703ead7e05de9e4cceed1fbd1eadc1ac3cb6f565a09f272"
-      url: "https://pub.dev"
-    source: hosted
-    version: "6.1.5+1"
   pub_semver:
     dependency: transitive
     description:
@@ -1091,5 +1075,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.9.2 <4.0.0"
+  dart: ">=3.9.0 <4.0.0"
   flutter: ">=3.35.0"

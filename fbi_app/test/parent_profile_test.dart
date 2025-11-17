@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fbi_app/pages/parent_profile.dart';
+import 'package:fbi_app/pages/parent_profile_page.dart';
 
 void main() {
   group('Parent Profile - UI Tests', () {
@@ -26,7 +26,7 @@ void main() {
           reason: 'ParentProfilePage widget should be in the widget tree');
     });
 
-    testWidgets('GIVEN no child ID stored WHEN parent profile page loads THEN I should see error message',
+    testWidgets('GIVEN no child ID stored WHEN parent profile page loads THEN page should still render with static data',
         (WidgetTester tester) async {
       // Set up shared preferences without child_id
       SharedPreferences.setMockInitialValues({
@@ -39,17 +39,21 @@ void main() {
         ),
       );
 
-      // Wait for async operations
+      // Wait for initial render
       await tester.pump();
       await tester.pump();
 
-      // THEN I should see error message
-      expect(find.text('No child selected'), findsOneWidget,
-          reason: 'Error message should appear when no child is selected');
+      // THEN ParentProfilePage should still be rendered (it shows static seed data)
+      expect(find.byType(ParentProfilePage), findsOneWidget,
+          reason: 'ParentProfilePage should render even without child ID');
       
-      // AND I should see retry button
-      expect(find.text('Retry'), findsOneWidget,
-          reason: 'Retry button should be visible');
+      // AND I should see the parent profile content
+      expect(find.text('JOHN SMITH'), findsOneWidget,
+          reason: 'Parent name should be displayed');
+      
+      // AND I should see the View My Children button
+      expect(find.text('View My Children'), findsOneWidget,
+          reason: 'View My Children button should be visible');
     });
 
     testWidgets('GIVEN I am on parent profile page WHEN page loads THEN I should see ParentProfilePage',

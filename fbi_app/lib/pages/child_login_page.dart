@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/child_auth_service.dart';
-import '../home.dart';
+import 'home_page.dart';
 import 'child_signup_page.dart';
 
 class ChildLoginPage extends StatefulWidget {

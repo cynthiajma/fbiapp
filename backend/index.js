@@ -1,6 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server');
 const { pool } = require('./db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { sendPasswordResetEmail } = require('./email-config');
 
