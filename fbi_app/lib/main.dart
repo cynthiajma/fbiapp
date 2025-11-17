@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'character_library.dart';
-import 'home.dart';
-import 'heartbeat.dart';
-import 'opening_page.dart'; // ✅ added missing semicolon here
+import 'pages/home_page.dart';
+import 'pages/opening_page.dart';
 import 'pages/child_login_page.dart';
 import 'services/user_state_service.dart';
 

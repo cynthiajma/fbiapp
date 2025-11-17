@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'package:fluttermoji/fluttermoji.dart';
-import 'character_library.dart';
-import 'pages/parent_login_page.dart';
-import 'pages/child_login_page.dart';
-import 'pages/child_profile_page.dart';
-import 'heartbeat.dart';
-import 'services/user_state_service.dart';
+import 'character_library_page.dart';
+import 'parent_login_page.dart';
+import 'child_login_page.dart';
+import 'child_profile_page.dart';
+import 'heartbeat_page.dart';
+import '../services/user_state_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -346,3 +345,4 @@ class _AvatarScaffold extends StatelessWidget {
     );
   }
 }
+

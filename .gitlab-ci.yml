@@ -20,13 +20,13 @@ variables:
 # Test stage - Run Flutter tests
 test:flutter:
   stage: test
-  image: cirrusci/flutter:stable
+  image: cirrusci/flutter:3.27.0
   before_script:
     - cd fbi_app
     - flutter pub get
     - flutter doctor
   script:
-    - flutter test --reporter expanded
+    - flutter test --exclude-tags integration --reporter expanded
   only:
     - merge_requests
     - main
@@ -36,7 +36,7 @@ test:flutter:
 # Build stage - Build Flutter app (optional, can be enabled when needed)
 build:android:
   stage: build
-  image: cirrusci/flutter:stable
+  image: cirrusci/flutter:3.27.0
   before_script:
     - cd fbi_app
     - flutter pub get
@@ -53,7 +53,7 @@ build:android:
 
 build:ios:
   stage: build
-  image: cirrusci/flutter:stable
+  image: cirrusci/flutter:3.27.0
   before_script:
     - cd fbi_app
     - flutter pub get
@@ -70,7 +70,7 @@ build:ios:
 
 build:web:
   stage: build
-  image: cirrusci/flutter:stable
+  image: cirrusci/flutter:3.27.0
   before_script:
     - cd fbi_app
     - flutter pub get

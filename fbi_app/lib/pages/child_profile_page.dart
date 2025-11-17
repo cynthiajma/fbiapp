@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'package:get/get.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import '../services/user_state_service.dart';
 import '../services/child_data_service.dart';
 import '../features/character.dart';
 import '../widgets/char_row.dart';
-import '../home.dart';
 
 class ChildProfilePage extends StatefulWidget {
   const ChildProfilePage({super.key});

@@ -4,9 +4,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
-import 'services/logging_service.dart';
-import 'services/user_state_service.dart';
-import 'services/character_service.dart';
+import '../services/logging_service.dart';
+import '../services/user_state_service.dart';
+import '../services/character_service.dart';
 
 class HeartbeatPage extends StatefulWidget {
   const HeartbeatPage({super.key});
@@ -483,3 +483,4 @@ class _HeartbeatPageState extends State<HeartbeatPage>
     );
   }
 }
+

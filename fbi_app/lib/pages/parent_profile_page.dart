@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import '../features/character.dart';
-import 'widgets/char_row.dart';
-import 'pages/parent_child_selector_page.dart';
-import 'home.dart';
+import '../widgets/char_row.dart';
+import 'parent_child_selector_page.dart';
+import 'home_page.dart';
 
 class ParentProfilePage extends StatelessWidget {
   const ParentProfilePage({super.key});
@@ -10,25 +10,25 @@ class ParentProfilePage extends StatelessWidget {
   List<Character> _seed() => [
         Character(
           name: 'Henry Heartbeat',
-          imageAsset: '../../../data/characters/henry_heartbeat.png',
+          imageAsset: 'data/characters/henry_heartbeat.png',
           progress: 0.60,
           date: DateTime(2025, 10, 2),
         ),
         Character(
           name: 'Gerda Gotta Go',
-          imageAsset: '../../../data/characters/gerda_gotta_go.png',
+          imageAsset: 'data/characters/gerda_gotta_go.png',
           progress: 0.35,
           date: DateTime(2025, 10, 3),
         ),
         Character(
           name: 'Samantha Sweat',
-          imageAsset: '../../../data/characters/samatha_sweat.png',
+          imageAsset: 'data/characters/samatha_sweat.png',
           progress: 0.78,
           date: DateTime(2025, 10, 5),
         ),
         Character(
           name: 'Patricia the Poop Pain',
-          imageAsset: '../../../data/characters/patricia_the_poop_pain.png',
+          imageAsset: 'data/characters/patricia_the_poop_pain.png',
           progress: 0.50,
           date: DateTime(2025, 11, 20),
         ),
@@ -140,3 +140,4 @@ class ParentProfilePage extends StatelessWidget {
     );
   }
 }
+
