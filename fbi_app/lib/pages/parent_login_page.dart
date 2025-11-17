@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/parent_auth_service.dart';
 import '../services/parent_data_service.dart';
-import 'parent_profile.dart';
+import 'parent_child_selector_page.dart';
 import 'forgot_password_page.dart';
 
 class ParentLoginPage extends StatefulWidget {
@@ -132,28 +132,10 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
           return;
         }
         
-        // Use the first child
-        final firstChild = children.first;
-        final childId = firstChild['id'];
-        
-        // Link parent to child (this is idempotent, won't fail if already linked)
-        try {
-          await ParentAuthService.linkParentChild(parentData['id'], childId, context);
-        } catch (e) {
-          // Ignore if already linked
-          print('Link parent-child: $e');
-        }
-        
-        // Save child ID to state
-        await UserStateService.saveChildId(childId);
-        if (firstChild['username'] != null) {
-          await UserStateService.saveChildName(firstChild['username']);
-        }
-        
-        // Navigate to parent profile page
+        // Always navigate to child selector page, regardless of number of children
         if (mounted) {
           Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const ParentProfilePage()),
+            MaterialPageRoute(builder: (context) => const ParentChildSelectorPage()),
           );
         }
       } else {

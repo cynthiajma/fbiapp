@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/parent_data_service.dart';
 import '../services/user_state_service.dart';
+import '../services/child_data_service.dart';
 import 'parent_view_child_page.dart';
+import 'parent_login_page.dart';
+import 'parent_signup_page.dart';
 
 class ParentChildSelectorPage extends StatefulWidget {
   const ParentChildSelectorPage({super.key});
@@ -53,96 +59,538 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
     }
   }
 
-  void _viewChild(Map<String, dynamic> child) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => ParentViewChildPage(
-          childId: child['id'] as String,
-          childName: child['name'] as String? ?? child['username'] as String,
+  Future<void> _viewChild(Map<String, dynamic> child) async {
+    // Save child to state before navigating to ensure consistency
+    final childId = child['id'] as String;
+    final childName = child['name'] as String? ?? child['username'] as String;
+    
+    await UserStateService.saveChildId(childId);
+    await UserStateService.saveChildName(childName);
+    
+    if (mounted) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => ParentViewChildPage(
+            childId: childId,
+            childName: childName,
+          ),
         ),
+      );
+    }
+  }
+
+  void _showAddParentDialog() {
+    if (_children.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No children available. Please link a child first.')),
+      );
+      return;
+    }
+
+    // Show dialog to select which child to add a parent to
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: const Row(
+            children: [
+              Icon(Icons.family_restroom, color: Color(0xff4a90e2)),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text('Add a Parent'),
+              ),
+            ],
+          ),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Select which child to add a parent to:',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 12),
+                ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: MediaQuery.of(context).size.height * 0.4,
+                  ),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: _children.length,
+                    itemBuilder: (context, index) {
+                      final child = _children[index];
+                      final name = child['name'] as String? ?? child['username'] as String;
+                      return ListTile(
+                        title: Text(name),
+                        onTap: () {
+                          Navigator.of(context).pop();
+                          _showAddParentOptions(child['id'] as String, name);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showAddParentOptions(String childId, String childName) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.family_restroom, color: Color(0xff4a90e2)),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Add Parent to $childName',
+                style: const TextStyle(fontSize: 18),
+              ),
+            ),
+          ],
+        ),
+        content: const Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Choose how to add another parent:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            SizedBox(height: 12),
+            Text(
+              '• Create a new account and link it automatically\n'
+              '• Or login with an existing parent account to link it',
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ParentLoginPage(childIdToLink: childId),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.grey[700],
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Login'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ParentSignupPage(childId: childId),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xff4a90e2),
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Create Account'),
+          ),
+        ],
       ),
     );
+  }
+
+  Future<void> _showExportDialog() async {
+    if (_children.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No children to export')),
+      );
+      return;
+    }
+
+    // Show dialog to select which child to export
+    final selectedChild = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Export Logs as CSV'),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: _children.length,
+              itemBuilder: (context, index) {
+                final child = _children[index];
+                final name = child['name'] as String? ?? child['username'] as String;
+                return ListTile(
+                  title: Text(name),
+                  onTap: () => Navigator.of(context).pop(child),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(null),
+              child: const Text('Cancel'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (selectedChild != null) {
+      await _exportToCsv(selectedChild);
+    }
+  }
+
+  Future<void> _exportToCsv(Map<String, dynamic> child) async {
+    final childId = child['id'] as String;
+    final childName = child['name'] as String? ?? child['username'] as String;
+
+    try {
+      // Show loading indicator
+      if (!mounted) return;
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+
+      // Fetch logs
+      final childLogs = await ChildDataService.getChildLogs(childId, context);
+
+      if (childLogs.isEmpty) {
+        if (!mounted) return;
+        Navigator.of(context).pop(); // Close loading dialog
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('No logs found for this child')),
+        );
+        return;
+      }
+
+      // Generate CSV content
+      final csvBuffer = StringBuffer();
+      
+      // CSV Header
+      csvBuffer.writeln('Log ID,Character Name,Level,Timestamp');
+      
+      // CSV Rows
+      for (final log in childLogs) {
+        final logId = log['id'] ?? '';
+        final charName = log['characterName'] ?? '';
+        final level = log['level'] ?? '';
+        final timestamp = log['timestamp'] ?? '';
+        
+        // Escape commas and quotes in CSV
+        String escapeCsv(String value) {
+          if (value.contains(',') || value.contains('"') || value.contains('\n')) {
+            return '"${value.replaceAll('"', '""')}"';
+          }
+          return value;
+        }
+        
+        csvBuffer.writeln('${escapeCsv(logId.toString())},'
+            '${escapeCsv(charName.toString())},'
+            '${escapeCsv(level.toString())},'
+            '${escapeCsv(timestamp.toString())}');
+      }
+
+      final csvContent = csvBuffer.toString();
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
+      final fileName = 'child_logs_${childName.replaceAll(' ', '_')}_$timestamp.csv';
+
+      // Close loading dialog
+      if (!mounted) return;
+      Navigator.of(context).pop();
+
+      // Save to temporary file and share
+      final directory = await getTemporaryDirectory();
+      final file = File('${directory.path}/$fileName');
+      await file.writeAsString(csvContent);
+      
+      final xFile = XFile(file.path);
+      await Share.shareXFiles(
+        [xFile],
+        subject: 'Child Logs Export - $childName',
+        text: 'Exported logs for $childName',
+      );
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('CSV exported successfully!')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      Navigator.of(context).pop(); // Close loading dialog if open
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error exporting CSV: $e')),
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        scrolledUnderElevation: 0,
-        centerTitle: true,
-        title: const Text(
-          'MY CHILDREN',
-          style: TextStyle(fontWeight: FontWeight.w900, letterSpacing: 2),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.error, size: 64, color: Colors.red[300]),
-                      const SizedBox(height: 16),
-                      Text(
-                        _errorMessage!,
-                        style: TextStyle(color: Colors.red[700], fontSize: 16),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _loadChildren,
-                        child: const Text('Retry'),
-                      ),
-                    ],
-                  ),
-                )
-              : _children.isEmpty
+      body: Stack(
+        children: [
+          // Corkboard background
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/corkboard.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          // Optional semi-transparent overlay
+          Container(color: Colors.brown.withOpacity(0.1)),
+          _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _errorMessage != null
                   ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(
-                            Icons.child_care,
-                            size: 80,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 24),
+                          Icon(Icons.error, size: 64, color: Colors.red[300]),
+                          const SizedBox(height: 16),
                           Text(
-                            'No Children Linked',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[700],
-                            ),
+                            _errorMessage!,
+                            style: TextStyle(color: Colors.red[700], fontSize: 16),
+                            textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: 12),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 48),
-                            child: Text(
-                              'You haven\'t linked any children to your account yet. Create a child account or link an existing one.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.grey[600],
-                              ),
-                            ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _loadChildren,
+                            child: const Text('Retry'),
                           ),
                         ],
                       ),
                     )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _children.length,
-                      itemBuilder: (context, index) {
-                        final child = _children[index];
-                        return _ChildCard(
-                          child: child,
-                          onTap: () => _viewChild(child),
-                        );
-                      },
-                    ),
+                  : _children.isEmpty
+                      ? SafeArea(
+                          child: Center(
+                            child: Transform.rotate(
+                              angle: -1 * 3.1416 / 180,
+                              child: Container(
+                                margin: const EdgeInsets.all(24),
+                                padding: const EdgeInsets.all(32),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.95),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: const [
+                                    BoxShadow(
+                                      offset: Offset(3, 3),
+                                      blurRadius: 5,
+                                      color: Colors.black26,
+                                    ),
+                                  ],
+                                ),
+                                child: Stack(
+                                  children: [
+                                    const Positioned(
+                                      top: 10,
+                                      left: 10,
+                                      child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(top: 24),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.child_care,
+                                            size: 64,
+                                            color: Colors.grey[400],
+                                          ),
+                                          const SizedBox(height: 24),
+                                          Text(
+                                            'No Children Linked',
+                                            style: TextStyle(
+                                              fontFamily: 'SpecialElite',
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.grey[700],
+                                            ),
+                                          ),
+                                          const SizedBox(height: 12),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                                            child: Text(
+                                              'You haven\'t linked any children to your account yet. Create a child account or link an existing one.',
+                                              textAlign: TextAlign.center,
+                                              style: TextStyle(
+                                                fontFamily: 'SpecialElite',
+                                                fontSize: 16,
+                                                color: Colors.grey[600],
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        )
+                      : SafeArea(
+                          child: RefreshIndicator(
+                            onRefresh: _loadChildren,
+                            child: SingleChildScrollView(
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              child: Column(
+                                children: [
+                                  // Top bar
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Container(
+                                        decoration: BoxDecoration(
+                                          color: Colors.white.withOpacity(0.9),
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              offset: const Offset(2, 2),
+                                              blurRadius: 4,
+                                              color: Colors.black.withOpacity(0.2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: IconButton(
+                                          icon: const Icon(Icons.arrow_back, color: Color(0xff4a90e2), size: 24),
+                                          onPressed: () => Navigator.of(context).pop(),
+                                          tooltip: 'Back',
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.person_add, color: Colors.brown),
+                                            onPressed: _showAddParentDialog,
+                                            tooltip: 'Add a parent',
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.download, color: Colors.brown),
+                                            onPressed: _showExportDialog,
+                                            tooltip: 'Export to CSV',
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.refresh, color: Colors.brown),
+                                            onPressed: _loadChildren,
+                                            tooltip: 'Refresh',
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 20),
+                                  // Title
+                                  Transform.rotate(
+                                    angle: -1.5 * 3.1416 / 180,
+                                    child: Container(
+                                      padding: const EdgeInsets.all(20),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFFFF8DC),
+                                        borderRadius: BorderRadius.circular(12),
+                                        boxShadow: const [
+                                          BoxShadow(
+                                            offset: Offset(3, 3),
+                                            blurRadius: 5,
+                                            color: Colors.black26,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Stack(
+                                        children: [
+                                          const Positioned(
+                                            top: 10,
+                                            left: 10,
+                                            child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.only(top: 20),
+                                            child: Column(
+                                              children: [
+                                                const Icon(
+                                                  Icons.family_restroom,
+                                                  size: 48,
+                                                  color: Color(0xff4a90e2),
+                                                ),
+                                                const SizedBox(height: 16),
+                                                Text(
+                                                  'MY CHILDREN',
+                                                  textAlign: TextAlign.center,
+                                                  style: const TextStyle(
+                                                    fontFamily: 'SpecialElite',
+                                                    fontWeight: FontWeight.w700,
+                                                    fontSize: 28,
+                                                    color: Colors.black87,
+                                                    height: 1.1,
+                                                  ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  '${_children.length} ${_children.length == 1 ? 'Child' : 'Children'}',
+                                                  style: TextStyle(
+                                                    fontFamily: 'SpecialElite',
+                                                    fontSize: 14,
+                                                    color: Colors.grey[600],
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 24),
+                                  // Children list
+                                  for (int i = 0; i < _children.length; i++) ...[
+                                    Transform.rotate(
+                                      angle: (i % 2 == 0 ? 1 : -1) * 1.5 * 3.1416 / 180,
+                                      child: _ChildCard(
+                                        child: _children[i],
+                                        onTap: () => _viewChild(_children[i]),
+                                      ),
+                                    ),
+                                    if (i != _children.length - 1) const SizedBox(height: 16),
+                                  ],
+                                  const SizedBox(height: 32),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+        ],
+      ),
     );
   }
 }
@@ -162,72 +610,90 @@ class _ChildCard extends StatelessWidget {
     final username = child['username'] as String;
     final age = child['age'] as int?;
 
-    return Card(
-      elevation: 2,
-      margin: const EdgeInsets.only(bottom: 16),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Row(
-            children: [
-              // Avatar
-              CircleAvatar(
-                radius: 32,
-                backgroundColor: const Color(0xff4a90e2).withOpacity(0.1),
-                child: Icon(
-                  Icons.child_care,
-                  size: 32,
-                  color: const Color(0xff4a90e2),
-                ),
-              ),
-              const SizedBox(width: 16),
-              // Child info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      name,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
-                      ),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: const [
+            BoxShadow(
+              offset: Offset(3, 3),
+              blurRadius: 5,
+              color: Colors.black26,
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            const Positioned(
+              top: 8,
+              left: 10,
+              child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(top: 24),
+              child: Row(
+                children: [
+                  // Avatar
+                  CircleAvatar(
+                    radius: 32,
+                    backgroundColor: const Color(0xff4a90e2).withOpacity(0.1),
+                    child: const Icon(
+                      Icons.child_care,
+                      size: 32,
+                      color: Color(0xff4a90e2),
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '@$username',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                    if (age != null) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        'Age: $age',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
+                  ),
+                  const SizedBox(width: 16),
+                  // Child info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name.toUpperCase(),
+                          style: const TextStyle(
+                            fontFamily: 'SpecialElite',
+                            fontSize: 20,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.black87,
+                          ),
                         ),
-                      ),
-                    ],
-                  ],
-                ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '@$username',
+                          style: TextStyle(
+                            fontFamily: 'SpecialElite',
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                        ),
+                        if (age != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            'Age: $age',
+                            style: TextStyle(
+                              fontFamily: 'SpecialElite',
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  // Arrow
+                  const Icon(
+                    Icons.arrow_forward_ios,
+                    size: 20,
+                    color: Colors.grey,
+                  ),
+                ],
               ),
-              // Arrow
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 20,
-                color: Colors.grey,
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
