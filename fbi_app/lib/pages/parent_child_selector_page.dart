@@ -60,9 +60,6 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
     final childId = child['id'] as String;
     final childName = child['name'] as String? ?? child['username'] as String;
     
-    await UserStateService.saveChildId(childId);
-    await UserStateService.saveChildName(childName);
-    
     if (mounted) {
     Navigator.of(context).push(
       MaterialPageRoute(

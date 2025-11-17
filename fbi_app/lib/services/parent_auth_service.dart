@@ -22,8 +22,8 @@ class ParentAuthService {
   ''';
   
   static const String _requestPasswordResetMutation = '''
-    mutation RequestPasswordReset(\$email: String!) {
-      requestPasswordReset(email: \$email)
+    mutation RequestPasswordReset(\$email: String!, \$childId: ID) {
+      requestPasswordReset(email: \$email, childId: \$childId)
     }
   ''';
   
@@ -133,18 +133,35 @@ class ParentAuthService {
       );
 
       if (result.hasException) {
-        String errorMessage = 'Create parent failed';
-        if (result.exception != null) {
+        // Extract clean error message from GraphQL errors
+        String errorMessage = 'Failed to create parent account';
+        
+        // First try to get message from graphqlErrors
+        if (result.exception?.graphqlErrors.isNotEmpty == true) {
+          errorMessage = result.exception!.graphqlErrors.first.message;
+        } else if (result.exception != null) {
+          // Fallback: try to extract from exception string
           final errorString = result.exception.toString();
+          
+          // Try to extract from GraphQLError format: message: "..."
           final graphqlMatch = RegExp(r'message:\s*"([^"]+)"').firstMatch(errorString);
           if (graphqlMatch != null) {
             errorMessage = graphqlMatch.group(1)!;
           } else {
-            errorMessage = errorString
-                .replaceAll(RegExp(r'^(Exception|Error|GraphQLError|LinkException):\s*'), '')
-                .split('\n')
-                .first
-                .trim();
+            // Try to extract message: ... (without quotes)
+            final messageMatch = RegExp(r'message:\s*([^\n,]+)').firstMatch(errorString);
+            if (messageMatch != null) {
+              errorMessage = messageMatch.group(1)!.trim()
+                .replaceAll('"', '')
+                .replaceAll("'", '');
+            } else {
+              // Fallback: remove common prefixes
+              errorMessage = errorString
+                  .replaceAll(RegExp(r'^(Exception|Error|GraphQLError|LinkException|OperationException):\s*'), '')
+                  .split('\n')
+                  .first
+                  .trim();
+            }
           }
         }
         throw Exception(errorMessage);
@@ -209,7 +226,7 @@ class ParentAuthService {
   }
 
   /// Request password reset email
-  static Future<bool> requestPasswordReset(String email, BuildContext context) async {
+  static Future<bool> requestPasswordReset(String email, BuildContext context, {String? childId}) async {
     try {
       final client = GraphQLProvider.of(context).value;
       
@@ -218,24 +235,39 @@ class ParentAuthService {
           document: gql(_requestPasswordResetMutation),
           variables: {
             'email': email,
+            if (childId != null) 'childId': childId,
           },
         ),
       );
 
       if (result.hasException) {
-        // Extract clean error message
-        String errorMessage = 'No account found with this email address';
-        if (result.exception != null) {
+        // Extract clean error message from GraphQL errors
+        String errorMessage = 'Failed to request password reset';
+        
+        // First try to get message from graphqlErrors
+        if (result.exception?.graphqlErrors.isNotEmpty == true) {
+          errorMessage = result.exception!.graphqlErrors.first.message;
+        } else if (result.exception != null) {
           final errorString = result.exception.toString();
+          
+          // Try to extract from GraphQLError format: message: "..."
           final graphqlMatch = RegExp(r'message:\s*"([^"]+)"').firstMatch(errorString);
           if (graphqlMatch != null) {
             errorMessage = graphqlMatch.group(1)!;
           } else {
-            errorMessage = errorString
-                .replaceAll(RegExp(r'^(Exception|Error|GraphQLError|LinkException):\s*'), '')
-                .split('\n')
-                .first
-                .trim();
+            // Try to extract message: ... (without quotes)
+            final messageMatch = RegExp(r'message:\s*([^\n,]+)').firstMatch(errorString);
+            if (messageMatch != null) {
+              errorMessage = messageMatch.group(1)!.trim()
+                .replaceAll('"', '')
+                .replaceAll("'", '');
+            } else {
+              errorMessage = errorString
+                  .replaceAll(RegExp(r'^(Exception|Error|GraphQLError|LinkException|OperationException):\s*'), '')
+                  .split('\n')
+                  .first
+                  .trim();
+            }
           }
         }
         throw Exception(errorMessage);
