@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:email_validator/email_validator.dart';
 import '../services/parent_auth_service.dart';
+import '../services/user_state_service.dart';
 import 'parent_login_page.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({super.key});
+  final String? childId;
+  
+  const ForgotPasswordPage({super.key, this.childId});
 
   @override
   State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
@@ -56,7 +59,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     });
 
     try {
-      await ParentAuthService.requestPasswordReset(email, context);
+      // Get current child ID - prefer the one passed as parameter, otherwise get from UserStateService
+      final currentChildId = widget.childId ?? await UserStateService.getChildId();
+      await ParentAuthService.requestPasswordReset(email, context, childId: currentChildId);
       
       setState(() {
         _currentStep = 1; // Move to code entry step
@@ -64,7 +69,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       });
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to send reset code. Please try again.';
+        // Extract the actual error message from the exception
+        String errorMsg = e.toString();
+        errorMsg = errorMsg.replaceFirst('Exception: ', '');
+        _errorMessage = errorMsg.isNotEmpty ? errorMsg : 'Failed to send reset code. Please try again.';
         _isLoading = false;
       });
     }
