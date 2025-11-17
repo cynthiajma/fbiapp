@@ -460,7 +460,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Icon(Icons.play_arrow),
+                    : const Icon(Icons.save),
                 label: Text(_isLogging ? 'Saving...' : 'Save'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isLogging
