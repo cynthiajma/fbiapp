@@ -51,8 +51,20 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
       }
       
       // Save the child's data to state
-      await UserStateService.saveChildName(childData['name'] ?? name);
-      await UserStateService.saveChildId(childData['id']);
+      // Note: GraphQL returns 'username', not 'name', so we use the username
+      final childId = childData['id']?.toString() ?? '';
+      final childUsername = childData['username'] ?? name;
+      
+      if (childId.isEmpty) {
+        setState(() {
+          _errorMessage = 'Error: Could not retrieve child ID. Please try again.';
+          _isLoading = false;
+        });
+        return;
+      }
+      
+      await UserStateService.saveChildName(childUsername);
+      await UserStateService.saveChildId(childId);
       
       // Navigate to home page
       if (mounted) {

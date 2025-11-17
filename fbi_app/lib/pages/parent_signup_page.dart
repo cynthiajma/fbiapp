@@ -93,7 +93,6 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
 
     try {
       String? childId = widget.childId; // Use provided childId if available
-      String? childName = _childName;
 
       // If no childId was provided to the widget, check if user entered a child username
       if (childId == null && childUsername.isNotEmpty) {
@@ -106,7 +105,6 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
           return;
         }
         childId = child['id'] as String?;
-        childName = child['name'] as String?;
       }
 
       final parent = await ParentAuthService.createParent(
@@ -129,12 +127,12 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
       await UserStateService.saveParentAuthenticated(true);
       await UserStateService.saveParentId(parent['id']);
 
+      // Note: We do NOT save the childId here because the active child should only be set
+      // when a child actually logs in, not when a parent signs up and links to a child.
+      // This preserves the originally logged-in child's ID.
+      
       if (childId != null) {
-        // If linked to a child, save child state and go back
-        await UserStateService.saveChildId(childId);
-        if (childName != null && childName.isNotEmpty) {
-          await UserStateService.saveChildName(childName);
-        }
+        // Parent is linked to child, but we don't change the active logged-in child
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -163,7 +161,25 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
     } catch (e) {
       setState(() {
         String msg = e.toString().replaceFirst('Exception: ', '');
-        _errorMessage = msg;
+        
+        // Provide user-friendly error messages for common cases
+        if (msg.toLowerCase().contains('email') && 
+            (msg.toLowerCase().contains('already') || 
+             msg.toLowerCase().contains('registered') ||
+             msg.toLowerCase().contains('exists') ||
+             msg.toLowerCase().contains('duplicate'))) {
+          _errorMessage = 'This email address is already registered. Please use a different email or try logging in instead.';
+        } else if ((msg.toLowerCase().contains('username') && 
+                   (msg.toLowerCase().contains('already') || 
+                    msg.toLowerCase().contains('taken') ||
+                    msg.toLowerCase().contains('duplicate'))) ||
+                   msg.toLowerCase().contains('duplicate key') ||
+                   msg.toLowerCase().contains('unique constraint')) {
+          _errorMessage = 'This username is already taken. Please choose a different username.';
+        } else {
+          _errorMessage = msg;
+        }
+        
         _isLoading = false;
       });
     }

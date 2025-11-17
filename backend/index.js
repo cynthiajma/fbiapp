@@ -21,7 +21,7 @@ const typeDefs = gql`
     createParent(username: String!, email: String!, password: String!, childId: ID): Parent
     loginParent(username: String!, password: String!): Parent
     linkParentChild(parentId: ID!, childId: ID!): Boolean
-    requestPasswordReset(email: String!): Boolean
+    requestPasswordReset(email: String!, childId: ID): Boolean
     resetPassword(token: String!, newPassword: String!): Boolean
   }
 
@@ -192,6 +192,15 @@ const resolvers = {
       };
     },
     createParent: async (_, { username, email, password, childId }) => {
+      // Check if username already exists
+      const usernameCheck = await pool.query(
+        'SELECT parent_id FROM parents WHERE parent_username = $1',
+        [username]
+      );
+      if (usernameCheck.rows.length > 0) {
+        throw new Error('Username already taken');
+      }
+      
       // Check if email already exists
       const emailCheck = await pool.query(
         'SELECT parent_id FROM parents WHERE parent_email = $1',
@@ -202,10 +211,27 @@ const resolvers = {
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
-      const result = await pool.query(
-        'INSERT INTO parents (parent_username, parent_email, hashed_password) VALUES ($1, $2, $3) RETURNING parent_id, parent_username, parent_email',
-        [username, email, hashedPassword]
-      );
+      
+      let result;
+      try {
+        result = await pool.query(
+          'INSERT INTO parents (parent_username, parent_email, hashed_password) VALUES ($1, $2, $3) RETURNING parent_id, parent_username, parent_email',
+          [username, email, hashedPassword]
+        );
+      } catch (dbError) {
+        // Catch database constraint violations (race conditions, etc.)
+        if (dbError.code === '23505') { // PostgreSQL unique violation error code
+          const constraint = dbError.constraint || '';
+          if (constraint.includes('parent_username') || dbError.detail?.includes('parent_username')) {
+            throw new Error('Username already taken');
+          } else if (constraint.includes('parent_email') || dbError.detail?.includes('parent_email')) {
+            throw new Error('Email address already registered');
+          }
+        }
+        // Re-throw if it's not a constraint violation we can handle
+        throw dbError;
+      }
+      
       const parent = result.rows[0];
       
       // Auto-link to child if childId is provided
@@ -294,7 +320,7 @@ const resolvers = {
         throw error;
       }
     },
-    requestPasswordReset: async (_, { email }) => {
+    requestPasswordReset: async (_, { email, childId }) => {
       try {
         // Find parent by email
         const result = await pool.query(
@@ -309,6 +335,19 @@ const resolvers = {
         }
         
         const parent = result.rows[0];
+        
+        // Verify that the parent is linked to this child
+        if (childId) {
+          const linkCheck = await pool.query(
+            'SELECT parent_id FROM parent_child_link WHERE parent_id = $1 AND child_id = $2',
+            [parent.parent_id, childId]
+          );
+          
+          if (linkCheck.rows.length === 0) {
+            console.log('Password reset denied: Parent not linked to child', { parentId: parent.parent_id, childId });
+            throw new Error('This parent is not linked to the current child.');
+          }
+        }
         
         // Generate 6-digit numerical code
         const resetCode = Math.floor(100000 + Math.random() * 900000).toString();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/parent_auth_service.dart';
 import '../services/parent_data_service.dart';
+import '../services/child_auth_service.dart';
 import 'parent_child_selector_page.dart';
 import 'forgot_password_page.dart';
 
@@ -72,8 +73,10 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
               context
             );
             
-            // Save this child as the active child
-            await UserStateService.saveChildId(widget.childIdToLink!);
+            // Note: We do NOT save the childIdToLink as the active child here
+            // because the active child should only be set when a child actually logs in,
+            // not when a parent is being added to a different child's profile.
+            // This preserves the originally logged-in child's ID.
             
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
@@ -106,8 +109,17 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
           );
           
           if (!isLinked) {
-            // Get child name for better error message
-            final childName = await UserStateService.getChildName() ?? 'this child';
+            // Get child name from database using child ID to ensure accuracy
+            String childName = 'this child';
+            try {
+              final childData = await ChildAuthService.getChildById(currentChildId, context);
+              if (childData != null) {
+                childName = childData['username'] ?? currentChildId;
+              }
+            } catch (e) {
+              // Fallback to stored name if fetch fails
+              childName = await UserStateService.getChildName() ?? 'this child';
+            }
             setState(() {
               _errorMessage = 'This parent account is not linked to $childName. Please use a parent account that is already associated with the current child, or ask an existing parent to add you.';
               _isLoading = false;
@@ -355,10 +367,16 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                         const SizedBox(height: 12),
                         // Forgot password link
                         TextButton(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const ForgotPasswordPage()),
-                            );
+                          onPressed: () async {
+                            // Get the current child ID to pass to forgot password page
+                            final currentChildId = await UserStateService.getChildId();
+                            if (mounted) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ForgotPasswordPage(childId: currentChildId),
+                                ),
+                              );
+                            }
                           },
                           child: const Text(
                             'Forgot Password?',
