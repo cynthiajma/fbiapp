@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> {
                                 icon: const Icon(Icons.family_restroom, color: Colors.white, size: 26),
                                 onPressed: () {
                                   Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const ParentLoginPage()),
+                                    MaterialPageRoute(builder: (_) => ParentLoginPage()),
                                   );
                                 },
                                 tooltip: 'Parent Access',

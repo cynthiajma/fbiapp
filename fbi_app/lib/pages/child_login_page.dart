@@ -248,7 +248,7 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                   OutlinedButton.icon(
                     onPressed: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(builder: (_) => const ParentLoginPage()),
+                        MaterialPageRoute(builder: (_) => ParentLoginPage()),
                       );
                     },
                     style: OutlinedButton.styleFrom(

@@ -87,7 +87,7 @@ class _ResetPasswordPageState extends State<ResetPasswordPage> {
       Future.delayed(const Duration(seconds: 2), () {
         if (mounted) {
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const ParentLoginPage()),
+            MaterialPageRoute(builder: (_) => ParentLoginPage()),
             (route) => false,
           );
         }
