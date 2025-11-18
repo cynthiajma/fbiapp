@@ -24,6 +24,8 @@ class ProgressRing extends StatelessWidget {
           CircularProgressIndicator(
             value: v,
             strokeWidth: stroke,
+            color: const Color.fromARGB(255, 84, 58, 50),
+            backgroundColor: const Color.fromARGB(255, 216, 187, 179),
           ),
           Container(
             height: size - stroke * 2,
