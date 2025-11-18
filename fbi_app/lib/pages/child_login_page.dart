@@ -107,8 +107,13 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) => const LoginSelectionPage(),
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => const LoginSelectionPage(),
+                              transitionDuration: const Duration(milliseconds: 300),
+                              reverseTransitionDuration: const Duration(milliseconds: 300),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                return child;
+                              },
                             ),
                           );
                         },
