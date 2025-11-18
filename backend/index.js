@@ -1,6 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server');
 const { pool } = require('./db');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { sendPasswordResetEmail } = require('./email-config');
 
@@ -113,12 +113,18 @@ const resolvers = {
       };
     },
     parentChildren: async (_, { parentId }) => {
+      // Convert string ID to integer for database query
+      const parentIdInt = parseInt(parentId, 10);
+      if (isNaN(parentIdInt)) {
+        return [];
+      }
+      
       const result = await pool.query(`
         SELECT c.child_id, c.child_username, c.child_age 
         FROM children c
         JOIN parent_child_link pcl ON c.child_id = pcl.child_id
         WHERE pcl.parent_id = $1
-      `, [parentId]);
+      `, [parentIdInt]);
       
       return result.rows.map(child => ({
         id: child.child_id.toString(),
@@ -149,9 +155,17 @@ const resolvers = {
       }));
     },
     isParentLinkedToChild: async (_, { parentId, childId }) => {
+      // Convert string IDs to integers for database queries
+      const parentIdInt = parseInt(parentId, 10);
+      const childIdInt = parseInt(childId, 10);
+      
+      if (isNaN(parentIdInt) || isNaN(childIdInt)) {
+        return false;
+      }
+      
       const result = await pool.query(
         'SELECT parent_id FROM parent_child_link WHERE parent_id = $1 AND child_id = $2',
-        [parentId, childId]
+        [parentIdInt, childIdInt]
       );
       return result.rows.length > 0;
     },
@@ -237,12 +251,30 @@ const resolvers = {
       // Auto-link to child if childId is provided
       if (childId) {
         try {
-          await pool.query(
-            'INSERT INTO parent_child_link (parent_id, child_id) VALUES ($1, $2)',
-            [parent.parent_id, childId]
-          );
+          // Convert string childId to integer for database query
+          const childIdInt = parseInt(childId, 10);
+          if (isNaN(childIdInt)) {
+            console.error(`Invalid childId provided: ${childId}`);
+          } else {
+            // Check if link already exists
+            const existingLink = await pool.query(
+              'SELECT parent_id FROM parent_child_link WHERE parent_id = $1 AND child_id = $2',
+              [parent.parent_id, childIdInt]
+            );
+            
+            if (existingLink.rows.length === 0) {
+              await pool.query(
+                'INSERT INTO parent_child_link (parent_id, child_id) VALUES ($1, $2)',
+                [parent.parent_id, childIdInt]
+              );
+              console.log(`✓ Auto-linked parent ${parent.parent_id} to child ${childIdInt}`);
+            } else {
+              console.log(`Link already exists between parent ${parent.parent_id} and child ${childIdInt}`);
+            }
+          }
         } catch (error) {
           console.error('Error auto-linking parent and child:', error);
+          // Don't throw - parent account is created, link can be added later
         }
       }
 
@@ -277,10 +309,18 @@ const resolvers = {
     },
     linkParentChild: async (_, { parentId, childId }) => {
       try {
+        // Convert string IDs to integers for database queries
+        const parentIdInt = parseInt(parentId, 10);
+        const childIdInt = parseInt(childId, 10);
+        
+        if (isNaN(parentIdInt) || isNaN(childIdInt)) {
+          throw new Error('Invalid parent or child ID');
+        }
+        
         // Verify parent exists
         const parentCheck = await pool.query(
           'SELECT parent_id FROM parents WHERE parent_id = $1',
-          [parentId]
+          [parentIdInt]
         );
         if (parentCheck.rows.length === 0) {
           throw new Error('Parent account not found');
@@ -289,7 +329,7 @@ const resolvers = {
         // Verify child exists
         const childCheck = await pool.query(
           'SELECT child_id FROM children WHERE child_id = $1',
-          [childId]
+          [childIdInt]
         );
         if (childCheck.rows.length === 0) {
           throw new Error('Child account not found');
@@ -298,7 +338,7 @@ const resolvers = {
         // Check if this link already exists
         const existingLink = await pool.query(
           'SELECT parent_id FROM parent_child_link WHERE parent_id = $1 AND child_id = $2',
-          [parentId, childId]
+          [parentIdInt, childIdInt]
         );
         
         if (existingLink.rows.length === 0) {
@@ -307,11 +347,11 @@ const resolvers = {
           // In production, consider adding: child approval, invitation codes, or email verification
           await pool.query(
             'INSERT INTO parent_child_link (parent_id, child_id) VALUES ($1, $2)',
-            [parentId, childId]
+            [parentIdInt, childIdInt]
           );
-          console.log(`✓ Linked parent ${parentId} to child ${childId}`);
+          console.log(`✓ Linked parent ${parentIdInt} to child ${childIdInt}`);
         } else {
-          console.log(`Link already exists between parent ${parentId} and child ${childId}`);
+          console.log(`Link already exists between parent ${parentIdInt} and child ${childIdInt}`);
         }
         
         return true;

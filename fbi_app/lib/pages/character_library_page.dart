@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'heartbeat.dart';
-import 'services/character_service.dart';
+import 'heartbeat_page.dart';
+import '../services/character_service.dart';
 
 
 class CharacterLibraryPage extends StatefulWidget {

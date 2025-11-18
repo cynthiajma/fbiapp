@@ -1,0 +1,6 @@
+# Test configuration file for Flutter tests
+tags:
+  integration:
+    description: Integration tests that require backend services
+    # These tests will be skipped by default unless explicitly run with --tags integration
+

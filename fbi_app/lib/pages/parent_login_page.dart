@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/parent_auth_service.dart';
 import '../services/parent_data_service.dart';
-import '../services/child_auth_service.dart';
 import 'parent_child_selector_page.dart';
 import 'forgot_password_page.dart';
 
@@ -57,11 +56,8 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
       final parentData = await ParentAuthService.loginParent(username, password, context);
       
       if (parentData != null) {
-        // Check if there's a currently logged-in child
-        final currentChildId = await UserStateService.getChildId();
-        
         // If childIdToLink is provided, we're in "add another parent" mode
-        // In this case, allow linking even if not already linked
+        // This is used when adding a parent from the parent child selector page
         if (widget.childIdToLink != null) {
           // Save parent authentication state
           await UserStateService.saveParentAuthenticated(true);
@@ -87,8 +83,9 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                 ),
               );
               
-              // Just pop back - the parent profile page should reload automatically
-              Navigator.of(context).pop();
+              // Pop back with a result to indicate that linking was successful
+              // This will trigger a reload in the parent child selector page
+              Navigator.of(context).pop(true);
             }
           } catch (e) {
             setState(() {
@@ -99,40 +96,11 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
           return;
         }
         
-        // If a child is logged in (but not in "add another parent" mode), 
-        // verify parent is linked to this child
-        if (currentChildId != null) {
-          final isLinked = await ParentDataService.isParentLinkedToChild(
-            parentData['id'],
-            currentChildId,
-            context,
-          );
-          
-          if (!isLinked) {
-            // Get child name from database using child ID to ensure accuracy
-            String childName = 'this child';
-            try {
-              final childData = await ChildAuthService.getChildById(currentChildId, context);
-              if (childData != null) {
-                childName = childData['username'] ?? currentChildId;
-              }
-            } catch (e) {
-              // Fallback to stored name if fetch fails
-              childName = await UserStateService.getChildName() ?? 'this child';
-            }
-            setState(() {
-              _errorMessage = 'This parent account is not linked to $childName. Please use a parent account that is already associated with the current child, or ask an existing parent to add you.';
-              _isLoading = false;
-            });
-            return;
-          }
-        }
-        
+        // Normal parent login flow (from home page only)
         // Save parent authentication state
         await UserStateService.saveParentAuthenticated(true);
         await UserStateService.saveParentId(parentData['id']);
         
-        // Normal login flow (no specific child to link)
         // Get parent's children from database
         final children = await ParentAuthService.getParentChildren(parentData['id'], context);
         
@@ -144,7 +112,6 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
           return;
         }
         
-        // Always navigate to child selector page, regardless of number of children
         if (mounted) {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const ParentChildSelectorPage()),
@@ -186,6 +153,29 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Back Button
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        icon: const Icon(Icons.arrow_back, size: 18),
+                        label: const Text('Back'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white.withOpacity(0.9),
+                          foregroundColor: Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 2,
+                        ),
+                      ),
+                    ),
+                  ),
                   // Parent Icon
                   Container(
                     padding: const EdgeInsets.all(24),
@@ -367,13 +357,12 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                         const SizedBox(height: 12),
                         // Forgot password link
                         TextButton(
-                          onPressed: () async {
-                            // Get the current child ID to pass to forgot password page
-                            final currentChildId = await UserStateService.getChildId();
+                          onPressed: () {
+                            // Parent login is independent of child login, so pass null for childId
                             if (mounted) {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
-                                  builder: (_) => ForgotPasswordPage(childId: currentChildId),
+                                  builder: (_) => const ForgotPasswordPage(childId: null),
                                 ),
                               );
                             }
@@ -388,22 +377,6 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                           ),
                         ),
                       ],
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  
-                  // Back to child mode button
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text(
-                      'Back to Child Mode',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.black87,
-                        decoration: TextDecoration.underline,
-                      ),
                     ),
                   ),
                   const SizedBox(height: 20),

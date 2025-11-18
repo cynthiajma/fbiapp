@@ -143,8 +143,9 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
             ),
           );
           
-          // Pop back to the previous page (parent profile)
-          Navigator.of(context).pop();
+          // Pop back with a result to indicate that linking was successful
+          // This will trigger a reload in the parent child selector page
+          Navigator.of(context).pop(true);
         }
       } else {
         // If not linked, send them to login with a hint
@@ -153,7 +154,7 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
             const SnackBar(content: Text('Account created! Now log in and link a child.')),
           );
           Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const ParentLoginPage()),
+            MaterialPageRoute(builder: (_) => ParentLoginPage()),
             (route) => false,
           );
         }
@@ -396,7 +397,7 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
                         TextButton(
                           onPressed: () {
                             Navigator.of(context).pushReplacement(
-                              MaterialPageRoute(builder: (_) => const ParentLoginPage()),
+                              MaterialPageRoute(builder: (_) => ParentLoginPage()),
                             );
                           },
                           child: const Text('Already have an account? Log in'),

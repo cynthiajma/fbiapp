@@ -1,0 +1,87 @@
+# GitLab CI/CD Pipeline Configuration
+# This pipeline runs tests for the Flutter application
+
+stages:
+  - test
+  - build
+
+# Cache Flutter dependencies to speed up pipeline
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - fbi_app/.dart_tool/
+    - fbi_app/.pub-cache/
+
+# Variables for Flutter
+variables:
+  FLUTTER_ROOT: "/opt/flutter"
+  FLUTTER_VERSION: "stable"
+
+# Test stage - Run Flutter tests
+test:flutter:
+  stage: test
+  image: ghcr.io/cirruslabs/flutter:3.38.1
+  before_script:
+    - cd fbi_app
+    - flutter pub get
+    - flutter doctor
+  script:
+    - flutter test --exclude-tags integration --reporter expanded
+  only:
+    - merge_requests
+    - main
+    - develop
+    - branches
+
+# Build stage - Build Flutter app (optional, can be enabled when needed)
+build:android:
+  stage: build
+  image: ghcr.io/cirruslabs/flutter:3.38.1
+  before_script:
+    - cd fbi_app
+    - flutter pub get
+  script:
+    - flutter build apk --release
+  artifacts:
+    paths:
+      - fbi_app/build/app/outputs/flutter-apk/*.apk
+    expire_in: 1 week
+  only:
+    - main
+    - tags
+  when: manual
+
+build:ios:
+  stage: build
+  image: ghcr.io/cirruslabs/flutter:3.38.1
+  before_script:
+    - cd fbi_app
+    - flutter pub get
+  script:
+    - flutter build ios --release --no-codesign
+  artifacts:
+    paths:
+      - fbi_app/build/ios/iphoneos/*.app
+    expire_in: 1 week
+  only:
+    - main
+    - tags
+  when: manual
+
+build:web:
+  stage: build
+  image: ghcr.io/cirruslabs/flutter:3.38.1
+  before_script:
+    - cd fbi_app
+    - flutter pub get
+  script:
+    - flutter build web --release
+  artifacts:
+    paths:
+      - fbi_app/build/web/
+    expire_in: 1 week
+  only:
+    - main
+    - tags
+  when: manual
+

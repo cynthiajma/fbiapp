@@ -1,8 +1,10 @@
+import 'package:fbi_app/pages/parent_login_page.dart';
 import 'package:flutter/material.dart';
 import '../services/user_state_service.dart';
 import '../services/child_auth_service.dart';
-import '../home.dart';
+import 'home_page.dart';
 import 'child_signup_page.dart';
+import 'login_selection_page.dart';
 
 class ChildLoginPage extends StatefulWidget {
   const ChildLoginPage({super.key});
@@ -97,6 +99,38 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Back Button
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation, secondaryAnimation) => const LoginSelectionPage(),
+                              transitionDuration: const Duration(milliseconds: 300),
+                              reverseTransitionDuration: const Duration(milliseconds: 300),
+                              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                return child;
+                              },
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_back, size: 18),
+                        label: const Text('Back'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white.withOpacity(0.9),
+                          foregroundColor: Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 2,
+                        ),
+                      ),
+                    ),
+                  ),
                   // Logo or Image
                   Container(
                     padding: const EdgeInsets.all(24),
@@ -127,7 +161,7 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Text(
-                      'FBI Feelings and Body Investigation',
+                      'FBI Feelings and Body Investigators',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
@@ -243,7 +277,6 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8),
                   
                   // Optional: Fun fact or instruction
                   Transform.rotate(
