@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/child_data_service.dart';
+import '../services/avatar_storage_service.dart';
 import '../features/character.dart';
 import '../widgets/char_row.dart';
 
@@ -25,6 +27,7 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
   List<Character> _characters = [];
   bool _isLoading = true;
   String? _errorMessage;
+  String? _avatarSvg;
 
   @override
   void initState() {
@@ -83,8 +86,12 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
         );
       }).toList();
 
+      // Load child's avatar
+      final avatarSvg = await AvatarStorageService.getAvatarSvg(widget.childId);
+
       setState(() {
         _characters = characters;
+        _avatarSvg = avatarSvg;
         _isLoading = false;
       });
     } catch (e) {
@@ -243,11 +250,7 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
                                     Column(
                                       children: [
                                         const SizedBox(height: 20),
-                                        CircleAvatar(
-                                          radius: 50,
-                                          backgroundColor: Colors.grey[300],
-                                          child: const Icon(Icons.child_care, size: 50, color: Colors.white),
-                                        ),
+                                        _ChildAvatar(svgData: _avatarSvg, size: 50),
                                         const SizedBox(height: 16),
                                         Text(
                                           _childName.toUpperCase(),
@@ -590,6 +593,70 @@ class _PinnedStatsNote extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChildAvatar extends StatelessWidget {
+  final String? svgData;
+  final double size;
+  const _ChildAvatar({required this.svgData, this.size = 32});
+
+  @override
+  Widget build(BuildContext context) {
+    if (svgData == null || svgData!.isEmpty) {
+      return CircleAvatar(
+        radius: size,
+        backgroundColor: const Color(0xff4a90e2).withOpacity(0.1),
+        child: Icon(
+          Icons.child_care,
+          size: size,
+          color: const Color(0xff4a90e2),
+        ),
+      );
+    }
+
+    return Container(
+      width: size * 2,
+      height: size * 2,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            offset: const Offset(2, 2),
+            blurRadius: 4,
+            color: Colors.black.withOpacity(0.15),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Builder(
+          builder: (context) {
+            try {
+              return SvgPicture.string(
+                svgData!,
+                fit: BoxFit.cover,
+                placeholderBuilder: (context) => const Center(
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                colorFilter: null,
+              );
+            } catch (e) {
+              // If SVG fails to render, show default icon
+              return Icon(
+                Icons.child_care,
+                size: size,
+                color: const Color(0xff4a90e2),
+              );
+            }
+          },
         ),
       ),
     );

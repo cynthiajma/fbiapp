@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:fluttermoji/fluttermoji.dart';
+import 'package:fluttermoji/fluttermojiFunctions.dart';
 import 'package:get/get.dart';
 import '../services/user_state_service.dart';
 import '../services/child_data_service.dart';
+import '../services/avatar_storage_service.dart';
 import '../features/character.dart';
 import '../widgets/char_row.dart';
 
@@ -533,10 +535,20 @@ class _AvatarCustomizationPage extends StatelessWidget {
               ],
             ),
             child: GestureDetector(
-              onTap: () {
-                // Save the avatar
+              onTap: () async {
                 final controller = Get.find<FluttermojiController>();
-                controller.setFluttermoji();
+                await controller.setFluttermoji();
+                final childId = await UserStateService.getChildId();
+                if (childId != null) {
+                  // Get the options directly from the controller after saving
+                  final avatarOptions = await FluttermojiFunctions().encodeMySVGtoString();
+                  if (avatarOptions.isNotEmpty) {
+                    await AvatarStorageService.saveAvatarOptions(
+                      childId,
+                      avatarOptions,
+                    );
+                  }
+                }
                 Navigator.of(context).pop();
               },
               child: Container(
