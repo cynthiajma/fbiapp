@@ -127,7 +127,7 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Text(
-                      'FBI Feelings and Body Investigation',
+                      'FBI Feelings and Body Investigators',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 24,
