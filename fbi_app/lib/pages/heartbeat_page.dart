@@ -132,7 +132,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
           const SnackBar(
             content: Text('Audio playing...'),
             duration: Duration(seconds: 2), 
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.blue,
           ),
         );
       }
@@ -155,7 +155,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error playing audio: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.orange,
           ),
         );
       }
@@ -231,7 +231,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Feeling logged successfully!'),
-            backgroundColor: Colors.green,
+            backgroundColor: Colors.blue,
           ),
         );
       }
@@ -240,7 +240,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error logging feeling: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: Colors.orange,
           ),
         );
       }
@@ -411,7 +411,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
                 children: const [
                   Row(
                     children: [
-                      Icon(Icons.emoji_nature_rounded, color: Colors.red),
+                      Icon(Icons.emoji_nature_rounded, color: Color(0xFF4A90E2)),
                       SizedBox(width: 5),
                       Text('SLOW LIKE A TURTLE'),
                     ],
@@ -420,7 +420,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
                     children: [
                       Text('FAST LIKE A RABBIT'),
                       SizedBox(width: 5),
-                      Icon(Icons.pets_rounded, color: Colors.red),
+                      Icon(Icons.pets_rounded, color: Color(0xFF9B59B6)),
                     ],
                   ),
                 ],
@@ -431,8 +431,8 @@ class _HeartbeatPageState extends State<HeartbeatPage>
                 min: 0,
                 max: 1,
                 divisions: 5,
-                activeColor: Colors.redAccent,
-                inactiveColor: Colors.red[100],
+                activeColor: const Color(0xFF4A90E2),
+                inactiveColor: const Color(0xFFB0D4F1),
               ),
               const SizedBox(height: 20),
               Container(
@@ -460,13 +460,13 @@ class _HeartbeatPageState extends State<HeartbeatPage>
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Icon(Icons.play_arrow),
+                    : const Icon(Icons.save),
                 label: Text(_isLogging ? 'Saving...' : 'Save'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isLogging
                       ? Colors.grey
-                      : Colors.greenAccent,
-                  foregroundColor: Colors.black,
+                      : const Color(0xFF4A90E2),
+                  foregroundColor: Colors.white,
                   disabledBackgroundColor: Colors.grey,
                   disabledForegroundColor: Colors.white,
                   shape: RoundedRectangleBorder(

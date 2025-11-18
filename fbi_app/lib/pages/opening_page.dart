@@ -21,10 +21,10 @@ class _OpeningPageState extends State<OpeningPage>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 3),
     );
 
-    _angle = Tween(begin: 0.0, end: -pi / 2).animate(
+    _angle = Tween(begin: 0.0, end: pi / 1).animate(
       CurvedAnimation(
         parent: _controller,
         curve: Curves.easeInOut,
@@ -105,28 +105,7 @@ class _OpeningPageState extends State<OpeningPage>
                 ),
 
                 // Top lid (rotates open)
-                Transform(
-                  alignment: Alignment.bottomCenter,
-                  transform: Matrix4.identity()
-                    ..setEntry(3, 2, 0.0015)
-                    ..rotateX(_angle.value),
-                  child: Container(
-                    width: briefcaseWidth,
-                    height: briefcaseHeight,
-                    decoration: BoxDecoration(
-                      color: Colors.brown[900],
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Colors.black38,
-                          blurRadius: 12,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
+                
                 // Handle
                 Positioned(
                   top: -briefcaseHeight * 0.15, // slightly above lid
@@ -196,6 +175,28 @@ class _OpeningPageState extends State<OpeningPage>
                     ),
                   ),
                 ),
+                Transform(
+                  alignment: Alignment.bottomCenter,
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.0015)
+                    ..rotateX(_angle.value),
+                  child: Container(
+                    width: briefcaseWidth,
+                    height: briefcaseHeight,
+                    decoration: BoxDecoration(
+                      color: Colors.brown[900],
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black38,
+                          blurRadius: 12,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
               ],
             );
           },
