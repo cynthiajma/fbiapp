@@ -145,17 +145,64 @@ class _MemoryGamePageState extends State<MemoryGamePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Memory Match Game'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _resetGame,
-            tooltip: 'New Game',
+      body: Stack(
+        children: [
+          // Corkboard background
+          Container(
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/corkboard.jpg'),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+
+          // Optional semi-transparent overlay
+          Container(color: Colors.brown.withOpacity(0.1)),
+
+          // Red strings connecting elements
+          CustomPaint(
+            painter: _RedStringPainter(),
+            child: Container(),
+          ),
+
+          SafeArea(
+            child: Column(
+              children: [
+                // Top bar with back button and refresh
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: Colors.black87),
+                        onPressed: () => Navigator.of(context).pop(),
+                        tooltip: 'Back',
+                      ),
+                      const Text(
+                        'Character Matching',
+                        style: TextStyle(
+                          fontFamily: 'SpecialElite',
+                          fontSize: 24,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.refresh, color: Colors.black87),
+                        onPressed: _resetGame,
+                        tooltip: 'New Game',
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(child: _buildBody()),
+              ],
+            ),
           ),
         ],
       ),
-      body: _buildBody(),
     );
   }
 
@@ -193,44 +240,86 @@ class _MemoryGamePageState extends State<MemoryGamePage> {
 
     if (isGameWon) {
       return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.celebration, size: 100, color: Colors.amber),
-            const SizedBox(height: 24),
-            const Text(
-              'Congratulations!',
-              style: TextStyle(
-                fontSize: 32,
-                fontWeight: FontWeight.bold,
-                color: Colors.green,
-              ),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Transform.rotate(
+                  angle: -2 * 3.1416 / 180,
+                  child: Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF8DC),
+                      borderRadius: BorderRadius.circular(4),
+                      boxShadow: const [
+                        BoxShadow(
+                          offset: Offset(3, 3),
+                          blurRadius: 5,
+                          color: Colors.black26,
+                        ),
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        const Positioned(
+                          top: 6,
+                          left: 10,
+                          child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+                        ),
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.celebration, size: 80, color: Colors.amber),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Case Solved!',
+                              style: TextStyle(
+                                fontFamily: 'SpecialElite',
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'You matched all pairs in $moves moves!',
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontFamily: 'SpecialElite',
+                                fontSize: 18,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                _PinnedNoteButton(
+                  text: 'Play Again',
+                  color: const Color(0xFFFFF8DC),
+                  rotation: 1.5,
+                  width: 180,
+                  height: 60,
+                  onTap: _resetGame,
+                ),
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              'You matched all pairs in $moves moves!',
-              style: const TextStyle(fontSize: 18),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: _resetGame,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Play Again'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-            ),
-          ],
+          ),
         ),
       );
     }
 
     return Column(
       children: [
-        // Score/Moves display
-        Container(
-          padding: const EdgeInsets.all(16),
-          color: Colors.blue.shade50,
+        const SizedBox(height: 8),
+        // Score/Moves display - styled as pinned notes
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
@@ -239,16 +328,17 @@ class _MemoryGamePageState extends State<MemoryGamePage> {
             ],
           ),
         ),
+        const SizedBox(height: 8),
         // Game grid
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 4,
                 crossAxisSpacing: 8,
                 mainAxisSpacing: 8,
-                childAspectRatio: 0.75,
+                childAspectRatio: 0.85,
               ),
               itemCount: cards.length,
               itemBuilder: (context, index) {
@@ -261,29 +351,124 @@ class _MemoryGamePageState extends State<MemoryGamePage> {
             ),
           ),
         ),
+        const SizedBox(height: 8),
       ],
     );
   }
 
   Widget _buildStatCard(String label, String value) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Colors.blue,
+    return Transform.rotate(
+      angle: (Random().nextDouble() * 4 - 2) * 3.1416 / 180, // Random rotation between -2 and 2 degrees
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFFF8DC),
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: const [
+            BoxShadow(
+              offset: Offset(2, 2),
+              blurRadius: 4,
+              color: Colors.black26,
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            const Positioned(
+              top: 4,
+              left: 4,
+              child: Icon(Icons.push_pin, color: Colors.redAccent, size: 16),
+            ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontFamily: 'SpecialElite',
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontFamily: 'SpecialElite',
+                    fontSize: 12,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PinnedNoteButton extends StatelessWidget {
+  final String text;
+  final Color color;
+  final double rotation;
+  final VoidCallback onTap;
+  final double? width;
+  final double? height;
+
+  const _PinnedNoteButton({
+    required this.text,
+    required this.color,
+    required this.rotation,
+    required this.onTap,
+    this.width,
+    this.height,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.rotate(
+      angle: rotation * 3.1416 / 180,
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          width: width ?? double.infinity,
+          height: height ?? 64,
+          margin: const EdgeInsets.symmetric(vertical: 6),
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: const [
+              BoxShadow(
+                offset: Offset(3, 3),
+                blurRadius: 5,
+                color: Colors.black26,
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              const Positioned(
+                top: 6,
+                left: 10,
+                child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+              ),
+              Center(
+                child: Text(
+                  text,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'SpecialElite',
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        Text(
-          label,
-          style: const TextStyle(
-            fontSize: 14,
-            color: Colors.grey,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -319,17 +504,17 @@ class _MemoryCard extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(4),
+          boxShadow: const [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 4,
-              offset: const Offset(2, 2),
+              offset: Offset(3, 3),
+              blurRadius: 5,
+              color: Colors.black26,
             ),
           ],
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(4),
           child: isFlipped ? _buildFlippedCard() : _buildBackCard(),
         ),
       ),
@@ -338,41 +523,67 @@ class _MemoryCard extends StatelessWidget {
 
   Widget _buildBackCard() {
     return Container(
-      color: const Color(0xFF4A90E2),
-      child: const Center(
-        child: Icon(
-          Icons.help_outline,
-          size: 40,
-          color: Colors.white,
-        ),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8DC),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Stack(
+        children: [
+          const Positioned(
+            top: 6,
+            left: 10,
+            child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+          ),
+          const Center(
+            child: Icon(
+              Icons.help_outline,
+              size: 30,
+              color: Colors.black87,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildFlippedCard() {
     return Container(
-      color: Colors.white,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8DC),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Stack(
         children: [
+          const Positioned(
+            top: 6,
+            left: 10,
+            child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+          ),
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.all(4.0),
               child: _buildCharacterImage(),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(bottom: 8.0),
+            padding: const EdgeInsets.only(bottom: 4.0),
             child: Text(
               card.character.name,
               textAlign: TextAlign.center,
               style: const TextStyle(
-                fontSize: 12,
+                fontFamily: 'SpecialElite',
+                fontSize: 10,
                 fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
+          ),
+            ],
           ),
         ],
       ),
@@ -398,10 +609,44 @@ class _MemoryCard extends StatelessWidget {
       color: Colors.grey.shade200,
       child: const Icon(
         Icons.person,
-        size: 40,
+        size: 30,
         color: Colors.grey,
       ),
     );
   }
+}
+
+class _RedStringPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.red.shade700
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    // Draw red strings
+    final path1 = Path();
+    path1.moveTo(0, size.height * 0.3);
+    path1.quadraticBezierTo(
+      size.width * 0.5,
+      size.height * 0.3,
+      size.width,
+      size.height * 0.32,
+    );
+    canvas.drawPath(path1, paint);
+
+    final path2 = Path();
+    path2.moveTo(0, size.height * 0.7);
+    path2.quadraticBezierTo(
+      size.width * 0.5,
+      size.height * 0.75,
+      size.width,
+      size.height * 0.65,
+    );
+    canvas.drawPath(path2, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 

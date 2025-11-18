@@ -5,7 +5,7 @@ import 'child_login_page.dart';
 import 'child_profile_page.dart';
 import 'heartbeat_page.dart';
 import 'login_selection_page.dart';
-import 'memory_game_page.dart';
+import 'games_selection_page.dart';
 import '../services/user_state_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -153,7 +153,7 @@ class _HomePageState extends State<HomePage> {
                                 height: 140,
                                 onTap: () {
                                   Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const MemoryGamePage()),
+                                    MaterialPageRoute(builder: (_) => const GamesSelectionPage()),
                                   );
                                 },
                               ),
