@@ -5,6 +5,7 @@ import 'parent_login_page.dart';
 import 'child_login_page.dart';
 import 'child_profile_page.dart';
 import 'heartbeat_page.dart';
+import 'login_selection_page.dart';
 import '../services/user_state_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -57,15 +58,101 @@ class _HomePageState extends State<HomePage> {
           ),
 
           SafeArea(
-            child: SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                child: Column(
-                  children: [
-                    // Top bar with detective name badge
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              child: Column(
+                children: [
+                  // Top bar
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          // Parent Profile Button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: const Color(0xff4a90e2),
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  offset: const Offset(2, 2),
+                                  blurRadius: 4,
+                                  color: Colors.black.withOpacity(0.2),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.family_restroom, color: Colors.white, size: 26),
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const ParentLoginPage()),
+                                );
+                              },
+                              tooltip: 'Parent Access',
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          // Logout Button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.red[400],
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  offset: const Offset(2, 2),
+                                  blurRadius: 4,
+                                  color: Colors.black.withOpacity(0.2),
+                                ),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: const Icon(Icons.logout, color: Colors.white, size: 24),
+                              onPressed: () async {
+                                await UserStateService.clearUserData();
+                                if (mounted) {
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(builder: (_) => const LoginSelectionPage()),
+                                    (route) => false,
+                                  );
+                                }
+                              },
+                              tooltip: 'Logout',
+                            ),
+                          ),
+                        ],
+                      ),
+                      const _ProfileButton(),
+                    ],
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  // Title
+                  Text(
+                    'Feelings and Body\nInvestigation',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'SpecialElite',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 56,
+                      color: Colors.black87,
+                      height: 1.1,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(2, 3),
+                          blurRadius: 2,
+                          color: Colors.white70,
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Pinned notes/buttons
+                  Expanded(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Row(
                           children: [
