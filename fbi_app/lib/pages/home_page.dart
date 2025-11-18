@@ -5,6 +5,7 @@ import 'parent_login_page.dart';
 import 'child_login_page.dart';
 import 'child_profile_page.dart';
 import 'heartbeat_page.dart';
+import 'login_selection_page.dart';
 import '../services/user_state_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -103,8 +104,9 @@ class _HomePageState extends State<HomePage> {
                               onPressed: () async {
                                 await UserStateService.clearUserData();
                                 if (mounted) {
-                                  Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(builder: (_) => const ChildLoginPage()),
+                                  Navigator.of(context).pushAndRemoveUntil(
+                                    MaterialPageRoute(builder: (_) => const LoginSelectionPage()),
+                                    (route) => false,
                                   );
                                 }
                               },
