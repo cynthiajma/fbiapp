@@ -3,6 +3,7 @@ import '../services/user_state_service.dart';
 import '../services/child_auth_service.dart';
 import 'home_page.dart';
 import 'child_signup_page.dart';
+import 'parent_login_page.dart';
 
 class ChildLoginPage extends StatefulWidget {
   const ChildLoginPage({super.key});
@@ -240,6 +241,28 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                         fontSize: 16,
                         color: Colors.black87,
                         decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const ParentLoginPage()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xff4a90e2),
+                      side: const BorderSide(color: Color(0xff4a90e2), width: 1.5),
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.family_restroom),
+                    label: const Text(
+                      'Parent Login',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
