@@ -143,8 +143,9 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
             ),
           );
           
-          // Pop back to the previous page (parent profile)
-          Navigator.of(context).pop();
+          // Pop back with a result to indicate that linking was successful
+          // This will trigger a reload in the parent child selector page
+          Navigator.of(context).pop(true);
         }
       } else {
         // If not linked, send them to login with a hint

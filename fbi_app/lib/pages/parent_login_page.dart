@@ -83,8 +83,9 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                 ),
               );
               
-              // Just pop back - the parent profile page should reload automatically
-              Navigator.of(context).pop();
+              // Pop back with a result to indicate that linking was successful
+              // This will trigger a reload in the parent child selector page
+              Navigator.of(context).pop(true);
             }
           } catch (e) {
             setState(() {

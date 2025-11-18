@@ -197,13 +197,17 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              Navigator.of(context).push(
+              final result = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => ParentLoginPage(childIdToLink: childId),
                 ),
               );
+              // Reload children if linking was successful
+              if (result == true && mounted) {
+                _loadChildren();
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.grey[700],
@@ -212,13 +216,17 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
             child: const Text('Login'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              Navigator.of(context).push(
+              final result = await Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) => ParentSignupPage(childId: childId),
                 ),
               );
+              // Reload children if linking was successful
+              if (result == true && mounted) {
+                _loadChildren();
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xff4a90e2),
