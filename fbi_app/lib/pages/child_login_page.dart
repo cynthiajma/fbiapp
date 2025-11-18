@@ -3,6 +3,7 @@ import '../services/user_state_service.dart';
 import '../services/child_auth_service.dart';
 import 'home_page.dart';
 import 'child_signup_page.dart';
+import 'login_selection_page.dart';
 
 class ChildLoginPage extends StatefulWidget {
   const ChildLoginPage({super.key});
@@ -97,6 +98,33 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Back Button
+                  Align(
+                    alignment: Alignment.topLeft,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => const LoginSelectionPage(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_back, size: 18),
+                        label: const Text('Back'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white.withOpacity(0.9),
+                          foregroundColor: Colors.black87,
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 2,
+                        ),
+                      ),
+                    ),
+                  ),
                   // Logo or Image
                   Container(
                     padding: const EdgeInsets.all(24),
@@ -240,6 +268,28 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                         fontSize: 16,
                         color: Colors.black87,
                         decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  OutlinedButton.icon(
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(builder: (_) => const ParentLoginPage()),
+                      );
+                    },
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xff4a90e2),
+                      side: const BorderSide(color: Color(0xff4a90e2), width: 1.5),
+                      padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 20),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    icon: const Icon(Icons.family_restroom),
+                    label: const Text(
+                      'Parent Login',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),

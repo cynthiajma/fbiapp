@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library_page.dart';
-import 'parent_login_page.dart';
-import 'child_login_page.dart';
 import 'child_profile_page.dart';
 import 'heartbeat_page.dart';
+import 'login_selection_page.dart';
 import '../services/user_state_service.dart';
 
 class HomePage extends StatefulWidget {
@@ -61,125 +60,98 @@ class _HomePageState extends State<HomePage> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 child: Column(
-                  children: [
-                    // Top bar with detective name badge
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Row(
-                          children: [
-                            // Parent Profile Button
-                            Container(
-                              decoration: BoxDecoration(
-                                color: const Color(0xff4a90e2),
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: const Offset(2, 2),
-                                    blurRadius: 4,
-                                    color: Colors.black.withOpacity(0.2),
-                                  ),
-                                ],
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.family_restroom, color: Colors.white, size: 26),
-                                onPressed: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const ParentLoginPage()),
-                                  );
-                                },
-                                tooltip: 'Parent Access',
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            // Logout Button
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.red[400],
-                                shape: BoxShape.circle,
-                                boxShadow: [
-                                  BoxShadow(
-                                    offset: const Offset(2, 2),
-                                    blurRadius: 4,
-                                    color: Colors.black.withOpacity(0.2),
-                                  ),
-                                ],
-                              ),
-                              child: IconButton(
-                                icon: const Icon(Icons.logout, color: Colors.white, size: 24),
-                                onPressed: () async {
-                                  await UserStateService.clearUserData();
-                                  if (mounted) {
-                                    Navigator.of(context).pushReplacement(
-                                      MaterialPageRoute(builder: (_) => const ChildLoginPage()),
-                                    );
-                                  }
-                                },
-                                tooltip: 'Logout',
-                              ),
+                children: [
+                  // Top bar with detective name badge
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // Logout Button
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.red[400],
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              offset: const Offset(2, 2),
+                              blurRadius: 4,
+                              color: Colors.black.withOpacity(0.2),
                             ),
                           ],
                         ),
-                        // Detective name badge in center
-                        Expanded(
-                          child: Center(
-                            child: Transform.rotate(
-                              angle: 1.2 * 3.1416 / 180,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
-                                  borderRadius: BorderRadius.circular(10),
-                                  boxShadow: const [
-                                    BoxShadow(
-                                      offset: Offset(1, 2),
-                                      blurRadius: 2,
-                                      color: Colors.black26,
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  '$_detectiveName 🕵️‍♀️',
-                                  style: const TextStyle(
-                                    fontFamily: 'SpecialElite',
-                                    fontSize: 14,
-                                    color: Colors.black87,
+                        child: IconButton(
+                          icon: const Icon(Icons.logout, color: Colors.white, size: 24),
+                          onPressed: () async {
+                            await UserStateService.clearUserData();
+                            if (mounted) {
+                              Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(builder: (_) => const LoginSelectionPage()),
+                                (route) => false,
+                              );
+                            }
+                          },
+                          tooltip: 'Logout',
+                        ),
+                      ),
+                      // Detective name badge in center
+                      Expanded(
+                        child: Center(
+                          child: Transform.rotate(
+                            angle: 1.2 * 3.1416 / 180,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    offset: Offset(1, 2),
+                                    blurRadius: 2,
+                                    color: Colors.black26,
                                   ),
+                                ],
+                              ),
+                              child: Text(
+                                '$_detectiveName 🕵️‍♀️',
+                                style: const TextStyle(
+                                  fontFamily: 'SpecialElite',
+                                  fontSize: 14,
+                                  color: Colors.black87,
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        const _ProfileButton(),
+                      ),
+                      const _ProfileButton(),
+                    ],
+                  ),
+
+                  const SizedBox(height: 8),
+
+                  // Title
+                  Text(
+                    'Feelings and Body\nInvestigation',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontFamily: 'SpecialElite',
+                      fontWeight: FontWeight.w700,
+                      fontSize: 48,
+                      color: Colors.black87,
+                      height: 1.1,
+                      shadows: [
+                        Shadow(
+                          offset: Offset(2, 3),
+                          blurRadius: 2,
+                          color: Colors.white70,
+                        ),
                       ],
                     ),
+                  ),
 
-                    const SizedBox(height: 8),
-
-                    // Title
-                    Text(
-                      'Feelings and Body\nInvestigation',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontFamily: 'SpecialElite',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 48,
-                        color: Colors.black87,
-                        height: 1.1,
-                        shadows: [
-                          Shadow(
-                            offset: Offset(2, 3),
-                            blurRadius: 2,
-                            color: Colors.white70,
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.15,
-                    ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.15,
+                  ),
 
                     // Pinned notes/buttons
                     Center(
