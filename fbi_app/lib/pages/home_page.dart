@@ -50,6 +50,12 @@ class _HomePageState extends State<HomePage> {
           // Optional semi-transparent overlay
           Container(color: Colors.brown.withOpacity(0.1)),
 
+          // Red strings connecting elements
+          CustomPaint(
+            painter: _RedStringPainter(),
+            child: Container(),
+          ),
+
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
@@ -117,7 +123,7 @@ class _HomePageState extends State<HomePage> {
                     ],
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                   // Title
                   Text(
@@ -139,47 +145,51 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
 
                   // Pinned notes/buttons
                   Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        _PinnedNoteButton(
-                          text: 'Start Case',
-                          color: const Color(0xFFFFF8DC),
-                          rotation: -1,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const CharacterLibraryPage()),
-                            );
-                          },
+                        Center(
+                          child: _PinnedNoteButton(
+                            text: 'Start Case',
+                            color: const Color(0xFFFFF8DC),
+                            rotation: -1,
+                            width: 140,
+                            height: 140,
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (_) => const CharacterLibraryPage()),
+                              );
+                            },
+                          ),
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 24),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Expanded(
-                              child: _PinnedNoteButton(
-                                text: 'Games',
-                                color: const Color(0xFFFAF0E6),
-                                rotation: 2.5,
-                                onTap: () {},
-                              ),
+                            _PinnedNoteButton(
+                              text: 'Games',
+                              color: const Color(0xFFFFF8DC),
+                              rotation: 2.5,
+                              width: 140,
+                              height: 140,
+                              onTap: () {},
                             ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: _PinnedNoteButton(
-                                text: 'Investigate',
-                                color: const Color(0xFFF0E68C),
-                                rotation: -3.5,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const HeartbeatPage()),
-                                  );
-                                },
-                              ),
+                            const SizedBox(width: 28),
+                            _PinnedNoteButton(
+                              text: 'Investigate',
+                              color: const Color(0xFFFFF8DC),
+                              rotation: -3.5,
+                              width: 140,
+                              height: 140,
+                              onTap: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+                                );
+                              },
                             ),
                           ],
                         ),
@@ -187,7 +197,7 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
 
                   // Footer pinned note
                   Transform.rotate(
@@ -230,12 +240,16 @@ class _PinnedNoteButton extends StatelessWidget {
   final Color color;
   final double rotation;
   final VoidCallback onTap;
+  final double? width;
+  final double? height;
 
   const _PinnedNoteButton({
     required this.text,
     required this.color,
     required this.rotation,
     required this.onTap,
+    this.width,
+    this.height,
   });
 
   @override
@@ -245,11 +259,12 @@ class _PinnedNoteButton extends StatelessWidget {
       child: GestureDetector(
         onTap: onTap,
         child: Container(
-          height: 64,
+          width: width ?? double.infinity,
+          height: height ?? 64,
           margin: const EdgeInsets.symmetric(vertical: 6),
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(4),
             boxShadow: const [
               BoxShadow(
                 offset: Offset(3, 3),
@@ -289,33 +304,97 @@ class _ProfileButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => const ChildProfilePage(),
-            transitionDuration: const Duration(milliseconds: 300),
-            reverseTransitionDuration: const Duration(milliseconds: 300),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              // When pushing: child profile slides in from right (1.0 -> 0.0)
-              // When popping: animation reverses, so child profile slides out to right (0.0 -> 1.0)
-              return SlideTransition(
-                position: Tween(
-                  begin: const Offset(1.0, 0.0), // Start from right
-                  end: Offset.zero, // End at center
-                ).animate(CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeInOut,
-                )),
-                child: child,
-              );
-            },
+    return Transform.rotate(
+      angle: 1.5 * 3.1416 / 180,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => const ChildProfilePage(),
+              transitionDuration: const Duration(milliseconds: 300),
+              reverseTransitionDuration: const Duration(milliseconds: 300),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                // When pushing: child profile slides in from right (1.0 -> 0.0)
+                // When popping: animation reverses, so child profile slides out to right (0.0 -> 1.0)
+                return SlideTransition(
+                  position: Tween(
+                    begin: const Offset(1.0, 0.0), // Start from right
+                    end: Offset.zero, // End at center
+                  ).animate(CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeInOut,
+                  )),
+                  child: child,
+                );
+              },
+            ),
+          );
+        },
+        child: Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            color: const Color(0xFFFFF8DC),
+            borderRadius: BorderRadius.circular(4),
+            boxShadow: [
+              BoxShadow(
+                offset: const Offset(3, 4),
+                blurRadius: 6,
+                color: Colors.black.withOpacity(0.32),
+              ),
+            ],
           ),
-        );
-      },
-      child: FluttermojiCircleAvatar(radius: 22),
+          child: Stack(
+            children: [
+              const Positioned(
+                top: 6,
+                left: 10,
+                child: Icon(Icons.push_pin, color: Colors.redAccent, size: 16),
+              ),
+              Center(
+                child: FluttermojiCircleAvatar(radius: 28),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
+}
+
+class _RedStringPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.red.shade700
+      ..strokeWidth = 2.0
+      ..style = PaintingStyle.stroke;
+
+    // Draw fewer, longer red strings spanning the entire width
+    // First string passes through the top of the Start Case button (centered)
+    final path1 = Path();
+    path1.moveTo(0, size.height * 0.45);
+    path1.quadraticBezierTo(
+      size.width * 0.5,
+      size.height * 0.45, // Pass through center at top of Start Case button
+      size.width,
+      size.height * 0.47,
+    );
+    canvas.drawPath(path1, paint);
+
+    final path2 = Path();
+    path2.moveTo(0, size.height * 0.65);
+    path2.quadraticBezierTo(
+      size.width * 0.5,
+      size.height * 0.7,
+      size.width,
+      size.height * 0.6,
+    );
+    canvas.drawPath(path2, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class _AvatarScaffold extends StatelessWidget {
