@@ -14,35 +14,96 @@ class CharacterRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  return Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween, // Ensures even spacing
-      children: [
-        SizedBox(
-          width: 52, height: 52,
-          child: Image.asset(c.imageAsset, fit: BoxFit.contain),
+  return Container(
+    decoration: BoxDecoration(
+      border: Border(
+        bottom: BorderSide(
+          color: Colors.brown.shade300,
+          width: 1,
         ),
-        Column(
-          children: [
-            ProgressRing(value: c.progress), // Progress ring in middle
-            const SizedBox(height: 4),
-            Text(
-              'Level: ${c.averageLevel}',
+      ),
+    ),
+    child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            flex: 2,
+            child: _CharacterLabel(name: c.name),
+          ),
+          Expanded(
+            flex: 2,
+            child: Column(
+              children: [
+                ProgressRing(value: c.progress),
+                const SizedBox(height: 4),
+                Text(
+                  'Level: ${c.averageLevel}',
+                  style: const TextStyle(
+                    fontFamily: 'SpecialElite',
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              _date(c.date),
+              textAlign: TextAlign.right,
               style: const TextStyle(
+                fontFamily: 'SpecialElite',
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: Colors.grey,
+                color: Colors.black87,
               ),
             ),
-          ],
-        ),
-        Text(
-          _date(c.date),
-          style: const TextStyle(fontWeight: FontWeight.w800),
-        ),
-      ],
+          ),
+        ],
+      ),
     ),
   );
+  }
+}
+
+class _CharacterLabel extends StatelessWidget {
+  final String name;
+  const _CharacterLabel({required this.name});
+
+  @override
+  Widget build(BuildContext context) {
+    final badgeColor = Colors.brown.shade300;
+
+    return Container(
+      width: 60,
+      height: 60,
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFF8DC),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: badgeColor, width: 2),
+        boxShadow: [
+          BoxShadow(
+            offset: const Offset(2, 2),
+            blurRadius: 4,
+            color: Colors.black.withOpacity(0.15),
+          ),
+        ],
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        name.toUpperCase(),
+        textAlign: TextAlign.center,
+        style: const TextStyle(
+          fontFamily: 'SpecialElite',
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: Colors.black87,
+        ),
+      ),
+    );
   }
 }

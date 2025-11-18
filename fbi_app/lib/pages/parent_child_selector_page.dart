@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/parent_data_service.dart';
 import '../services/user_state_service.dart';
+import '../services/avatar_storage_service.dart';
 import 'parent_view_child_page.dart';
 import 'parent_login_page.dart';
 import 'parent_signup_page.dart';
@@ -42,9 +44,22 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
 
       // Load children linked to this parent
       final children = await ParentDataService.getParentChildren(parentId, context);
+      final enrichedChildren = await Future.wait(
+        children.map((child) async {
+          final childId = child['id'] as String;
+          final avatarSvg = await AvatarStorageService.getAvatarSvg(childId);
+          return {
+            ...child,
+            'avatarSvg': avatarSvg,
+            'name': child['username'],
+          };
+        }).toList(),
+      );
+
+      if (!mounted) return;
 
       setState(() {
-        _children = children;
+        _children = enrichedChildren;
         _isLoading = false;
       });
     } catch (e) {
@@ -488,6 +503,7 @@ class _ChildCard extends StatelessWidget {
     final name = child['name'] as String? ?? child['username'] as String;
     final username = child['username'] as String;
     final age = child['age'] as int?;
+    final avatarSvg = child['avatarSvg'] as String?;
 
     return GestureDetector(
         onTap: onTap,
@@ -516,15 +532,7 @@ class _ChildCard extends StatelessWidget {
           child: Row(
             children: [
               // Avatar
-              CircleAvatar(
-                radius: 32,
-                backgroundColor: const Color(0xff4a90e2).withOpacity(0.1),
-                    child: const Icon(
-                  Icons.child_care,
-                  size: 32,
-                      color: Color(0xff4a90e2),
-                ),
-              ),
+              _ChildAvatar(svgData: avatarSvg),
               const SizedBox(width: 16),
               // Child info
               Expanded(
@@ -573,6 +581,69 @@ class _ChildCard extends StatelessWidget {
           ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ChildAvatar extends StatelessWidget {
+  final String? svgData;
+  const _ChildAvatar({required this.svgData});
+
+  @override
+  Widget build(BuildContext context) {
+    if (svgData == null || svgData!.isEmpty) {
+      return CircleAvatar(
+        radius: 32,
+        backgroundColor: const Color(0xff4a90e2).withOpacity(0.1),
+        child: const Icon(
+          Icons.child_care,
+          size: 32,
+          color: Color(0xff4a90e2),
+        ),
+      );
+    }
+
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            offset: const Offset(2, 2),
+            blurRadius: 4,
+            color: Colors.black.withOpacity(0.15),
+          ),
+        ],
+      ),
+      child: ClipOval(
+        child: Builder(
+          builder: (context) {
+            try {
+              return SvgPicture.string(
+                svgData!,
+                fit: BoxFit.cover,
+                placeholderBuilder: (context) => const Center(
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+                colorFilter: null,
+              );
+            } catch (e) {
+              // If SVG fails to render, show default icon
+              return const Icon(
+                Icons.child_care,
+                size: 32,
+                color: Color(0xff4a90e2),
+              );
+            }
+          },
         ),
       ),
     );
