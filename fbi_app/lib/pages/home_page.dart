@@ -4,6 +4,7 @@ import 'character_library_page.dart';
 import 'child_profile_page.dart';
 import 'heartbeat_page.dart';
 import 'login_selection_page.dart';
+import 'games_selection_page.dart';
 import '../services/user_state_service.dart';
 
 class HomePage extends StatefulWidget {
