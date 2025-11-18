@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttermoji/fluttermoji.dart';
 import 'character_library_page.dart';
-import 'child_login_page.dart';
 import 'child_profile_page.dart';
 import 'heartbeat_page.dart';
 import 'login_selection_page.dart';
@@ -58,13 +57,15 @@ class _HomePageState extends State<HomePage> {
           ),
 
           SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              child: Column(
+            child: SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                child: Column(
                 children: [
-                  // Top bar
+                  // Top bar with detective name badge
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       // Logout Button
                       Container(
@@ -93,11 +94,41 @@ class _HomePageState extends State<HomePage> {
                           tooltip: 'Logout',
                         ),
                       ),
+                      // Detective name badge in center
+                      Expanded(
+                        child: Center(
+                          child: Transform.rotate(
+                            angle: 1.2 * 3.1416 / 180,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.9),
+                                borderRadius: BorderRadius.circular(10),
+                                boxShadow: const [
+                                  BoxShadow(
+                                    offset: Offset(1, 2),
+                                    blurRadius: 2,
+                                    color: Colors.black26,
+                                  ),
+                                ],
+                              ),
+                              child: Text(
+                                '$_detectiveName 🕵️‍♀️',
+                                style: const TextStyle(
+                                  fontFamily: 'SpecialElite',
+                                  fontSize: 14,
+                                  color: Colors.black87,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                       const _ProfileButton(),
                     ],
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                   // Title
                   Text(
@@ -106,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                     style: const TextStyle(
                       fontFamily: 'SpecialElite',
                       fontWeight: FontWeight.w700,
-                      fontSize: 56,
+                      fontSize: 48,
                       color: Colors.black87,
                       height: 1.1,
                       shadows: [
@@ -122,62 +153,49 @@ class _HomePageState extends State<HomePage> {
                   const SizedBox(height: 40),
 
                   // Pinned notes/buttons
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Center(
-                            child: _PinnedNoteButton(
-                              text: 'Start Case',
-                              color: const Color(0xFFFFF8DC),
-                              rotation: -1,
-                              width: 140,
-                              height: 140,
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const CharacterLibraryPage()),
-                                );
-                              },
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              _PinnedNoteButton(
-                                text: 'Games',
-                                color: const Color(0xFFFFF8DC),
-                                rotation: 2.5,
-                                width: 140,
-                                height: 140,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const GamesSelectionPage()),
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 28),
-                              _PinnedNoteButton(
-                                text: 'Investigate',
-                                color: const Color(0xFFFFF8DC),
-                                rotation: -3.5,
-                                width: 140,
-                                height: 140,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const HeartbeatPage()),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                          SizedBox(
-                            height: MediaQuery.of(context).size.height * 0.15,
-                          ),
-                        ],
-                      ),
+                  Center(
+                    child: _PinnedNoteButton(
+                      text: 'Start Case',
+                      color: const Color(0xFFFFF8DC),
+                      rotation: -1,
+                      width: 140,
+                      height: 140,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const CharacterLibraryPage()),
+                        );
+                      },
                     ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _PinnedNoteButton(
+                        text: 'Games',
+                        color: const Color(0xFFFFF8DC),
+                        rotation: 2.5,
+                        width: 140,
+                        height: 140,
+                        onTap: () {},
+                      ),
+                      const SizedBox(width: 28),
+                      _PinnedNoteButton(
+                        text: 'Investigate',
+                        color: const Color(0xFFFFF8DC),
+                        rotation: -3.5,
+                        width: 140,
+                        height: 140,
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.15,
                   ),
 
                   const SizedBox(height: 16),
@@ -185,6 +203,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
+          ),
           ],
         ),
     );
