@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
 import 'dart:math';
+import 'login_selection_page.dart';
 
 class OpeningPage extends StatefulWidget {
   const OpeningPage({super.key});
@@ -44,7 +44,11 @@ class _OpeningPageState extends State<OpeningPage>
       if (status == AnimationStatus.completed) {
         Future.delayed(const Duration(seconds: 1), () {
           if (mounted) {
-            Get.offNamed('/loginWrapper');
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const LoginSelectionPage(),
+              ),
+            );
           }
         });
       }
