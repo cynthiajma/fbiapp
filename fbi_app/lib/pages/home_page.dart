@@ -177,7 +177,11 @@ class _HomePageState extends State<HomePage> {
                         rotation: 2.5,
                         width: 140,
                         height: 140,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const GamesSelectionPage()),
+                          );
+                        },
                       ),
                       const SizedBox(width: 28),
                       _PinnedNoteButton(
