@@ -149,65 +149,62 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
 
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.15,
-                  ),
+                  const SizedBox(height: 40),
 
-                    // Pinned notes/buttons
-                    Center(
-                      child: _PinnedNoteButton(
-                        text: 'Start Case',
+                  // Pinned notes/buttons
+                  Center(
+                    child: _PinnedNoteButton(
+                      text: 'Start Case',
+                      color: const Color(0xFFFFF8DC),
+                      rotation: -1,
+                      width: 140,
+                      height: 140,
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const CharacterLibraryPage()),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _PinnedNoteButton(
+                        text: 'Games',
                         color: const Color(0xFFFFF8DC),
-                        rotation: -1,
+                        rotation: 2.5,
+                        width: 140,
+                        height: 140,
+                        onTap: () {},
+                      ),
+                      const SizedBox(width: 28),
+                      _PinnedNoteButton(
+                        text: 'Investigate',
+                        color: const Color(0xFFFFF8DC),
+                        rotation: -3.5,
                         width: 140,
                         height: 140,
                         onTap: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const CharacterLibraryPage()),
+                            MaterialPageRoute(builder: (_) => const HeartbeatPage()),
                           );
                         },
                       ),
-                    ),
-                    const SizedBox(height: 20),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        _PinnedNoteButton(
-                          text: 'Games',
-                          color: const Color(0xFFFFF8DC),
-                          rotation: 2.5,
-                          width: 140,
-                          height: 140,
-                          onTap: () {},
-                        ),
-                        const SizedBox(width: 28),
-                        _PinnedNoteButton(
-                          text: 'Investigate',
-                          color: const Color(0xFFFFF8DC),
-                          rotation: -3.5,
-                          width: 140,
-                          height: 140,
-                          onTap: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const HeartbeatPage()),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                    ],
+                  ),
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.15,
+                  ),
 
-                    SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.15,
-                    ),
-
-                    const SizedBox(height: 16),
+                  const SizedBox(height: 16),
                   ],
                 ),
               ),
             ),
           ),
-        ],
-      ),
+          ],
+        ),
     );
   }
 }
