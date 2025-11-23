@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'heartbeat_page.dart';
+import 'butterfly.dart';
 import '../services/character_service.dart';
 
 
@@ -34,6 +35,27 @@ class _CharacterLibraryPageState extends State<CharacterLibraryPage> {
         error = e.toString();
         isLoading = false;
       });
+    }
+  }
+
+  VoidCallback? _getNavigationCallback(String? characterName) {
+    if (characterName == null) return null;
+    
+    switch (characterName) {
+      case 'Henry the Heartbeat':
+        return () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+          );
+        };
+      case 'Betty Butterfly':
+        return () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const BettyPage()),
+          );
+        };
+      default:
+        return null;
     }
   }
 
@@ -103,13 +125,7 @@ class _CharacterLibraryPageState extends State<CharacterLibraryPage> {
           final character = characters[index];
           return _CharacterCard(
             character: character,
-            onTap: character.name == 'Henry the Heartbeat'
-                ? () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const HeartbeatPage()),
-                    );
-                  }
-                : null,
+            onTap: _getNavigationCallback(character.name),
           );
         }
 
