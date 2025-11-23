@@ -7,7 +7,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
-import 'character_constants.dart'; // Using the constants file
 
 class BettyPage extends StatefulWidget {
   const BettyPage({Key? key}) : super(key: key); 
