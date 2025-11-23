@@ -2,8 +2,14 @@
 
 import 'dart:async';
 import 'dart:math';
+import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart'; 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:audioplayers/audioplayers.dart';
+import 'package:path_provider/path_provider.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
@@ -20,6 +26,11 @@ class _BettyPageState extends State<BettyPage>
   
   int _tapCounter = 5; 
   bool _isLogging = false;
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlayingAudio = false;
+  bool _hasPlayedOnce = false;
+  bool _isLoadingAudio = false;
+  Uint8List? _audioBytes;
 
   late final AnimationController _animationController;
 
@@ -31,12 +42,146 @@ class _BettyPageState extends State<BettyPage>
       vsync: this,
       duration: const Duration(seconds: 5),
     )..repeat();
+    
+    _loadCharacterAudio();
   }
 
   @override
   void dispose() {
     _animationController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCharacterAudio() async {
+    setState(() {
+      _isLoadingAudio = true;
+    });
+
+    try {
+      // Load audio from local assets and store the bytes
+      final ByteData data = await rootBundle.load('data/audio/betty-butterfly.mp3');
+      _audioBytes = data.buffer.asUint8List();
+      
+      setState(() {
+        _isLoadingAudio = false;
+      });
+    } catch (e) {
+      print('Error loading character audio: $e');
+      setState(() {
+        _isLoadingAudio = false;
+      });
+    }
+  }
+
+  Future<void> _toggleAudio() async {
+    if (_isLoadingAudio || _audioBytes == null) return;
+
+    // If already playing, pause it
+    if (_isPlayingAudio) {
+      await _audioPlayer.pause();
+      setState(() {
+        _isPlayingAudio = false;
+      });
+      // Clear the snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Audio paused'),
+            duration: Duration(seconds: 1),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+    }
+
+    // Otherwise, play or resume
+    setState(() {
+      _isPlayingAudio = true;
+      _hasPlayedOnce = true;
+    });
+
+    try {
+      Source audioSource;
+      
+      // Use different approach for web vs native platforms
+      if (kIsWeb) {
+        // For web (Chrome): Use AssetSource
+        audioSource = AssetSource('data/audio/betty-butterfly.mp3');
+      } else {
+        // For native platforms (iOS/Android/macOS/Linux/Windows): Use temporary file
+        // Create the temp file right before playing (like Henry does)
+        final tempDir = await getTemporaryDirectory();
+        final tempFile = File('${tempDir.path}/betty_butterfly.mp3');
+        await tempFile.writeAsBytes(_audioBytes!);
+        audioSource = DeviceFileSource(tempFile.path);
+      }
+      
+      await _audioPlayer.play(audioSource);
+      
+      // Show "audio playing" snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Audio playing...'),
+            duration: Duration(seconds: 2), 
+            backgroundColor: Colors.blue,
+          ),
+        );
+      }
+      
+      // Listen for completion
+      _audioPlayer.onPlayerComplete.listen((_) {
+        setState(() {
+          _isPlayingAudio = false;
+          _hasPlayedOnce = false; // Reset so speaker icon shows again
+        });
+        // Clear the snackbar when audio completes
+        if (mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+        }
+      });
+      
+    } catch (e) {
+      print('Error playing audio: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error playing audio: $e'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      setState(() {
+        _isPlayingAudio = false;
+      });
+    }
+  }
+
+  Future<void> _replayAudio() async {
+    if (_isLoadingAudio || _audioBytes == null) return;
+    
+    // Stop current playback and reset to initial state
+    await _audioPlayer.stop();
+    
+    setState(() {
+      _isPlayingAudio = false;
+      _hasPlayedOnce = false;
+    });
+    
+    // Clear any existing snackbars
+    if (mounted) {
+      ScaffoldMessenger.of(context).clearSnackBars();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Audio reset to beginning'),
+          duration: Duration(seconds: 1),
+          backgroundColor: Colors.blue,
+        ),
+      );
+    }
   }
 
   /// Corrected function to log the feeling with the proper String type for investigation.
@@ -127,6 +272,66 @@ class _BettyPageState extends State<BettyPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xfffcefee),
+      appBar: AppBar(
+        backgroundColor: const Color(0xfffcefee),
+        elevation: 0,
+        leading: BackButton(onPressed: () => Navigator.of(context).pop()),
+        actions: [
+          // Play/Pause button
+          Container(
+            margin: const EdgeInsets.only(right: 8),
+            decoration: BoxDecoration(
+              color: Colors.pink.shade400,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: Icon(
+                _isPlayingAudio 
+                    ? Icons.pause_rounded 
+                    : (_hasPlayedOnce ? Icons.play_arrow_rounded : Icons.volume_up_rounded),
+                color: Colors.white,
+              ),
+              onPressed: _isLoadingAudio ? null : _toggleAudio,
+              tooltip: _isLoadingAudio 
+                  ? 'Loading audio...' 
+                  : (_isPlayingAudio ? 'Pause audio' : 'Play character voiceover'),
+            ),
+          ),
+          // Replay button
+          Container(
+            margin: const EdgeInsets.only(right: 16),
+            decoration: BoxDecoration(
+              color: Colors.pink.shade400,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: IconButton(
+              icon: const Icon(
+                Icons.replay_rounded,
+                color: Colors.white,
+              ),
+              onPressed: _isLoadingAudio ? null : _replayAudio,
+              tooltip: _isLoadingAudio 
+                  ? 'Loading audio...' 
+                  : 'Replay audio from beginning',
+            ),
+          ),
+        ],
+      ),
       body: Container(
         // Colorful & Engaging UI: Gradient Background
         decoration: const BoxDecoration(
@@ -150,12 +355,44 @@ class _BettyPageState extends State<BettyPage>
 
             // --- The Page Content (Centered) ---
             SafeArea(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+              child: Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Audio instruction text for mobile
+                    if (!_isLoadingAudio)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4, bottom: 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.volume_up_rounded,
+                              size: 18,
+                              color: Colors.pink.shade400,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'Tap the buttons above to listen to Betty!',
+                              style: GoogleFonts.nunito(
+                                fontSize: 13,
+                                fontStyle: FontStyle.italic,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    else
+                      const SizedBox(height: 16),
+                    const SizedBox(height: 10),
+                    Expanded(
+                      child: Center(
+                        child: SingleChildScrollView(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
                       // Betty's main icon/image
                       Container(
                         padding: const EdgeInsets.all(20),
@@ -179,7 +416,7 @@ class _BettyPageState extends State<BettyPage>
 
                       // --- Single Sentence Intro ---
                       Text(
-                        "Hi! I'm Betty, and those flutters are just my friends telling you they need a little calm.",
+                        "Hi! I'm Betty the Butterfly! I cause a fluttering in your stomach when you feel anxious, worried, or maybe even excited about something.",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.nunito(
                           fontSize: 24,
@@ -232,8 +469,12 @@ class _BettyPageState extends State<BettyPage>
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
