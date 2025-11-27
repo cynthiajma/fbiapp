@@ -488,7 +488,10 @@ const server = new ApolloServer({
   typeDefs, 
   resolvers,
   cors: {
-    origin: true,
+    origin: [
+      'http://localhost:3000', 
+      'https://beamish-heliotrope-3d6787.netlify.app/'
+    ],
     credentials: true,
   },
 });

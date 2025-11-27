@@ -1,7 +1,7 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
 
 class CharacterService {
-  static const String _graphqlEndpoint = 'http://localhost:3000/graphql';
+  static const String _graphqlEndpoint = 'https://fbiapp-production.up.railway.app/graphql';
   
   static GraphQLClient get _client {
     final HttpLink httpLink = HttpLink(_graphqlEndpoint);
