@@ -504,10 +504,7 @@ async function startServer() {
   app.use(
     '/graphql',
     cors({
-      origin: [
-        'http://localhost:3000',
-        'https://beamish-heliotrope-3d6787.netlify.app'
-      ],
+      origin: true,
       credentials: true,
     }),
     express.json(),
