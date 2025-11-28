@@ -75,6 +75,46 @@ This is the repository where you will keep everything related to this CompSci 40
    flutter run
    ```
 
+## Production Deployment
+
+The app is currently deployed and accessible at:
+
+- **Frontend (Web App)**: [https://fbiapp1.netlify.app/](https://fbiapp1.netlify.app/)
+- **Backend API**: [https://tender-wisdom-production-fe18.up.railway.app/graphql](https://tender-wisdom-production-fe18.up.railway.app/graphql)
+- **Railway Project**: [View on Railway](https://railway.com/project/2f2f6d4d-4a44-4914-a44f-ebf090b9e668?environmentId=c600e312-0dbf-42e9-8e09-d658dba534f3)
+
+### Production Environment Configuration
+
+The backend service on Railway requires the following environment variables:
+
+- `DATABASE_URL` - Automatically provided by Railway's PostgreSQL service
+- `NODE_ENV=production` - Sets the application to production mode
+- `PORT=3000` - Server port (Railway may override this automatically)
+
+### Accessing Production
+
+1. **Web App**: Simply visit [https://fbiapp1.netlify.app/](https://fbiapp1.netlify.app/) in your browser
+2. **GraphQL API**: Access the GraphQL playground at [https://tender-wisdom-production-fe18.up.railway.app/graphql](https://tender-wisdom-production-fe18.up.railway.app/graphql)
+
+### Deployment Architecture
+
+- **Frontend**: Deployed on Netlify as a Flutter web app
+- **Backend**: Deployed on Railway with Node.js and PostgreSQL
+- **Database**: PostgreSQL hosted on Railway (automatically linked to backend service)
+
+### Updating Production
+
+1. **Backend Updates**: Push changes to the `backend/` directory. Railway automatically rebuilds and redeploys.
+2. **Frontend Updates**: 
+   - Build the Flutter web app: `cd fbi_app && flutter build web`
+   - Deploy the `build/web` folder to Netlify (or connect GitLab for automatic deployments)
+
+### Production Notes
+
+- The production database is separate from the local development database
+- Character data and test data need to be initialized separately in production
+- CORS is configured to allow requests from the Netlify frontend domain
+
 ## Development
 
 - Backend API documentation: See `backend/docs/graphql-api.md`
@@ -98,7 +138,12 @@ Character photos are stored as binary data (BYTEA) in the database and returned 
 
 ## GraphQL API
 
-The server provides a GraphQL API at `http://localhost:3000/graphql` with:
+The server provides a GraphQL API at:
+
+- **Development**: `http://localhost:3000/graphql`
+- **Production**: `https://tender-wisdom-production-fe18.up.railway.app/graphql`
+
+Available operations:
 
 ### Queries
 - `childProfile(id: ID!)` - Get child information
