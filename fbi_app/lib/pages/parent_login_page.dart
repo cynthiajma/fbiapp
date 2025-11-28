@@ -4,6 +4,7 @@ import '../services/parent_auth_service.dart';
 import '../services/parent_data_service.dart';
 import 'parent_child_selector_page.dart';
 import 'forgot_password_page.dart';
+import 'parent_signup_page.dart';
 
 class ParentLoginPage extends StatefulWidget {
   final String? childIdToLink;
@@ -355,6 +356,27 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                           ),
                         ),
                         const SizedBox(height: 12),
+                        // Create new account link
+                        TextButton(
+                          onPressed: () {
+                            if (mounted) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => const ParentSignupPage(childId: null),
+                                ),
+                              );
+                            }
+                          },
+                          child: const Text(
+                            'Create New Account',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xff4a90e2),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                         // Forgot password link
                         TextButton(
                           onPressed: () {
