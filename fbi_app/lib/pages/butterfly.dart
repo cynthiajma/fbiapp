@@ -36,9 +36,9 @@ class _BettyPageState extends State<BettyPage>
   // State for the questions
   int _currentQuestionIndex = 0;
   final List<String> _questions = [
-    "How many butterflies would fly out if you were sitting down for a **test at school**?",
-    "How many butterflies fly out when you are riding a **rollercoaster**?",
-    "How many butterflies fly out when you are **alone in a dark room**?",
+    "How many butterflies would fly out if you were on a swing?",
+    "How many butterflies fly out when you are riding a rollercoaster?",
+    "How many butterflies fly out when you are alone in a dark room?",
   ];
 
   late final AnimationController _animationController;
@@ -299,9 +299,12 @@ class _BettyPageState extends State<BettyPage>
             _buildButterfly(assetPath: bettyAsset, baseLeft: 300, baseTop: 500, moveMagnitude: 20, timeOffset: 0.9, size: 25),
             _buildButterfly(assetPath: bettyAsset, baseLeft: 20, baseTop: 300, moveMagnitude: 15, timeOffset: 0.2, size: 20), // Added more
             _buildButterfly(assetPath: bettyAsset, baseLeft: 350, baseTop: 450, moveMagnitude: 40, timeOffset: 0.7, size: 38), // Added more
-            _buildButterfly(assetPath: bettyAsset, baseLeft: 180, baseTop: 80, moveMagnitude: 22, timeOffset: 0.3, size: 30), // Added more
-
-
+            _buildButterfly(assetPath: bettyAsset, baseLeft: 180, baseTop: 80, moveMagnitude: 22, timeOffset: 0.4, size: 30), // Added more
+            _buildButterfly(assetPath: bettyAsset, baseLeft: 700, baseTop: 50, moveMagnitude: 10, timeOffset: 0.6, size: 40),
+            _buildButterfly(assetPath: bettyAsset, baseLeft: 680, baseTop: 450, moveMagnitude: 40, timeOffset: 0.2, size: 20),
+            _buildButterfly(assetPath: bettyAsset, baseLeft: 600, baseTop: 20, moveMagnitude: 25, timeOffset: 0.5, size: 25),
+            _buildButterfly(assetPath: bettyAsset, baseLeft: 750, baseTop: 120, moveMagnitude: 50, timeOffset: 0.01, size: 20),
+            _buildButterfly(assetPath: bettyAsset, baseLeft: 900, baseTop: 150, moveMagnitude: 30, timeOffset: 0.8, size: 30),
             // --- The Page Content (Centered) ---
             SafeArea(
               child: Padding(
@@ -318,7 +321,7 @@ class _BettyPageState extends State<BettyPage>
                         border: Border.all(color: Colors.pinkAccent.shade100)
                       ),
                       child: Text(
-                        "Hi! I'm **Betty the Butterfly**! I cause that fluttery feeling in your stomach when you get nervous. Help me count how many butterflies fly out for each situation.",
+                        "Hi! I'm Betty the Butterfly! I cause that fluttery feeling in your stomach when you get nervous. Help me count how many butterflies fly out for each situation.",
                         textAlign: TextAlign.center,
                         style: GoogleFonts.nunito(
                           fontSize: 16,
