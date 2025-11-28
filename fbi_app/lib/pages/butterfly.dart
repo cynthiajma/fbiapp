@@ -1,3 +1,5 @@
+// lib/butterfly.dart
+
 import 'dart:async';
 import 'dart:math';
 import 'dart:io';
@@ -11,7 +13,6 @@ import 'package:path_provider/path_provider.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
-// import 'character_constants.dart'; // Ensure this is present if using constants elsewhere
 
 class BettyPage extends StatefulWidget {
   const BettyPage({Key? key}) : super(key: key); 
@@ -61,14 +62,14 @@ class _BettyPageState extends State<BettyPage>
     _audioPlayer.dispose();
     super.dispose();
   }
-  
-  // ... (Audio loading and control functions are unchanged for brevity)
+
   Future<void> _loadCharacterAudio() async {
     setState(() {
       _isLoadingAudio = true;
     });
 
     try {
+      // Load audio from local assets and store the bytes
       final ByteData data = await rootBundle.load('data/audio/betty-butterfly.mp3');
       _audioBytes = data.buffer.asUint8List();
       
@@ -85,35 +86,87 @@ class _BettyPageState extends State<BettyPage>
 
   Future<void> _toggleAudio() async {
     if (_isLoadingAudio || _audioBytes == null) return;
+
+    // If already playing, pause it
     if (_isPlayingAudio) {
       await _audioPlayer.pause();
-      setState(() { _isPlayingAudio = false; });
-      if (mounted) { ScaffoldMessenger.of(context).clearSnackBars(); }
+      setState(() {
+        _isPlayingAudio = false;
+      });
+      // Clear the snackbar
+      if (mounted) {
+        ScaffoldMessenger.of(context).clearSnackBars();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Audio paused'),
+            duration: Duration(seconds: 1),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
       return;
     }
-    setState(() { _isPlayingAudio = true; _hasPlayedOnce = true; });
+
+    // Otherwise, play or resume
+    setState(() {
+      _isPlayingAudio = true;
+      _hasPlayedOnce = true;
+    });
+
     try {
       Source audioSource;
-      if (kIsWeb) { audioSource = AssetSource('data/audio/betty-butterfly.mp3'); } 
-      else { 
+      
+      // Use different approach for web vs native platforms
+      if (kIsWeb) {
+        // For web (Chrome): Use AssetSource
+        audioSource = AssetSource('data/audio/betty-butterfly.mp3');
+      } else {
+        // For native platforms (iOS/Android/macOS/Linux/Windows): Use temporary file
+        // Create the temp file right before playing (like Henry does)
         final tempDir = await getTemporaryDirectory();
         final tempFile = File('${tempDir.path}/betty_butterfly.mp3');
         await tempFile.writeAsBytes(_audioBytes!);
         audioSource = DeviceFileSource(tempFile.path);
       }
+      
       await _audioPlayer.play(audioSource);
+      
+      // Show "audio playing" snackbar
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Audio playing...'), duration: Duration(seconds: 2), backgroundColor: Colors.blue));
+          const SnackBar(
+            content: Text('Audio playing...'),
+            duration: Duration(seconds: 2), 
+            backgroundColor: Colors.blue,
+          ),
+        );
       }
+      
+      // Listen for completion
       _audioPlayer.onPlayerComplete.listen((_) {
-        setState(() { _isPlayingAudio = false; _hasPlayedOnce = false; });
-        if (mounted) { ScaffoldMessenger.of(context).clearSnackBars(); }
+        setState(() {
+          _isPlayingAudio = false;
+          _hasPlayedOnce = false; // Reset so speaker icon shows again
+        });
+        // Clear the snackbar when audio completes
+        if (mounted) {
+          ScaffoldMessenger.of(context).clearSnackBars();
+        }
       });
+      
     } catch (e) {
       print('Error playing audio: $e');
-      if (mounted) { ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error playing audio: $e'), backgroundColor: Colors.orange)); }
-      setState(() { _isPlayingAudio = false; });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error playing audio: $e'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      setState(() {
+        _isPlayingAudio = false;
+      });
     }
   }
 

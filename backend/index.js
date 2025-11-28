@@ -1,10 +1,15 @@
-const { ApolloServer, gql } = require('apollo-server');
+const { ApolloServer } = require('@apollo/server');
+const { expressMiddleware } = require('@apollo/server/express4');
+const { ApolloServerPluginDrainHttpServer } = require('@apollo/server/plugin/drainHttpServer');
+const express = require('express');
+const http = require('http');
+const cors = require('cors');
 const { pool } = require('./db');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { sendPasswordResetEmail } = require('./email-config');
 
-const typeDefs = gql`
+const typeDefs = `
   type Query {
     childProfile(id: ID!): Child
     childByUsername(username: String!): Child
@@ -484,18 +489,34 @@ const resolvers = {
   }
 };
 
-const server = new ApolloServer({ 
-  typeDefs, 
-  resolvers,
-  cors: {
-    origin: true,
-    credentials: true,
-  },
-});
+async function startServer() {
+  const app = express();
+  const httpServer = http.createServer(app);
+  
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  });
 
-server.listen({ port: 3000, host: '0.0.0.0' }).then(({ url }) => {
-  console.log(`🚀 Server ready at ${url}`);
-}).catch((error) => {
+  await server.start();
+
+  app.use(
+    '/graphql',
+    cors({
+      origin: true,
+      credentials: true,
+    }),
+    express.json(),
+    expressMiddleware(server)
+  );
+
+  const port = process.env.PORT || 3000;
+  await new Promise((resolve) => httpServer.listen({ port, host: '0.0.0.0' }, resolve));
+  console.log(`🚀 Server ready at http://0.0.0.0:${port}/graphql`);
+}
+
+startServer().catch((error) => {
   console.error('❌ Failed to start server:', error);
   process.exit(1);
 });

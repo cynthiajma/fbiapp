@@ -23,25 +23,11 @@ class LoginSelectionPage extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   // FBI Logo
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.95),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          offset: const Offset(2, 4),
-                          blurRadius: 8,
-                          color: Colors.black.withOpacity(0.1),
-                        ),
-                      ],
-                    ),
-                    child: Image.asset(
-                      'assets/images/fbi_logo.png',
-                      width: 120,
-                      height: 120,
-                      fit: BoxFit.contain,
-                    ),
+                  Image.asset(
+                    'assets/images/fbi_logo.png',
+                    width: 280,
+                    height: 280,
+                    fit: BoxFit.contain,
                   ),
                   const SizedBox(height: 40),
                   
