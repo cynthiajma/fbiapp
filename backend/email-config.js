@@ -11,7 +11,7 @@ const createTransporter = () => {
     });
   }
 
-  // For production: use actual SMTP server
+  // For production: use actual SMTP server (SendGrid, Gmail, etc.)
   return nodemailer.createTransport({
     host: process.env.EMAIL_HOST,
     port: parseInt(process.env.EMAIL_PORT || '587'),
@@ -20,6 +20,9 @@ const createTransporter = () => {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD,
     },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000, // 10 seconds
+    socketTimeout: 10000, // 10 seconds
   });
 };
 
@@ -91,7 +94,13 @@ This is an automated message from FBI App. Please do not reply to this email.
       `,
     };
 
-    const info = await transporter.sendMail(mailOptions);
+    // Add timeout wrapper (15 seconds max)
+    const emailPromise = transporter.sendMail(mailOptions);
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Email sending timeout after 15 seconds')), 15000)
+    );
+    
+    const info = await Promise.race([emailPromise, timeoutPromise]);
 
     // In development mode, log the email content
     if (process.env.NODE_ENV === 'development' || !process.env.EMAIL_HOST) {
@@ -100,13 +109,18 @@ This is an automated message from FBI App. Please do not reply to this email.
       console.log('Reset Code:', resetCode);
       console.log('=========================================\n');
     } else {
-      console.log('Password reset email sent:', info.messageId);
+      console.log('Password reset email sent successfully:', info.messageId);
     }
 
     return true;
   } catch (error) {
     console.error('Error sending password reset email:', error);
-    return false;
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+    });
+    throw new Error(`Failed to send email: ${error.message}`);
   }
 };
 
