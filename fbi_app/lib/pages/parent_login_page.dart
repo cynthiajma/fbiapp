@@ -59,9 +59,8 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
         // If childIdToLink is provided, we're in "add another parent" mode
         // This is used when adding a parent from the parent child selector page
         if (widget.childIdToLink != null) {
-          // Save parent authentication state
-          await UserStateService.saveParentAuthenticated(true);
-          await UserStateService.saveParentId(parentData['id']);
+          // DO NOT save the newly added parent's ID - preserve the current parent's ID
+          // We only link the new parent to the child, but keep viewing as the original parent
           try {
             await ParentDataService.linkParentToChild(
               parentData['id'], 
@@ -69,10 +68,9 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
               context
             );
             
-            // Note: We do NOT save the childIdToLink as the active child here
-            // because the active child should only be set when a child actually logs in,
-            // not when a parent is being added to a different child's profile.
-            // This preserves the originally logged-in child's ID.
+            // Note: We do NOT save the newly added parent's ID here because we want to
+            // keep viewing children from the current parent's perspective, not switch to
+            // the newly added parent's view. This preserves the originally logged-in parent's ID.
             
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(

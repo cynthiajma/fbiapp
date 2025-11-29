@@ -123,16 +123,13 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
         return;
       }
 
-      // Save parent state
-      await UserStateService.saveParentAuthenticated(true);
-      await UserStateService.saveParentId(parent['id']);
-
-      // Note: We do NOT save the childId here because the active child should only be set
-      // when a child actually logs in, not when a parent signs up and links to a child.
-      // This preserves the originally logged-in child's ID.
-      
+      // If childId is provided, we're in "add another parent" mode
+      // DO NOT save the newly created parent's ID - preserve the current parent's ID
+      // We only link the new parent to the child, but keep viewing as the original parent
       if (childId != null) {
-        // Parent is linked to child, but we don't change the active logged-in child
+        // Parent is linked to child, but we don't change the active logged-in parent
+        // This preserves the originally logged-in parent's ID so they can continue viewing
+        // their own children after adding another parent.
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
@@ -148,6 +145,9 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
           Navigator.of(context).pop(true);
         }
       } else {
+        // If no childId, this is a normal signup - save the parent state
+        await UserStateService.saveParentAuthenticated(true);
+        await UserStateService.saveParentId(parent['id']);
         // If not linked, send them to login with a hint
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
