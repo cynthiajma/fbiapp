@@ -7,6 +7,7 @@ import '../services/avatar_storage_service.dart';
 import 'parent_view_child_page.dart';
 import 'parent_login_page.dart';
 import 'parent_signup_page.dart';
+import 'login_selection_page.dart';
 
 class ParentChildSelectorPage extends StatefulWidget {
   const ParentChildSelectorPage({super.key});
@@ -377,7 +378,7 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                                     children: [
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.9),
+                                          color: Colors.red,
                                           shape: BoxShape.circle,
                                           boxShadow: [
                                             BoxShadow(
@@ -388,9 +389,17 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                                           ],
                                         ),
                                         child: IconButton(
-                                          icon: const Icon(Icons.arrow_back, color: Color(0xff4a90e2), size: 24),
-                                          onPressed: () => Navigator.of(context).pop(),
-                                          tooltip: 'Back',
+                                          icon: const Icon(Icons.logout, color: Colors.white, size: 24),
+                                          onPressed: () async {
+                                            await UserStateService.clearUserData();
+                                            if (context.mounted) {
+                                              Navigator.of(context).pushAndRemoveUntil(
+                                                MaterialPageRoute(builder: (_) => const LoginSelectionPage()),
+                                                (route) => false,
+                                              );
+                                            }
+                                          },
+                                          tooltip: 'Logout',
                                         ),
                                       ),
                                       Row(
