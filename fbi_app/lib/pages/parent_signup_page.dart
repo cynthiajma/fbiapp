@@ -132,11 +132,12 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
         // their own children after adding another parent.
 
         if (mounted) {
+          final username = parent['username'] as String? ?? 'parent';
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✓ Parent account created and linked successfully!'),
+            SnackBar(
+              content: Text('✓ Parent "$username" created and linked successfully!'),
               backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 3),
             ),
           );
           

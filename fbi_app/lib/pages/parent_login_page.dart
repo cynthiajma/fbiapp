@@ -73,11 +73,12 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
             // the newly added parent's view. This preserves the originally logged-in parent's ID.
             
             if (mounted) {
+              final username = parentData['username'] as String? ?? 'parent';
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('✓ Parent account linked successfully!'),
+                SnackBar(
+                  content: Text('✓ Parent "$username" linked successfully!'),
                   backgroundColor: Colors.green,
-                  duration: Duration(seconds: 2),
+                  duration: const Duration(seconds: 3),
                 ),
               );
               
