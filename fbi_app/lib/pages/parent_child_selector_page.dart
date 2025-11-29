@@ -504,40 +504,40 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                                     ),
                                     if (i != _children.length - 1) const SizedBox(height: 16),
                                   ],
-                                  const SizedBox(height: 24),
-                                  // Parent username tag
-                                  if (_parentUsername != null)
-                                    Center(
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                                        decoration: BoxDecoration(
-                                          color: const Color(0xff4a90e2).withOpacity(0.9),
-                                          borderRadius: BorderRadius.circular(20),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.black.withOpacity(0.1),
-                                              blurRadius: 4,
-                                              offset: const Offset(0, 2),
-                                            ),
-                                          ],
-                                        ),
-                                        child: Text(
-                                          'Parent: @$_parentUsername',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 14,
-                                            letterSpacing: 0.5,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
                                   const SizedBox(height: 32),
                                 ],
                               ),
                             ),
                           ),
                         ),
+          // Parent username tag at bottom
+          if (_parentUsername != null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'Parent: @$_parentUsername',
+                      style: const TextStyle(
+                        fontFamily: 'SpecialElite',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
                     ),
     );
