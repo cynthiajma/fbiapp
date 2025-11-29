@@ -95,7 +95,7 @@ The backend service on Railway requires the following environment variables:
 **Email Configuration (for password reset):**
 To enable password reset emails, add these environment variables in Railway:
 
-**Recommended: SendGrid**
+**Recommended: SendGrid Web API (Required for Railway Hobby)**
 1. Sign up for a free account at [SendGrid](https://sendgrid.com) (100 emails/day free)
 2. Go to Settings → API Keys → Create API Key
 3. Give it a name (e.g., "FBI App Production") and select "Full Access" or "Mail Send" permissions
@@ -104,24 +104,11 @@ To enable password reset emails, add these environment variables in Railway:
 
 Add these variables in Railway:
 ```
-EMAIL_HOST=smtp.sendgrid.net
-EMAIL_PORT=587
-EMAIL_USER=apikey
-EMAIL_PASSWORD=your-sendgrid-api-key-here
+SENDGRID_API_KEY=SG.your-sendgrid-api-key-here
 EMAIL_FROM=your-verified-email@yourdomain.com
 ```
 
-**Alternative: Gmail**
-1. Enable 2-Step Verification on your Google account
-2. Generate an App Password at https://myaccount.google.com/apppasswords
-3. Add these variables in Railway:
-```
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASSWORD=your-16-char-app-password
-EMAIL_FROM=your-email@gmail.com
-```
+**Note:** The app uses SendGrid's Web API (HTTPS) instead of SMTP, which is required for Railway Hobby plan. This is more reliable and doesn't require SMTP ports.
 
 **Note:** Without email configuration, password reset requests will fail. The app will still work for login and other features.
 
