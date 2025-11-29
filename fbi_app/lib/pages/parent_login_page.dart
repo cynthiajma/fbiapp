@@ -56,14 +56,40 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
       final parentData = await ParentAuthService.loginParent(username, password, context);
       
       if (parentData != null) {
-        // If childIdToLink is provided, we're in "add another parent" mode
-        // This is used when adding a parent from the parent child selector page
         if (widget.childIdToLink != null) {
           // DO NOT save the newly added parent's ID - preserve the current parent's ID
           // We only link the new parent to the child, but keep viewing as the original parent
           try {
+            final parentId = parentData['id'] as String;
+            final username = parentData['username'] as String? ?? 'parent';
+            
+            // Check if parent is already linked to this child
+            final isAlreadyLinked = await ParentDataService.isParentLinkedToChild(
+              parentId,
+              widget.childIdToLink!,
+              context,
+            );
+            
+            if (isAlreadyLinked) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Parent "$username" is already linked to this child. Please login as "$username" to view their children.'),
+                    backgroundColor: Colors.orange,
+                    duration: const Duration(seconds: 4),
+                  ),
+                );
+                Navigator.of(context).pop(false); 
+              }
+              setState(() {
+                _isLoading = false;
+              });
+              return;
+            }
+            
+            // Parent is not linked yet - proceed with linking
             await ParentDataService.linkParentToChild(
-              parentData['id'], 
+              parentId, 
               widget.childIdToLink!, 
               context
             );
@@ -73,7 +99,6 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
             // the newly added parent's view. This preserves the originally logged-in parent's ID.
             
             if (mounted) {
-              final username = parentData['username'] as String? ?? 'parent';
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text('✓ Parent "$username" linked successfully!'),
