@@ -33,6 +33,16 @@ class ParentAuthService {
     }
   ''';
 
+  static const String _getParentProfileQuery = '''
+    query GetParentProfile(\$id: ID!) {
+      parentProfile(id: \$id) {
+        id
+        username
+        email
+      }
+    }
+  ''';
+
   static const String _linkParentChildMutation = '''
     mutation LinkParentChild(\$parentId: ID!, \$childId: ID!) {
       linkParentChild(parentId: \$parentId, childId: \$childId)
@@ -197,6 +207,30 @@ class ParentAuthService {
       return result.data?['linkParentChild'] ?? false;
     } catch (e) {
       throw Exception('Failed to link parent and child: $e');
+    }
+  }
+
+  /// Get parent profile by ID
+  static Future<Map<String, dynamic>?> getParentProfile(String parentId, BuildContext context) async {
+    try {
+      final client = GraphQLProvider.of(context).value;
+      
+      final result = await client.query(
+        QueryOptions(
+          document: gql(_getParentProfileQuery),
+          variables: {
+            'id': parentId,
+          },
+        ),
+      );
+
+      if (result.hasException) {
+        throw Exception(result.exception.toString());
+      }
+
+      return result.data?['parentProfile'] as Map<String, dynamic>?;
+    } catch (e) {
+      throw Exception('Failed to get parent profile: $e');
     }
   }
 
