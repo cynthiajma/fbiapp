@@ -75,7 +75,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Parent "$username" is already linked to this child. Please login as "$username" to view their children.'),
-                    backgroundColor: Colors.orange,
+                    backgroundColor: Colors.red[700],
                     duration: const Duration(seconds: 4),
                   ),
                 );

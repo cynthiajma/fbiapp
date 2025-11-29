@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:email_validator/email_validator.dart';
 import '../services/parent_auth_service.dart';
 import '../services/child_auth_service.dart';
-import '../services/parent_data_service.dart';
 import '../services/user_state_service.dart';
 import 'parent_login_page.dart';
 
@@ -128,39 +127,7 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
       // DO NOT save the newly created parent's ID - preserve the current parent's ID
       // We only link the new parent to the child, but keep viewing as the original parent
       if (childId != null) {
-        final parentId = parent['id'] as String;
         final username = parent['username'] as String? ?? 'parent';
-        
-        // Check if parent is already linked to this child (shouldn't happen on signup, but check anyway)
-        final isAlreadyLinked = await ParentDataService.isParentLinkedToChild(
-          parentId,
-          childId,
-          context,
-        );
-        
-        if (isAlreadyLinked) {
-          // Parent is already linked - show informative message
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Parent "$username" is already linked to this child. Please login as "$username" to view their children.'),
-                backgroundColor: Colors.orange,
-                duration: const Duration(seconds: 4),
-              ),
-            );
-            Navigator.of(context).pop(false); // Don't reload since nothing changed
-          }
-          return;
-        }
-        
-        // Parent is not linked yet - proceed with linking
-        // Note: The createParent mutation already links the parent if childId is provided,
-        // but we check here to show appropriate message
-        
-        // Parent is linked to child, but we don't change the active logged-in parent
-        // This preserves the originally logged-in parent's ID so they can continue viewing
-        // their own children after adding another parent.
-
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

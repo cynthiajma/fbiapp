@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/parent_data_service.dart';
+import '../services/parent_auth_service.dart';
 import '../services/user_state_service.dart';
 import '../services/avatar_storage_service.dart';
 import 'parent_view_child_page.dart';
@@ -18,11 +19,29 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
   List<Map<String, dynamic>> _children = [];
   bool _isLoading = true;
   String? _errorMessage;
+  String? _parentUsername;
 
   @override
   void initState() {
     super.initState();
     _loadChildren();
+    _loadParentUsername();
+  }
+
+  Future<void> _loadParentUsername() async {
+    try {
+      final parentId = await UserStateService.getParentId();
+      if (parentId != null) {
+        final parentProfile = await ParentAuthService.getParentProfile(parentId, context);
+        if (mounted) {
+          setState(() {
+            _parentUsername = parentProfile?['username'] as String?;
+          });
+        }
+      }
+    } catch (e) {
+      // Silently fail - username tag is optional
+    }
   }
 
   Future<void> _loadChildren() async {
@@ -485,6 +504,34 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                                     ),
                                     if (i != _children.length - 1) const SizedBox(height: 16),
                                   ],
+                                  const SizedBox(height: 24),
+                                  // Parent username tag
+                                  if (_parentUsername != null)
+                                    Center(
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xff4a90e2).withOpacity(0.9),
+                                          borderRadius: BorderRadius.circular(20),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.black.withOpacity(0.1),
+                                              blurRadius: 4,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Text(
+                                          'Parent: @$_parentUsername',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 14,
+                                            letterSpacing: 0.5,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   const SizedBox(height: 32),
                                 ],
                               ),
