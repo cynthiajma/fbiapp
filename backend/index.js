@@ -407,9 +407,15 @@ const resolvers = {
         );
         
         // Send reset email with code
-        await sendPasswordResetEmail(email, resetCode);
+        try {
+          await sendPasswordResetEmail(email, resetCode);
+          console.log('Password reset code sent to:', email);
+        } catch (emailError) {
+          console.error('Email sending failed:', emailError);
+          // Code is already saved in database, but email failed
+          throw new Error(`Failed to send reset code email: ${emailError.message}. Please try again or contact support.`);
+        }
         
-        console.log('Password reset code sent to:', email);
         return true;
       } catch (error) {
         console.error('Error requesting password reset:', error);

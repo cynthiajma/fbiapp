@@ -87,9 +87,43 @@ The app is currently deployed and accessible at:
 
 The backend service on Railway requires the following environment variables:
 
+**Required:**
 - `DATABASE_URL` - Automatically provided by Railway's PostgreSQL service
 - `NODE_ENV=production` - Sets the application to production mode
 - `PORT=3000` - Server port (Railway may override this automatically)
+
+**Email Configuration (for password reset):**
+To enable password reset emails, add these environment variables in Railway:
+
+**Recommended: SendGrid**
+1. Sign up for a free account at [SendGrid](https://sendgrid.com) (100 emails/day free)
+2. Go to Settings → API Keys → Create API Key
+3. Give it a name (e.g., "FBI App Production") and select "Full Access" or "Mail Send" permissions
+4. Copy the API key (you'll only see it once!)
+5. Verify a sender email address in Settings → Sender Authentication
+
+Add these variables in Railway:
+```
+EMAIL_HOST=smtp.sendgrid.net
+EMAIL_PORT=587
+EMAIL_USER=apikey
+EMAIL_PASSWORD=your-sendgrid-api-key-here
+EMAIL_FROM=your-verified-email@yourdomain.com
+```
+
+**Alternative: Gmail**
+1. Enable 2-Step Verification on your Google account
+2. Generate an App Password at https://myaccount.google.com/apppasswords
+3. Add these variables in Railway:
+```
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-16-char-app-password
+EMAIL_FROM=your-email@gmail.com
+```
+
+**Note:** Without email configuration, password reset requests will fail. The app will still work for login and other features.
 
 ### Accessing Production
 
