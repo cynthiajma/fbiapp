@@ -199,16 +199,25 @@ const resolvers = {
       };
     },
     createChild: async (_, { username, age }) => {
-      const result = await pool.query(
-        'INSERT INTO children (child_username, child_age) VALUES ($1, $2) RETURNING child_id, child_username, child_age',
-        [username, age]
-      );
-      const child = result.rows[0];
-      return {
-        id: child.child_id.toString(),
-        username: child.child_username,
-        age: child.child_age,
-      };
+      try {
+        const result = await pool.query(
+          'INSERT INTO children (child_username, child_age) VALUES ($1, $2) RETURNING child_id, child_username, child_age',
+          [username, age]
+        );
+        const child = result.rows[0];
+        return {
+          id: child.child_id.toString(),
+          username: child.child_username,
+          age: child.child_age,
+        };
+      } catch (error) {
+        // Check if it's a duplicate username error (PostgreSQL unique constraint violation)
+        if (error.code === '23505' && error.constraint === 'children_child_username_key') {
+          throw new Error('This detective name is already taken. Please choose a different name.');
+        }
+        // Re-throw other errors
+        throw error;
+      }
     },
     createParent: async (_, { username, email, password, childId }) => {
       // Check if username already exists
