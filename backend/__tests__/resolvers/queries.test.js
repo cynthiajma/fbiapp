@@ -142,6 +142,100 @@ describe('Query Resolvers', () => {
         ['1', '2024-01-01', '2024-01-02']
       );
     });
+
+    test('should return empty array when no logs exist', async () => {
+      pool.query.mockResolvedValueOnce({ rows: [] });
+
+      const result = await resolvers.Query.childLogs(null, { childId: '1' });
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('characterLibrary', () => {
+    test('should return all characters with base64 encoded photo and audio', async () => {
+      const photoBuffer = Buffer.from('photo-data');
+      const audioBuffer = Buffer.from('audio-data');
+      const mockCharacter = createMockCharacter(1, 'Henry', photoBuffer, 'Description', audioBuffer);
+      pool.query.mockResolvedValueOnce({ rows: [mockCharacter] });
+
+      const result = await resolvers.Query.characterLibrary(null, {});
+
+      expect(result).toHaveLength(1);
+      expect(result[0]).toEqual({
+        id: '1',
+        name: 'Henry',
+        photo: photoBuffer.toString('base64'),
+        description: 'Description',
+        audio: audioBuffer.toString('base64'),
+      });
+    });
+
+    test('should return null for photo and audio when not present', async () => {
+      const mockCharacter = createMockCharacter(1, 'Henry', null, 'Description', null);
+      pool.query.mockResolvedValueOnce({ rows: [mockCharacter] });
+
+      const result = await resolvers.Query.characterLibrary(null, {});
+
+      expect(result[0].photo).toBeNull();
+      expect(result[0].audio).toBeNull();
+    });
+
+    test('should return empty array when no characters exist', async () => {
+      pool.query.mockResolvedValueOnce({ rows: [] });
+
+      const result = await resolvers.Query.characterLibrary(null, {});
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('isParentLinkedToChild', () => {
+    test('should return true when link exists', async () => {
+      pool.query.mockResolvedValueOnce({ rows: [{ parent_id: 1 }] });
+
+      const result = await resolvers.Query.isParentLinkedToChild(null, {
+        parentId: '1',
+        childId: '2',
+      });
+
+      expect(result).toBe(true);
+      expect(pool.query).toHaveBeenCalledWith(
+        'SELECT parent_id FROM parent_child_link WHERE parent_id = $1 AND child_id = $2',
+        [1, 2]
+      );
+    });
+
+    test('should return false when link does not exist', async () => {
+      pool.query.mockResolvedValueOnce({ rows: [] });
+
+      const result = await resolvers.Query.isParentLinkedToChild(null, {
+        parentId: '1',
+        childId: '2',
+      });
+
+      expect(result).toBe(false);
+    });
+
+    test('should return false for invalid parent ID', async () => {
+      const result = await resolvers.Query.isParentLinkedToChild(null, {
+        parentId: 'invalid',
+        childId: '2',
+      });
+
+      expect(result).toBe(false);
+      expect(pool.query).not.toHaveBeenCalled();
+    });
+
+    test('should return false for invalid child ID', async () => {
+      const result = await resolvers.Query.isParentLinkedToChild(null, {
+        parentId: '1',
+        childId: 'invalid',
+      });
+
+      expect(result).toBe(false);
+      expect(pool.query).not.toHaveBeenCalled();
+    });
   });
 });
 
