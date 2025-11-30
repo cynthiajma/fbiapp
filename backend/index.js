@@ -504,6 +504,10 @@ const resolvers = {
   }
 };
 
+// Export resolvers for testing
+module.exports.resolvers = resolvers;
+module.exports.typeDefs = typeDefs;
+
 async function startServer() {
   const app = express();
   const httpServer = http.createServer(app);
@@ -531,7 +535,10 @@ async function startServer() {
   console.log(`🚀 Server ready at http://0.0.0.0:${port}/graphql`);
 }
 
-startServer().catch((error) => {
-  console.error('❌ Failed to start server:', error);
-  process.exit(1);
-});
+// Only start server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  startServer().catch((error) => {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  });
+}
