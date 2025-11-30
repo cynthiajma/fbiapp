@@ -420,7 +420,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'SpecialElite',
-                          fontSize: 14,
+                          fontSize: 18,
                           color: Colors.black87,
                         ),
                       ),
