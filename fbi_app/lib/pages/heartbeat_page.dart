@@ -132,7 +132,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
           const SnackBar(
             content: Text('Audio playing...'),
             duration: Duration(seconds: 2), 
-            backgroundColor: Colors.blue,
+            backgroundColor: const Color(0xff4a90e2),
           ),
         );
       }
@@ -183,7 +183,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         const SnackBar(
           content: Text('Audio reset to beginning'),
           duration: Duration(seconds: 1),
-          backgroundColor: Colors.blue,
+          backgroundColor: const Color(0xff4a90e2),
         ),
       );
     }
@@ -231,7 +231,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Feeling logged successfully!'),
-            backgroundColor: Colors.blue,
+            backgroundColor: const Color(0xff4a90e2),
           ),
         );
       }

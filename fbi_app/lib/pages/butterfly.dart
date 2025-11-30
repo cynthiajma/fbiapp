@@ -137,7 +137,7 @@ class _BettyPageState extends State<BettyPage>
           const SnackBar(
             content: Text('Audio playing...'),
             duration: Duration(seconds: 2), 
-            backgroundColor: Colors.blue,
+            backgroundColor: const Color(0xff4a90e2),
           ),
         );
       }
