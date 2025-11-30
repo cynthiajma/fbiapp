@@ -162,7 +162,7 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
                                     ],
                                   ),
                                   child: IconButton(
-                                    icon: const Icon(Icons.arrow_back, color: Color(0xff4a90e2), size: 24),
+                                    icon: const Icon(Icons.arrow_back, color: Color(0xff2275d3), size: 24),
                                     onPressed: () => Navigator.of(context).pop(),
                                     tooltip: 'Back',
                                   ),
@@ -177,7 +177,7 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
                                       decoration: BoxDecoration(
                                         color: Colors.white.withOpacity(0.9),
                                         borderRadius: BorderRadius.circular(20),
-                                        border: Border.all(color: const Color(0xff4a90e2)),
+                                        border: Border.all(color: const Color(0xff2275d3)),
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
@@ -185,14 +185,14 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
                                           Icon(
                                             Icons.remove_red_eye,
                                             size: 16,
-                                            color: Color(0xff4a90e2),
+                                            color: Color(0xff2275d3),
                                           ),
                                           SizedBox(width: 4),
                                           Text(
                                             'Parent View',
                                             style: TextStyle(
                                               fontSize: 12,
-                                              color: Color(0xff4a90e2),
+                                              color: Color(0xff2275d3),
                                               fontWeight: FontWeight.bold,
                                             ),
                                           ),
@@ -270,7 +270,7 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
                                             vertical: 8,
                                           ),
                                           decoration: BoxDecoration(
-                                            color: const Color(0xff4a90e2),
+                                            color: const Color(0xff2275d3),
                                             borderRadius: BorderRadius.circular(20),
                                           ),
                                           child: const Row(

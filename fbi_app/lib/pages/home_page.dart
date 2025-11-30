@@ -206,7 +206,7 @@ class _HomePageState extends State<HomePage> {
                           '$_detectiveName 🕵️‍♀️',
                           style: const TextStyle(
                             fontFamily: 'SpecialElite',
-                            fontSize: 14,
+                            fontSize: 18,
                             color: Colors.black87,
                           ),
                         ),

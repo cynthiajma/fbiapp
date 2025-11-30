@@ -226,7 +226,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     decoration: BoxDecoration(
-                      color: const Color(0xff4a90e2),
+                      color: const Color(0xff2275d3),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Text(
@@ -351,7 +351,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _login,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xff4a90e2),
+                              backgroundColor: const Color(0xff2275d3),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -395,7 +395,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                             'Forgot Password?',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Color(0xff4a90e2),
+                              color: Color(0xff2275d3),
                               decoration: TextDecoration.underline,
                             ),
                           ),
@@ -420,7 +420,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'SpecialElite',
-                          fontSize: 14,
+                          fontSize: 18,
                           color: Colors.black87,
                         ),
                       ),
