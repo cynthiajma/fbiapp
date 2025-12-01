@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import 'butterfly.dart';
 
 // Mock CharacterConstants. DELETE IF USING SEPARATE FILE.
 class CharacterConstants {
@@ -24,6 +25,7 @@ class _SamanthaPageState extends State<SamanthaPage> {
   int _heatLevel = 0; 
   static const int _maxLevel = 5; 
   bool _isLogging = false;
+  bool _allQuestionsCompleted = false;
   
   int _currentQuestionIndex = 0;
   final List<String> _questions = [
@@ -85,10 +87,12 @@ class _SamanthaPageState extends State<SamanthaPage> {
     if (_currentQuestionIndex < _questions.length - 1) {
       setState(() {
         _currentQuestionIndex++;
-        _heatLevel = 0; 
+        _heatLevel = 0;
+        _allQuestionsCompleted = false;
       });
     } else {
       setState(() {
+        _allQuestionsCompleted = true;
         _currentQuestionIndex = 0; 
         _heatLevel = 0;
       });
@@ -348,6 +352,29 @@ class _SamanthaPageState extends State<SamanthaPage> {
                       ),
                     ),
                   ),
+                  // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
+                  if (_allQuestionsCompleted) ...[
+                    const SizedBox(height: 10),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => const BettyPage()),
+                          );
+                        },
+                        icon: const Icon(Icons.arrow_forward),
+                        label: const Text('NEXT CHARACTER'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue.shade600,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                          textStyle: GoogleFonts.nunito(fontSize: 18, fontWeight: FontWeight.bold)
+                        ),
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),

@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import 'heartbeat_page.dart';
 
 // Mock Constants (Delete if using separate file)
 class CharacterConstants {
@@ -25,6 +26,7 @@ class _RickyPageState extends State<RickyPage> {
   double _rockWeight = 0.0; 
   static const double _maxWeight = 10.0; 
   bool _isLogging = false;
+  bool _allQuestionsCompleted = false;
   
   int _currentQuestionIndex = 0;
   final List<String> _questions = [
@@ -74,9 +76,11 @@ class _RickyPageState extends State<RickyPage> {
       setState(() {
         _currentQuestionIndex++;
         _rockWeight = 0.0; // Reset
+        _allQuestionsCompleted = false;
       });
     } else {
       setState(() {
+        _allQuestionsCompleted = true;
         _currentQuestionIndex = 0; 
         _rockWeight = 0.0;
       });
@@ -264,27 +268,59 @@ class _RickyPageState extends State<RickyPage> {
               // --- NEXT BUTTON ---
               Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isLogging ? null : _nextQuestion,
-                    icon: _isLogging
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.check),
-                    label: Text(_isLogging ? 'LOGGING...' : 'LOG THIS WEIGHT'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: textColor, // Button adapts to theme
-                      foregroundColor: bgColor,   // Text is inverted
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLogging ? null : _nextQuestion,
+                        icon: _isLogging
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.check),
+                        label: Text(_isLogging ? 'LOGGING...' : 'LOG THIS WEIGHT'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: textColor, // Button adapts to theme
+                          foregroundColor: bgColor,   // Text is inverted
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          textStyle: GoogleFonts.nunito(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          )
+                        ),
                       ),
-                      textStyle: GoogleFonts.nunito(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      )
                     ),
-                  ),
+                    // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
+                    if (_allQuestionsCompleted) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+                            );
+                          },
+                          icon: const Icon(Icons.arrow_forward),
+                          label: const Text('NEXT CHARACTER'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade700,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            textStyle: GoogleFonts.nunito(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            )
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],
