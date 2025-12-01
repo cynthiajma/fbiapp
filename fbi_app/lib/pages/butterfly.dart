@@ -1,6 +1,7 @@
 // lib/butterfly.dart
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'dart:io';
 import 'dart:typed_data';
@@ -122,8 +123,9 @@ class _BettyPageState extends State<BettyPage>
       
       // Use different approach for web vs native platforms
       if (kIsWeb) {
-        // For web (Chrome): Use AssetSource
-        audioSource = AssetSource('data/audio/betty-butterfly.mp3');
+        // For web: Use data URL (base64) - AssetSource doesn't work on web
+        final base64Audio = base64Encode(_audioBytes!);
+        audioSource = UrlSource('data:audio/mp3;base64,$base64Audio');
       } else {
         // For native platforms (iOS/Android/macOS/Linux/Windows): Use temporary file
         // Create the temp file right before playing (like Henry does)
