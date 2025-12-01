@@ -4,6 +4,7 @@ import 'heartbeat_page.dart';
 import 'butterfly.dart';
 import 'sweat.dart';
 import 'rock.dart';
+import 'gerda.dart';
 import '../services/character_service.dart';
 
 
@@ -60,6 +61,13 @@ class _CharacterLibraryPageState extends State<CharacterLibraryPage> {
         return () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const BettyPage()),
+          );
+          
+        };
+        case 'Gerda Gotta Go':
+        return () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const GerdaPage()),
           );
         };
       case 'Ricky the Rock':
