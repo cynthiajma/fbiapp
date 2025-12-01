@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:math' as math;
-import 'package:path_provider/path_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../services/child_data_service.dart';
 import '../services/avatar_storage_service.dart';
 import '../features/character.dart';
 import '../widgets/char_row.dart';
+
+// Conditional imports for web vs mobile
+import 'csv_export_stub.dart'
+    if (dart.library.html) 'csv_export_web.dart'
+    if (dart.library.io) 'csv_export_mobile.dart' as csv_export;
 
 enum TimeFilter { week, month, year, all }
 enum ViewMode { list, chart }
@@ -1050,20 +1053,16 @@ class _ParentViewChildPageState extends State<ParentViewChildPage> {
       if (!mounted) return;
       Navigator.of(context).pop();
 
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/$fileName');
-      await file.writeAsString(csvContent);
-      
-      final xFile = XFile(file.path);
-      await Share.shareXFiles(
-        [xFile],
-        subject: 'Child Logs Export - $_childName',
-        text: 'Exported logs for $_childName',
-      );
+      // Use platform-specific export
+      await csv_export.downloadCsv(csvContent, fileName);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('CSV exported successfully!')),
+        SnackBar(
+          content: Text(kIsWeb 
+            ? 'CSV downloaded!' 
+            : 'CSV exported successfully!'),
+        ),
       );
     } catch (e) {
       if (!mounted) return;
