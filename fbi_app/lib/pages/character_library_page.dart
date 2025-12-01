@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'heartbeat_page.dart';
 import 'butterfly.dart';
+import 'sweat.dart';
+import 'rock.dart';
 import '../services/character_service.dart';
 
 
@@ -48,10 +50,22 @@ class _CharacterLibraryPageState extends State<CharacterLibraryPage> {
             MaterialPageRoute(builder: (_) => const HeartbeatPage()),
           );
         };
+      case 'Samantha Sweat':
+        return () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const SamanthaPage()),
+          );
+        };
       case 'Betty Butterfly':
         return () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const BettyPage()),
+          );
+        };
+      case 'Ricky the Rock':
+        return () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const RickyPage()),
           );
         };
       default:
