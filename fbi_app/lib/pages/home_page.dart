@@ -168,10 +168,10 @@ class _HomePageState extends State<HomePage> {
                           Center(
                             child: Showcase(
                               key: TutorialService.startCaseKey,
-                              title: 'Start Case',
+                              title: 'Character Library',
                               description: 'Tap here to start investigating your feelings! Choose a character and log how you\'re feeling.',
                               child: _PinnedNoteButton(
-                                text: 'Start Case',
+                                text: 'Character Library',
                                 color: const Color(0xFFFFF8DC),
                                 rotation: -1,
                                 width: 140,
@@ -326,6 +326,7 @@ class _PinnedNoteButton extends StatelessWidget {
               Center(
                 child: Text(
                   text,
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontFamily: 'SpecialElite',
                     fontSize: 22,
@@ -419,12 +420,12 @@ class _RedStringPainter extends CustomPainter {
       ..style = PaintingStyle.stroke;
 
     // Draw fewer, longer red strings spanning the entire width
-    // First string passes through the top of the Start Case button (centered)
+    // First string passes through the top of the Character Library button (centered)
     final path1 = Path();
     path1.moveTo(0, size.height * 0.45);
     path1.quadraticBezierTo(
       size.width * 0.5,
-      size.height * 0.45, // Pass through center at top of Start Case button
+      size.height * 0.45, // Pass through center at top of Character library button
       size.width,
       size.height * 0.47,
     );
