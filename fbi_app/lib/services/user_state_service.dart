@@ -6,7 +6,6 @@ class UserStateService {
   static const String _parentAuthenticatedKey = 'parent_authenticated';
   static const String _parentIdKey = 'parent_id';
   static const String _tutorialCompletedKey = 'tutorial_completed';
-  static const String _parentTutorialCompletedKey = 'parent_tutorial_completed';
   
   /// Get the current child's name
   static Future<String?> getChildName() async {
@@ -80,24 +79,6 @@ class UserStateService {
     await prefs.remove(_tutorialCompletedKey);
   }
   
-  /// Check if parent tutorial has been completed
-  static Future<bool> isParentTutorialCompleted() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_parentTutorialCompletedKey) ?? false;
-  }
-  
-  /// Mark parent tutorial as completed
-  static Future<void> markParentTutorialCompleted() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_parentTutorialCompletedKey, true);
-  }
-  
-  /// Reset parent tutorial completion (for testing or replay)
-  static Future<void> resetParentTutorial() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_parentTutorialCompletedKey);
-  }
-  
   /// Clear tutorial status when clearing user data
   static Future<void> clearUserData() async {
     final prefs = await SharedPreferences.getInstance();
@@ -106,6 +87,5 @@ class UserStateService {
     await prefs.remove(_parentAuthenticatedKey);
     await prefs.remove(_parentIdKey);
     await prefs.remove(_tutorialCompletedKey);
-    await prefs.remove(_parentTutorialCompletedKey);
   }
 }
