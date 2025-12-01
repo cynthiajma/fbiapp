@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'heartbeat_page.dart';
 import 'butterfly.dart';
 import 'sweat.dart';
+import 'rock.dart';
 import '../services/character_service.dart';
 
 
@@ -59,6 +60,12 @@ class _CharacterLibraryPageState extends State<CharacterLibraryPage> {
         return () {
           Navigator.of(context).push(
             MaterialPageRoute(builder: (_) => const BettyPage()),
+          );
+        };
+      case 'Ricky the Rock':
+        return () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (_) => const RickyPage()),
           );
         };
       default:
