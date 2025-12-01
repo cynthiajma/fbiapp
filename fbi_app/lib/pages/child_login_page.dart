@@ -157,7 +157,7 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     decoration: BoxDecoration(
-                      color: const Color(0xffe67268),
+                      color: Colors.red,
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Text(
@@ -231,7 +231,7 @@ class _ChildLoginPageState extends State<ChildLoginPage> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _login,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xffe67268),
+                              backgroundColor: Colors.red,
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
