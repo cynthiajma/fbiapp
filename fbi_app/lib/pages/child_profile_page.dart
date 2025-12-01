@@ -7,6 +7,7 @@ import '../services/child_data_service.dart';
 import '../services/avatar_storage_service.dart';
 import '../features/character.dart';
 import '../widgets/char_row.dart';
+import 'login_selection_page.dart';
 
 class ChildProfilePage extends StatefulWidget {
   const ChildProfilePage({super.key});
@@ -161,23 +162,56 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
                                     tooltip: 'Back to Home',
                                   ),
                                 ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.9),
-                                    shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        offset: const Offset(2, 2),
-                                        blurRadius: 4,
-                                        color: Colors.black.withOpacity(0.2),
+                                Row(
+                                  children: [
+                                    // Logout Button
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.red[400],
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            offset: const Offset(2, 2),
+                                            blurRadius: 4,
+                                            color: Colors.black.withOpacity(0.2),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                  child: IconButton(
-                                    icon: const Icon(Icons.edit, color: Color(0xffe67268), size: 24),
-                                    onPressed: _openCustomization,
-                                    tooltip: 'Customize Avatar',
-                                  ),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.logout, color: Colors.white, size: 24),
+                                        onPressed: () async {
+                                          await UserStateService.clearUserData();
+                                          if (mounted) {
+                                            Navigator.of(context).pushAndRemoveUntil(
+                                              MaterialPageRoute(builder: (_) => const LoginSelectionPage()),
+                                              (route) => false,
+                                            );
+                                          }
+                                        },
+                                        tooltip: 'Logout',
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    // Edit Avatar Button
+                                    Container(
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.9),
+                                        shape: BoxShape.circle,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            offset: const Offset(2, 2),
+                                            blurRadius: 4,
+                                            color: Colors.black.withOpacity(0.2),
+                                          ),
+                                        ],
+                                      ),
+                                      child: IconButton(
+                                        icon: const Icon(Icons.edit, color: Color(0xffe67268), size: 24),
+                                        onPressed: _openCustomization,
+                                        tooltip: 'Customize Avatar',
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

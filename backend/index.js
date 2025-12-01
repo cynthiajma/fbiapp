@@ -199,16 +199,25 @@ const resolvers = {
       };
     },
     createChild: async (_, { username, age }) => {
-      const result = await pool.query(
-        'INSERT INTO children (child_username, child_age) VALUES ($1, $2) RETURNING child_id, child_username, child_age',
-        [username, age]
-      );
-      const child = result.rows[0];
-      return {
-        id: child.child_id.toString(),
-        username: child.child_username,
-        age: child.child_age,
-      };
+      try {
+        const result = await pool.query(
+          'INSERT INTO children (child_username, child_age) VALUES ($1, $2) RETURNING child_id, child_username, child_age',
+          [username, age]
+        );
+        const child = result.rows[0];
+        return {
+          id: child.child_id.toString(),
+          username: child.child_username,
+          age: child.child_age,
+        };
+      } catch (error) {
+        // Check if it's a duplicate username error (PostgreSQL unique constraint violation)
+        if (error.code === '23505' && error.constraint === 'children_child_username_key') {
+          throw new Error('This detective name is already taken. Please choose a different name.');
+        }
+        // Re-throw other errors
+        throw error;
+      }
     },
     createParent: async (_, { username, email, password, childId }) => {
       // Check if username already exists
@@ -407,9 +416,15 @@ const resolvers = {
         );
         
         // Send reset email with code
-        await sendPasswordResetEmail(email, resetCode);
+        try {
+          await sendPasswordResetEmail(email, resetCode);
+          console.log('Password reset code sent to:', email);
+        } catch (emailError) {
+          console.error('Email sending failed:', emailError);
+          // Code is already saved in database, but email failed
+          throw new Error(`Failed to send reset code email: ${emailError.message}. Please try again or contact support.`);
+        }
         
-        console.log('Password reset code sent to:', email);
         return true;
       } catch (error) {
         console.error('Error requesting password reset:', error);
@@ -489,6 +504,10 @@ const resolvers = {
   }
 };
 
+// Export resolvers for testing
+module.exports.resolvers = resolvers;
+module.exports.typeDefs = typeDefs;
+
 async function startServer() {
   const app = express();
   const httpServer = http.createServer(app);
@@ -516,7 +535,10 @@ async function startServer() {
   console.log(`🚀 Server ready at http://0.0.0.0:${port}/graphql`);
 }
 
-startServer().catch((error) => {
-  console.error('❌ Failed to start server:', error);
-  process.exit(1);
-});
+// Only start server if not in test mode
+if (process.env.NODE_ENV !== 'test') {
+  startServer().catch((error) => {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  });
+}

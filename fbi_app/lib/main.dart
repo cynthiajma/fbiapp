@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
     return GraphQLProvider(
       client: ValueNotifier(
         GraphQLClient(
-          link: HttpLink('https://fbiapp-production.up.railway.app//graphql'),
+          link: HttpLink('https://tender-wisdom-production-fe18.up.railway.app/graphql'),
           cache: GraphQLCache(),
         ),
       ),

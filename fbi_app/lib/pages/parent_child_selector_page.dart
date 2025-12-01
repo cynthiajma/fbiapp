@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../services/parent_data_service.dart';
+import '../services/parent_auth_service.dart';
 import '../services/user_state_service.dart';
 import '../services/avatar_storage_service.dart';
 import 'parent_view_child_page.dart';
 import 'parent_login_page.dart';
 import 'parent_signup_page.dart';
+import 'login_selection_page.dart';
 
 class ParentChildSelectorPage extends StatefulWidget {
   const ParentChildSelectorPage({super.key});
@@ -18,11 +20,29 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
   List<Map<String, dynamic>> _children = [];
   bool _isLoading = true;
   String? _errorMessage;
+  String? _parentUsername;
 
   @override
   void initState() {
     super.initState();
     _loadChildren();
+    _loadParentUsername();
+  }
+
+  Future<void> _loadParentUsername() async {
+    try {
+      final parentId = await UserStateService.getParentId();
+      if (parentId != null) {
+        final parentProfile = await ParentAuthService.getParentProfile(parentId, context);
+        if (mounted) {
+          setState(() {
+            _parentUsername = parentProfile?['username'] as String?;
+          });
+        }
+      }
+    } catch (e) {
+      // Silently fail - username tag is optional
+    }
   }
 
   Future<void> _loadChildren() async {
@@ -358,7 +378,7 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                                     children: [
                                       Container(
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.9),
+                                          color: Colors.red,
                                           shape: BoxShape.circle,
                                           boxShadow: [
                                             BoxShadow(
@@ -369,9 +389,17 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                                           ],
                                         ),
                                         child: IconButton(
-                                          icon: const Icon(Icons.arrow_back, color: Color(0xff4a90e2), size: 24),
-                                          onPressed: () => Navigator.of(context).pop(),
-                                          tooltip: 'Back',
+                                          icon: const Icon(Icons.logout, color: Colors.white, size: 24),
+                                          onPressed: () async {
+                                            await UserStateService.clearUserData();
+                                            if (context.mounted) {
+                                              Navigator.of(context).pushAndRemoveUntil(
+                                                MaterialPageRoute(builder: (_) => const LoginSelectionPage()),
+                                                (route) => false,
+                                              );
+                                            }
+                                          },
+                                          tooltip: 'Logout',
                                         ),
                                       ),
                                       Row(
@@ -491,6 +519,34 @@ class _ParentChildSelectorPageState extends State<ParentChildSelectorPage> {
                             ),
                           ),
                         ),
+          // Parent username tag at bottom
+          if (_parentUsername != null)
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: SafeArea(
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    margin: const EdgeInsets.only(bottom: 20),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      'Parent: @$_parentUsername',
+                      style: const TextStyle(
+                        fontFamily: 'SpecialElite',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
                     ),
     );

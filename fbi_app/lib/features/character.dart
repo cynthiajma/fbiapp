@@ -3,13 +3,13 @@ class Character {
   final String imageAsset; // e.g., 'assets/images/heart.png'
   final double progress;   // 0.0..1.0
   final DateTime date;
-  final int averageLevel;  // Average feeling level (0-10)
+  final int averageLevel;  // Average feeling level (1-10)
 
   const Character({
     required this.name,
     required this.imageAsset,
     required this.progress,
     required this.date,
-    this.averageLevel = 0,
+    this.averageLevel = 1,  // Default to 1, not 0
   });
 }

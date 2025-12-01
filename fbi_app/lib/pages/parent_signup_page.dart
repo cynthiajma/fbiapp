@@ -4,6 +4,7 @@ import '../services/parent_auth_service.dart';
 import '../services/child_auth_service.dart';
 import '../services/user_state_service.dart';
 import 'parent_login_page.dart';
+import 'home_page.dart';
 
 class ParentSignupPage extends StatefulWidget {
   final String? childId;
@@ -123,31 +124,39 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
         return;
       }
 
-      // Save parent state
-      await UserStateService.saveParentAuthenticated(true);
-      await UserStateService.saveParentId(parent['id']);
-
-      // Note: We do NOT save the childId here because the active child should only be set
-      // when a child actually logs in, not when a parent signs up and links to a child.
-      // This preserves the originally logged-in child's ID.
-      
+      // If childId is provided, we're in "add another parent" mode
+      // DO NOT save the newly created parent's ID - preserve the current parent's ID
+      // We only link the new parent to the child, but keep viewing as the original parent
       if (childId != null) {
-        // Parent is linked to child, but we don't change the active logged-in child
-
+        final username = parent['username'] as String? ?? 'parent';
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('✓ Parent account created and linked successfully!'),
+            SnackBar(
+              content: Text('✓ Parent "$username" created and linked successfully!'),
               backgroundColor: Colors.green,
-              duration: Duration(seconds: 2),
+              duration: const Duration(seconds: 3),
             ),
           );
           
-          // Pop back with a result to indicate that linking was successful
-          // This will trigger a reload in the parent child selector page
-          Navigator.of(context).pop(true);
+          // After parent signup, navigate child to HomePage so they can see the tutorial
+          // Check if child data is saved (from child signup)
+          final savedChildId = await UserStateService.getChildId();
+          if (savedChildId != null && savedChildId == childId) {
+            // Child is logged in, navigate to HomePage
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const HomePage()),
+              (route) => false,
+            );
+          } else {
+            // Pop back with a result to indicate that linking was successful
+            // This will trigger a reload in the parent child selector page
+            Navigator.of(context).pop(true);
+          }
         }
       } else {
+        // If no childId, this is a normal signup - save the parent state
+        await UserStateService.saveParentAuthenticated(true);
+        await UserStateService.saveParentId(parent['id']);
         // If not linked, send them to login with a hint
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(

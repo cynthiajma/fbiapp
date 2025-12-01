@@ -19,7 +19,7 @@ void main() {
       return GraphQLProvider(
         client: ValueNotifier(
           GraphQLClient(
-            link: HttpLink('http://127.0.0.1:3000/graphql'),
+            link: HttpLink('https://fbiapp-production.up.railway.app/graphql'),
             cache: GraphQLCache(),
           ),
         ),

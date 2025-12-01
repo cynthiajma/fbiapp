@@ -35,7 +35,7 @@ class LoginSelectionPage extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     decoration: BoxDecoration(
-                      color: const Color(0xff4a90e2),
+                      color: const Color(0xff2275d3),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Text(
@@ -105,7 +105,7 @@ class LoginSelectionPage extends StatelessWidget {
                           );
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xff4a90e2),
+                          backgroundColor: const Color(0xff2275d3),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           shape: RoundedRectangleBorder(
@@ -151,7 +151,7 @@ class LoginSelectionPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'SpecialElite',
-                          fontSize: 14,
+                          fontSize: 18,
                           color: Colors.black87,
                         ),
                       ),

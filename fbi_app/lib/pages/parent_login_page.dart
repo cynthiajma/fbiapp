@@ -56,30 +56,54 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
       final parentData = await ParentAuthService.loginParent(username, password, context);
       
       if (parentData != null) {
-        // If childIdToLink is provided, we're in "add another parent" mode
-        // This is used when adding a parent from the parent child selector page
         if (widget.childIdToLink != null) {
-          // Save parent authentication state
-          await UserStateService.saveParentAuthenticated(true);
-          await UserStateService.saveParentId(parentData['id']);
+          // DO NOT save the newly added parent's ID - preserve the current parent's ID
+          // We only link the new parent to the child, but keep viewing as the original parent
           try {
+            final parentId = parentData['id'] as String;
+            final username = parentData['username'] as String? ?? 'parent';
+            
+            // Check if parent is already linked to this child
+            final isAlreadyLinked = await ParentDataService.isParentLinkedToChild(
+              parentId,
+              widget.childIdToLink!,
+              context,
+            );
+            
+            if (isAlreadyLinked) {
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Parent "$username" is already linked to this child. Please login as "$username" to view their children.'),
+                    backgroundColor: Colors.red[700],
+                    duration: const Duration(seconds: 4),
+                  ),
+                );
+                Navigator.of(context).pop(false); 
+              }
+              setState(() {
+                _isLoading = false;
+              });
+              return;
+            }
+            
+            // Parent is not linked yet - proceed with linking
             await ParentDataService.linkParentToChild(
-              parentData['id'], 
+              parentId, 
               widget.childIdToLink!, 
               context
             );
             
-            // Note: We do NOT save the childIdToLink as the active child here
-            // because the active child should only be set when a child actually logs in,
-            // not when a parent is being added to a different child's profile.
-            // This preserves the originally logged-in child's ID.
+            // Note: We do NOT save the newly added parent's ID here because we want to
+            // keep viewing children from the current parent's perspective, not switch to
+            // the newly added parent's view. This preserves the originally logged-in parent's ID.
             
             if (mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('✓ Parent account linked successfully!'),
+                SnackBar(
+                  content: Text('✓ Parent "$username" linked successfully!'),
                   backgroundColor: Colors.green,
-                  duration: Duration(seconds: 2),
+                  duration: const Duration(seconds: 3),
                 ),
               );
               
@@ -202,7 +226,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                   Container(
                     padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
                     decoration: BoxDecoration(
-                      color: const Color(0xff4a90e2),
+                      color: const Color(0xff2275d3),
                       borderRadius: BorderRadius.circular(15),
                     ),
                     child: const Text(
@@ -327,7 +351,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                           child: ElevatedButton(
                             onPressed: _isLoading ? null : _login,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xff4a90e2),
+                              backgroundColor: const Color(0xff2275d3),
                               foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
@@ -371,7 +395,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                             'Forgot Password?',
                             style: TextStyle(
                               fontSize: 14,
-                              color: Color(0xff4a90e2),
+                              color: Color(0xff2275d3),
                               decoration: TextDecoration.underline,
                             ),
                           ),
@@ -396,7 +420,7 @@ class _ParentLoginPageState extends State<ParentLoginPage> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontFamily: 'SpecialElite',
-                          fontSize: 14,
+                          fontSize: 18,
                           color: Colors.black87,
                         ),
                       ),

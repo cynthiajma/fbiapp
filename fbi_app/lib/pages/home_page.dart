@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:fluttermoji/fluttermoji.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'character_library_page.dart';
 import 'child_profile_page.dart';
 import 'heartbeat_page.dart';
-import 'login_selection_page.dart';
 import 'games_selection_page.dart';
 import '../services/user_state_service.dart';
+import '../services/tutorial_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -21,6 +22,10 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadDetectiveName();
+    // Check and start tutorial if needed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      TutorialService.checkAndStartTutorial(context);
+    });
   }
 
   Future<void> _loadDetectiveName() async {
@@ -34,8 +39,12 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Stack(
+    return ShowCaseWidget(
+      onFinish: () {
+        TutorialService.completeTutorial();
+      },
+      builder: (context) => Scaffold(
+        body: Stack(
         children: [
           // Corkboard background
           Container(
@@ -70,31 +79,29 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Logout Button
-                              Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.red[400],
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      offset: const Offset(2, 2),
-                                      blurRadius: 4,
-                                      color: Colors.black.withOpacity(0.2),
-                                    ),
-                                  ],
-                                ),
-                                child: IconButton(
-                                  icon: const Icon(Icons.logout, color: Colors.white, size: 24),
-                                  onPressed: () async {
-                                    await UserStateService.clearUserData();
-                                    if (mounted) {
-                                      Navigator.of(context).pushAndRemoveUntil(
-                                        MaterialPageRoute(builder: (_) => const LoginSelectionPage()),
-                                        (route) => false,
-                                      );
-                                    }
-                                  },
-                                  tooltip: 'Logout',
+                              // Help Icon (top left)
+                              Showcase(
+                                key: TutorialService.helpIconKey,
+                                description: 'Tap here anytime to see the tutorial again!',
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: Colors.blue[400],
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        offset: const Offset(2, 2),
+                                        blurRadius: 4,
+                                        color: Colors.black.withOpacity(0.2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: IconButton(
+                                    icon: const Icon(Icons.help_outline, color: Colors.white, size: 24),
+                                    onPressed: () {
+                                      TutorialService.resetAndStartTutorial(context);
+                                    },
+                                    tooltip: 'Help & Tutorial',
+                                  ),
                                 ),
                               ),
                               const _ProfileButton(),
@@ -127,47 +134,62 @@ class _HomePageState extends State<HomePage> {
 
                           // Pinned notes/buttons
                           Center(
-                            child: _PinnedNoteButton(
-                              text: 'Start Case',
-                              color: const Color(0xFFFFF8DC),
-                              rotation: -1,
-                              width: 140,
-                              height: 140,
-                              onTap: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const CharacterLibraryPage()),
-                                );
-                              },
+                            child: Showcase(
+                              key: TutorialService.startCaseKey,
+                              title: 'Start Case',
+                              description: 'Tap here to start investigating your feelings! Choose a character and log how you\'re feeling.',
+                              child: _PinnedNoteButton(
+                                text: 'Start Case',
+                                color: const Color(0xFFFFF8DC),
+                                rotation: -1,
+                                width: 140,
+                                height: 140,
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(builder: (_) => const CharacterLibraryPage()),
+                                  );
+                                },
+                              ),
                             ),
                           ),
                           const SizedBox(height: 20),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              _PinnedNoteButton(
-                                text: 'Games',
-                                color: const Color(0xFFFFF8DC),
-                                rotation: 2.5,
-                                width: 140,
-                                height: 140,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const GamesSelectionPage()),
-                                  );
-                                },
+                              Showcase(
+                                key: TutorialService.gamesKey,
+                                title: 'Games',
+                                description: 'Play fun games to learn more about your body and feelings!',
+                                child: _PinnedNoteButton(
+                                  text: 'Games',
+                                  color: const Color(0xFFFFF8DC),
+                                  rotation: 2.5,
+                                  width: 140,
+                                  height: 140,
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const GamesSelectionPage()),
+                                    );
+                                  },
+                                ),
                               ),
                               const SizedBox(width: 28),
-                              _PinnedNoteButton(
-                                text: 'Investigate',
-                                color: const Color(0xFFFFF8DC),
-                                rotation: -3.5,
-                                width: 140,
-                                height: 140,
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(builder: (_) => const HeartbeatPage()),
-                                  );
-                                },
+                              Showcase(
+                                key: TutorialService.investigateKey,
+                                title: 'Investigate',
+                                description: 'Use your detective skills to investigate your heartbeat and body signals!',
+                                child: _PinnedNoteButton(
+                                  text: 'Investigate',
+                                  color: const Color(0xFFFFF8DC),
+                                  rotation: -3.5,
+                                  width: 140,
+                                  height: 140,
+                                  onTap: () {
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+                                    );
+                                  },
+                                ),
                               ),
                             ],
                           ),
@@ -206,7 +228,7 @@ class _HomePageState extends State<HomePage> {
                           '$_detectiveName 🕵️‍♀️',
                           style: const TextStyle(
                             fontFamily: 'SpecialElite',
-                            fontSize: 14,
+                            fontSize: 18,
                             color: Colors.black87,
                           ),
                         ),
@@ -219,6 +241,7 @@ class _HomePageState extends State<HomePage> {
           ),
           ],
         ),
+      ),
     );
   }
 }
@@ -292,57 +315,62 @@ class _ProfileButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Transform.rotate(
-      angle: 1.5 * 3.1416 / 180,
-      child: GestureDetector(
-        onTap: () {
-          Navigator.of(context).push(
-            PageRouteBuilder(
-              pageBuilder: (context, animation, secondaryAnimation) => const ChildProfilePage(),
-              transitionDuration: const Duration(milliseconds: 300),
-              reverseTransitionDuration: const Duration(milliseconds: 300),
-              transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                // When pushing: child profile slides in from right (1.0 -> 0.0)
-                // When popping: animation reverses, so child profile slides out to right (0.0 -> 1.0)
-                return SlideTransition(
-                  position: Tween(
-                    begin: const Offset(1.0, 0.0), // Start from right
-                    end: Offset.zero, // End at center
-                  ).animate(CurvedAnimation(
-                    parent: animation,
-                    curve: Curves.easeInOut,
-                  )),
-                  child: child,
-                );
-              },
+    return Showcase(
+      key: TutorialService.profileKey,
+      title: 'Your Profile',
+      description: 'Tap here to view and customize your detective profile!',
+      child: Transform.rotate(
+        angle: 1.5 * 3.1416 / 180,
+        child: GestureDetector(
+          onTap: () {
+            Navigator.of(context).push(
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) => const ChildProfilePage(),
+                transitionDuration: const Duration(milliseconds: 300),
+                reverseTransitionDuration: const Duration(milliseconds: 300),
+                transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  // When pushing: child profile slides in from right (1.0 -> 0.0)
+                  // When popping: animation reverses, so child profile slides out to right (0.0 -> 1.0)
+                  return SlideTransition(
+                    position: Tween(
+                      begin: const Offset(1.0, 0.0), // Start from right
+                      end: Offset.zero, // End at center
+                    ).animate(CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeInOut,
+                    )),
+                    child: child,
+                  );
+                },
+              ),
+            );
+          },
+          child: Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              color: const Color(0xFFFFF8DC),
+              borderRadius: BorderRadius.circular(4),
+              boxShadow: [
+                BoxShadow(
+                  offset: const Offset(3, 4),
+                  blurRadius: 6,
+                  color: Colors.black.withOpacity(0.32),
+                ),
+              ],
             ),
-          );
-        },
-        child: Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            color: const Color(0xFFFFF8DC),
-            borderRadius: BorderRadius.circular(4),
-            boxShadow: [
-              BoxShadow(
-                offset: const Offset(3, 4),
-                blurRadius: 6,
-                color: Colors.black.withOpacity(0.32),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              const Positioned(
-                top: 6,
-                left: 10,
-                child: Icon(Icons.push_pin, color: Colors.redAccent, size: 16),
-              ),
-              Center(
-                child: FluttermojiCircleAvatar(radius: 28),
-              ),
-            ],
+            child: Stack(
+              children: [
+                const Positioned(
+                  top: 6,
+                  left: 10,
+                  child: Icon(Icons.push_pin, color: Colors.redAccent, size: 16),
+                ),
+                Center(
+                  child: FluttermojiCircleAvatar(radius: 28),
+                ),
+              ],
+            ),
           ),
         ),
       ),
