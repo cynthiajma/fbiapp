@@ -186,14 +186,26 @@ class ChildDataService {
       }
       
       if (character != null && displayName != null) {
-        final level = log['level'] as int;
+        // Safely parse level with fallback to 1
+        int level = 1;
+        final rawLevel = log['level'];
+        if (rawLevel is int) {
+          level = rawLevel;
+        } else if (rawLevel is double) {
+          level = rawLevel.round();
+        } else if (rawLevel is String) {
+          level = int.tryParse(rawLevel) ?? 1;
+        }
+        // Ensure level is between 1-10
+        level = level.clamp(1, 10);
+        
         final timestamp = DateTime.parse(log['timestamp'] as String);
         
         logEntries.add({
           'character': character,
           'characterName': displayName,
           'level': level,
-          'progress': level / 10.0, // Convert level (0-10) to progress (0-1)
+          'progress': level / 10.0, // Convert level (1-10) to progress (0.1-1)
           'date': timestamp,
           'logId': log['id'],
         });
