@@ -9,7 +9,9 @@ import '../services/user_state_service.dart';
 import '../services/character_service.dart';
 
 class HeartbeatPage extends StatefulWidget {
-  const HeartbeatPage({super.key});
+  final bool fromCharacterLibrary;
+  
+  const HeartbeatPage({super.key, this.fromCharacterLibrary = false});
 
   @override
   State<HeartbeatPage> createState() => _HeartbeatPageState();
@@ -260,6 +262,14 @@ class _HeartbeatPageState extends State<HeartbeatPage>
       appBar: AppBar(
         backgroundColor: const Color(0xffd2f0f7),
         elevation: 0,
+        leading: widget.fromCharacterLibrary
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            : null, // Default back button behavior
         actions: [
           // Play/Pause button
           Container(

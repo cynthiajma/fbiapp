@@ -15,7 +15,9 @@ class CharacterConstants {
 }
 
 class GerdaPage extends StatefulWidget {
-  const GerdaPage({Key? key}) : super(key: key); 
+  final bool fromCharacterLibrary;
+  
+  const GerdaPage({Key? key, this.fromCharacterLibrary = false}) : super(key: key); 
 
   @override
   _GerdaPageState createState() => _GerdaPageState();
@@ -148,6 +150,14 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
         title: const Text('GERDA GOTTA GO'),
         backgroundColor: Colors.amber.shade100,
         elevation: 0,
+        leading: widget.fromCharacterLibrary
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            : null, // Default back button behavior
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -329,7 +339,7 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
                             child: ElevatedButton.icon(
                               onPressed: () {
                                 Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => const RickyPage()),
+                                  MaterialPageRoute(builder: (_) => RickyPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
                                 );
                               },
                               icon: const Icon(Icons.arrow_forward),
