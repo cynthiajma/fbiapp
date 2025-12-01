@@ -4,6 +4,7 @@ import '../services/parent_auth_service.dart';
 import '../services/child_auth_service.dart';
 import '../services/user_state_service.dart';
 import 'parent_login_page.dart';
+import 'home_page.dart';
 
 class ParentSignupPage extends StatefulWidget {
   final String? childId;
@@ -137,9 +138,20 @@ class _ParentSignupPageState extends State<ParentSignupPage> {
             ),
           );
           
-          // Pop back with a result to indicate that linking was successful
-          // This will trigger a reload in the parent child selector page
-          Navigator.of(context).pop(true);
+          // After parent signup, navigate child to HomePage so they can see the tutorial
+          // Check if child data is saved (from child signup)
+          final savedChildId = await UserStateService.getChildId();
+          if (savedChildId != null && savedChildId == childId) {
+            // Child is logged in, navigate to HomePage
+            Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(builder: (_) => const HomePage()),
+              (route) => false,
+            );
+          } else {
+            // Pop back with a result to indicate that linking was successful
+            // This will trigger a reload in the parent child selector page
+            Navigator.of(context).pop(true);
+          }
         }
       } else {
         // If no childId, this is a normal signup - save the parent state
