@@ -3,9 +3,9 @@ import 'package:fluttermoji/fluttermoji.dart';
 import 'package:showcaseview/showcaseview.dart';
 import 'character_library_page.dart';
 import 'child_profile_page.dart';
-import 'heartbeat_page.dart';
 import 'games_selection_page.dart';
 import 'login_selection_page.dart';
+import 'sweat.dart';
 import '../services/user_state_service.dart';
 import '../services/tutorial_service.dart';
 
@@ -218,7 +218,7 @@ class _HomePageState extends State<HomePage> {
                                   height: 140,
                                   onTap: () {
                                     Navigator.of(context).push(
-                                      MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+                                      MaterialPageRoute(builder: (_) => const SamanthaPage()),
                                     );
                                   },
                                 ),

@@ -260,7 +260,6 @@ class _HeartbeatPageState extends State<HeartbeatPage>
       appBar: AppBar(
         backgroundColor: const Color(0xffd2f0f7),
         elevation: 0,
-        leading: BackButton(onPressed: () => Navigator.of(context).pop()),
         actions: [
           // Play/Pause button
           Container(

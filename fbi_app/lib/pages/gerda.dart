@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import 'rock.dart';
 
 // Mock Constants (Delete if using separate file)
 class CharacterConstants {
@@ -24,6 +25,7 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
   
   double _fillLevel = 0.0; 
   bool _isLogging = false;
+  bool _allQuestionsCompleted = false;
   
   late AnimationController _shakeController;
   
@@ -93,6 +95,7 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
       });
     } else {
       setState(() {
+        _allQuestionsCompleted = true;
         _currentQuestionIndex = 0; 
         _fillLevel = 0.0;
         _shakeController.stop();
@@ -294,27 +297,59 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
                   // --- NEXT BUTTON ---
                   Padding(
                     padding: const EdgeInsets.all(20.0),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _isLogging ? null : _nextQuestion,
-                        icon: _isLogging
-                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Icon(Icons.arrow_forward),
-                        label: Text(_isLogging ? 'LOGGING...' : 'NEXT QUESTION'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.amber.shade600,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            onPressed: _isLogging ? null : _nextQuestion,
+                            icon: _isLogging
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                                : const Icon(Icons.arrow_forward),
+                            label: Text(_isLogging ? 'LOGGING...' : 'NEXT QUESTION'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber.shade600,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 15),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
+                              textStyle: GoogleFonts.nunito(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              )
+                            ),
                           ),
-                          textStyle: GoogleFonts.nunito(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          )
                         ),
-                      ),
+                        // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
+                        if (_allQuestionsCompleted) ...[
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(builder: (_) => const RickyPage()),
+                                );
+                              },
+                              icon: const Icon(Icons.arrow_forward),
+                              label: const Text('NEXT CHARACTER'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.amber.shade800,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(vertical: 15),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                                textStyle: GoogleFonts.nunito(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                )
+                              ),
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],

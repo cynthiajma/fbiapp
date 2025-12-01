@@ -13,6 +13,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import 'gerda.dart';
 
 class BettyPage extends StatefulWidget {
   const BettyPage({Key? key}) : super(key: key); 
@@ -28,6 +29,7 @@ class _BettyPageState extends State<BettyPage>
   int _tapCounter = 0; 
   static const int _maxTaps = 10; 
   bool _isLogging = false;
+  bool _allQuestionsCompleted = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlayingAudio = false;
   bool _hasPlayedOnce = false;
@@ -214,6 +216,7 @@ class _BettyPageState extends State<BettyPage>
     } else {
       // If all questions are answered, just reset the counter
        setState(() {
+        _allQuestionsCompleted = true;
         _currentQuestionIndex = 0; // Loop back to the first question
         _tapCounter = 0;
       });
@@ -311,7 +314,6 @@ class _BettyPageState extends State<BettyPage>
       appBar: AppBar(
         backgroundColor: const Color(0xfffcefee),
         elevation: 0,
-        leading: BackButton(onPressed: () => Navigator.of(context).pop()),
         actions: [
           // Audio buttons remain the same
           // ... (Play/Pause and Replay buttons)
@@ -468,6 +470,29 @@ class _BettyPageState extends State<BettyPage>
                         ),
                       ],
                     ),
+                    // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
+                    if (_allQuestionsCompleted) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => const GerdaPage()),
+                            );
+                          },
+                          icon: const Icon(Icons.arrow_forward),
+                          label: const Text('NEXT CHARACTER'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.pink.shade600,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                            textStyle: GoogleFonts.nunito(fontSize: 18, fontWeight: FontWeight.bold)
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
