@@ -14,7 +14,9 @@ class CharacterConstants {
 }
 
 class RickyPage extends StatefulWidget {
-  const RickyPage({Key? key}) : super(key: key); 
+  final bool fromCharacterLibrary;
+  
+  const RickyPage({Key? key, this.fromCharacterLibrary = false}) : super(key: key); 
 
   @override
   _RickyPageState createState() => _RickyPageState();
@@ -139,6 +141,14 @@ class _RickyPageState extends State<RickyPage> {
         backgroundColor: bgColor, // Dynamic App Bar
         foregroundColor: textColor,
         elevation: 0,
+        leading: widget.fromCharacterLibrary
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            : null, // Default back button behavior
       ),
       body: AnimatedContainer(
         duration: const Duration(milliseconds: 100), // Smooth color transition
@@ -300,7 +310,7 @@ class _RickyPageState extends State<RickyPage> {
                         child: ElevatedButton.icon(
                           onPressed: () {
                             Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+                              MaterialPageRoute(builder: (_) => HeartbeatPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
                             );
                           },
                           icon: const Icon(Icons.arrow_forward),

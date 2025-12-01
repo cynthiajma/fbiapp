@@ -5,7 +5,6 @@ import 'butterfly.dart';
 import 'sweat.dart';
 import 'rock.dart';
 import 'gerda.dart';
-import 'home_page.dart';
 import '../services/character_service.dart';
 
 
@@ -49,32 +48,32 @@ class _CharacterLibraryPageState extends State<CharacterLibraryPage> {
       case 'Henry the Heartbeat':
         return () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const HeartbeatPage()),
+            MaterialPageRoute(builder: (_) => const HeartbeatPage(fromCharacterLibrary: true)),
           );
         };
       case 'Samantha Sweat':
         return () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const SamanthaPage()),
+            MaterialPageRoute(builder: (_) => const SamanthaPage(fromCharacterLibrary: true)),
           );
         };
       case 'Betty Butterfly':
         return () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const BettyPage()),
+            MaterialPageRoute(builder: (_) => const BettyPage(fromCharacterLibrary: true)),
           );
           
         };
         case 'Gerda Gotta Go':
         return () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const GerdaPage()),
+            MaterialPageRoute(builder: (_) => const GerdaPage(fromCharacterLibrary: true)),
           );
         };
       case 'Ricky the Rock':
         return () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const RickyPage()),
+            MaterialPageRoute(builder: (_) => const RickyPage(fromCharacterLibrary: true)),
           );
         };
       default:
@@ -179,9 +178,7 @@ class _CharacterLibraryPageState extends State<CharacterLibraryPage> {
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 24),
                   onPressed: () {
-                    Navigator.of(context).pushReplacement(
-                      MaterialPageRoute(builder: (_) => const HomePage()),
-                    );
+                    Navigator.of(context).pop();
                   },
                   tooltip: 'Back to Home',
                 ),

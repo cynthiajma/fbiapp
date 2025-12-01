@@ -14,7 +14,9 @@ class CharacterConstants {
 }
 
 class SamanthaPage extends StatefulWidget {
-  const SamanthaPage({Key? key}) : super(key: key); 
+  final bool fromCharacterLibrary;
+  
+  const SamanthaPage({Key? key, this.fromCharacterLibrary = false}) : super(key: key); 
 
   @override
   _SamanthaPageState createState() => _SamanthaPageState();
@@ -274,6 +276,14 @@ class _SamanthaPageState extends State<SamanthaPage> {
       appBar: AppBar(
         title: const Text('SAMANTHA SWEAT'),
         backgroundColor: Colors.blue.shade50,
+        leading: widget.fromCharacterLibrary
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            : null, // Default back button behavior
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -360,7 +370,7 @@ class _SamanthaPageState extends State<SamanthaPage> {
                       child: ElevatedButton.icon(
                         onPressed: () {
                           Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => const BettyPage()),
+                            MaterialPageRoute(builder: (_) => BettyPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
                           );
                         },
                         icon: const Icon(Icons.arrow_forward),

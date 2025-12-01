@@ -16,7 +16,9 @@ import '../services/user_state_service.dart';
 import 'gerda.dart';
 
 class BettyPage extends StatefulWidget {
-  const BettyPage({Key? key}) : super(key: key); 
+  final bool fromCharacterLibrary;
+  
+  const BettyPage({Key? key, this.fromCharacterLibrary = false}) : super(key: key); 
 
   @override
   _BettyPageState createState() => _BettyPageState();
@@ -314,6 +316,14 @@ class _BettyPageState extends State<BettyPage>
       appBar: AppBar(
         backgroundColor: const Color(0xfffcefee),
         elevation: 0,
+        leading: widget.fromCharacterLibrary
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            : null, // Default back button behavior
         actions: [
           // Audio buttons remain the same
           // ... (Play/Pause and Replay buttons)
@@ -478,7 +488,7 @@ class _BettyPageState extends State<BettyPage>
                         child: ElevatedButton.icon(
                           onPressed: () {
                             Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => const GerdaPage()),
+                              MaterialPageRoute(builder: (_) => GerdaPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
                             );
                           },
                           icon: const Icon(Icons.arrow_forward),
