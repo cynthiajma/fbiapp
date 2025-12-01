@@ -149,25 +149,55 @@ class _CharacterLibraryPageState extends State<CharacterLibraryPage> {
 
     return Column(
       children: [
-        // Title
+        // Top bar with back button and title
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Text(
-            'Character Library',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: 'SpecialElite',
-              fontWeight: FontWeight.w700,
-              fontSize: 36,
-              color: Colors.black87,
-              shadows: [
-                Shadow(
-                  offset: Offset(2, 3),
-                  blurRadius: 2,
-                  color: Colors.white70,
+          child: Row(
+            children: [
+              // Back button
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      offset: const Offset(2, 2),
+                      blurRadius: 4,
+                      color: Colors.black.withOpacity(0.2),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.black87, size: 24),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  tooltip: 'Back to Home',
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Title
+              Expanded(
+                child: Text(
+                  'Character Library',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontFamily: 'SpecialElite',
+                    fontWeight: FontWeight.w700,
+                    fontSize: 36,
+                    color: Colors.black87,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(2, 3),
+                        blurRadius: 2,
+                        color: Colors.white70,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(width: 56), // Spacer to balance the back button
+            ],
           ),
         ),
         Expanded(
