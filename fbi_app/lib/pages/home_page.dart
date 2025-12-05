@@ -6,6 +6,7 @@ import 'child_profile_page.dart';
 import 'games_selection_page.dart';
 import 'login_selection_page.dart';
 import 'sweat.dart';
+import 'about_page.dart';
 import '../services/user_state_service.dart';
 import '../services/tutorial_service.dart';
 
@@ -80,7 +81,7 @@ class _HomePageState extends State<HomePage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
-                              // Help Icon and Logout button (top left)
+                              // Help Icon, About, and Logout button (top left)
                               Row(
                                 children: [
                                   Showcase(
@@ -105,6 +106,29 @@ class _HomePageState extends State<HomePage> {
                                         },
                                         tooltip: 'Help & Tutorial',
                                       ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Colors.green[600],
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          offset: const Offset(2, 2),
+                                          blurRadius: 4,
+                                          color: Colors.black.withOpacity(0.2),
+                                        ),
+                                      ],
+                                    ),
+                                    child: IconButton(
+                                      icon: const Icon(Icons.info_outline, color: Colors.white, size: 24),
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                          MaterialPageRoute(builder: (_) => const AboutPage()),
+                                        );
+                                      },
+                                      tooltip: 'About',
                                     ),
                                   ),
                                   const SizedBox(width: 8),
