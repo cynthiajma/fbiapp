@@ -14,6 +14,7 @@ import 'package:path_provider/path_provider.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import '../services/character_service.dart';
 import 'gerda.dart';
 
 class BettyPage extends StatefulWidget {
@@ -38,6 +39,7 @@ class _BettyPageState extends State<BettyPage>
   bool _hasPlayedOnce = false;
   bool _isLoadingAudio = false;
   Uint8List? _audioBytes;
+  String? _characterId;
   
   // State for the questions
   int _currentQuestionIndex = 0;
@@ -59,6 +61,7 @@ class _BettyPageState extends State<BettyPage>
     )..repeat();
     
     _loadCharacterAudio();
+    _loadCharacterId();
   }
 
   @override
@@ -66,6 +69,21 @@ class _BettyPageState extends State<BettyPage>
     _animationController.dispose();
     _audioPlayer.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCharacterId() async {
+    try {
+      final characters = await CharacterService.getCharacters();
+      final betty = characters.firstWhere(
+        (char) => char.name == 'Betty Butterfly',
+        orElse: () => characters.first,
+      );
+      setState(() {
+        _characterId = betty.id;
+      });
+    } catch (e) {
+      print('Error loading character ID: $e');
+    }
   }
 
   Future<void> _loadCharacterAudio() async {
@@ -246,10 +264,10 @@ class _BettyPageState extends State<BettyPage>
 
     try {
       final childId = await UserStateService.getChildId();
-      if (childId != null) {
+      if (childId != null && _characterId != null) {
         await LoggingService.logFeeling(
           childId: childId,
-          characterId: '2', 
+          characterId: _characterId!, 
           level: _tapCounter, // Logs the tap count (answer)
           context: context,
           investigation: [stepName], 
