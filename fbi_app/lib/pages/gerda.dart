@@ -7,6 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import '../services/character_service.dart';
 import 'rock.dart';
 
 // Mock Constants (Delete if using separate file)
@@ -28,6 +29,7 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
   double _fillLevel = 0.0; 
   bool _isLogging = false;
   bool _allQuestionsCompleted = false;
+  String? _characterId;
   
   late AnimationController _shakeController;
   
@@ -45,12 +47,28 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
       duration: const Duration(milliseconds: 100),
       vsync: this,
     );
+    _loadCharacterId();
   }
 
   @override
   void dispose() {
     _shakeController.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCharacterId() async {
+    try {
+      final characters = await CharacterService.getCharacters();
+      final gerda = characters.firstWhere(
+        (char) => char.name == 'Gerda Gotta Go',
+        orElse: () => characters.first,
+      );
+      setState(() {
+        _characterId = gerda.id;
+      });
+    } catch (e) {
+      print('Error loading character ID: $e');
+    }
   }
 
   // ----------------------------------------------------
@@ -119,10 +137,10 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
 
     try {
       final childId = await UserStateService.getChildId();
-      if (childId != null) {
+      if (childId != null && _characterId != null) {
         await LoggingService.logFeeling(
           childId: childId,
-          characterId: '5', 
+          characterId: _characterId!, 
           level: level, 
           context: context,
           investigation: [stepName], 

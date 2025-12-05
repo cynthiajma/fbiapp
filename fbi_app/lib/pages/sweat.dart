@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import '../services/character_service.dart';
 import 'butterfly.dart';
 
 // Mock CharacterConstants. DELETE IF USING SEPARATE FILE.
@@ -28,6 +29,7 @@ class _SamanthaPageState extends State<SamanthaPage> {
   static const int _maxLevel = 5; 
   bool _isLogging = false;
   bool _allQuestionsCompleted = false;
+  String? _characterId;
   
   int _currentQuestionIndex = 0;
   final List<String> _questions = [
@@ -38,8 +40,29 @@ class _SamanthaPageState extends State<SamanthaPage> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadCharacterId();
+  }
+
+  @override
   void dispose() {
     super.dispose();
+  }
+
+  Future<void> _loadCharacterId() async {
+    try {
+      final characters = await CharacterService.getCharacters();
+      final samantha = characters.firstWhere(
+        (char) => char.name == 'Samantha Sweat',
+        orElse: () => characters.first,
+      );
+      setState(() {
+        _characterId = samantha.id;
+      });
+    } catch (e) {
+      print('Error loading character ID: $e');
+    }
   }
   
   // ----------------------------------------------------
@@ -114,10 +137,10 @@ class _SamanthaPageState extends State<SamanthaPage> {
 
     try {
       final childId = await UserStateService.getChildId();
-      if (childId != null) {
+      if (childId != null && _characterId != null) {
         await LoggingService.logFeeling(
           childId: childId,
-          characterId: '3', 
+          characterId: _characterId!, 
           level: level, 
           context: context,
           investigation: [stepName], 
