@@ -1,0 +1,351 @@
+================================================================================
+FEELINGS AND BODY INVESTIGATION (FBI) APP - RELEASE NOTES
+================================================================================
+Version: 1.0.0
+Release Date: December 2024
+
+================================================================================
+CURRENT FUNCTIONALITY
+================================================================================
+
+AUTHENTICATION & USER MANAGEMENT
+---------------------------------
+✓ Child Login
+  - Username-based authentication for children
+  - Child profile creation and management
+  - Customizable avatar using Fluttermoji
+  - Persistent login state
+
+✓ Parent Authentication
+  - Parent account creation with email and password
+  - Parent login functionality
+  - Multiple parents can link to the same child
+  - Parent-child relationship management
+  - Password reset functionality (requires SendGrid configuration)
+
+✓ User State Management
+  - Local storage for user sessions
+  - Automatic login state checking
+  - User data persistence
+
+CHARACTER-BASED INTERACTIONS
+-----------------------------
+✓ Character Library
+  - Browse all available characters
+  - Character descriptions and images
+  - Navigation to character-specific pages
+
+✓ Interactive Character Pages
+  - Henry the Heartbeat: Heartbeat speed tracking with slider
+  - Betty Butterfly: Tap-based interaction for excitement/nervousness
+  - Samantha Sweat: Heat level tracking with up/down controls
+  - Gerda Gotta Go: Bladder fullness tracking with drag interaction
+  - Ricky the Rock: Guilt/weight tracking with vertical drag
+
+✓ Character Audio
+  - Audio playback for character voiceovers [Betty the Butterfly and Henry Heartbeat]
+  - Platform-specific audio handling (web vs native)
+  - Play/pause/replay controls
+  - Base64 audio encoding from database
+
+FEELING LOGGING
+---------------
+✓ Feeling Logging System
+  - Log feelings for each character interaction
+  - Level-based tracking (0-10 scale)
+  - Investigation notes/context
+  - Timestamp tracking
+  - Multiple question support per character
+
+✓ Data Visualization
+  - Parent view of child's feeling logs
+  - Chart visualization of logged data
+  - Time-based filtering
+  - Character-specific log viewing
+
+PARENT DASHBOARD
+----------------
+✓ Child Data Viewing
+  - View all children linked to parent account
+  - Select and view individual child data
+  - Feeling log history
+  - Data export functionality (CSV)
+
+✓ Parent Management
+  - Link multiple parents to same child
+  - Manage parent accounts
+  - Parent account creation from child view
+
+GAMES & ACTIVITIES
+------------------
+✓ Games Selection Page
+  - Matching: Memory game
+
+✓ Memory Game
+  - Interactive memory matching game
+  - Character-themed gameplay
+
+TUTORIAL & HELP SYSTEM
+-----------------------
+✓ Interactive Tutorial
+  - First-time user tutorial
+  - Highlighted feature explanations
+  - Step-by-step guidance
+  - Tutorial reset functionality
+
+✓ Help System
+  - Help icon on home page
+  - Contextual help information
+
+DATA EXPORT
+-----------
+✓ CSV Export
+  - Export child feeling logs to CSV
+  - Platform-specific export handling (web vs mobile)
+  - Download functionality for web
+  - Share functionality for mobile
+
+ABOUT PAGE
+----------
+✓ Project Information
+  - Development team credits
+  - Institution information (Duke University)
+  - Project purpose and background
+  - Research collaboration details
+
+BACKEND API
+-----------
+✓ GraphQL API
+  - Character library queries
+  - Child profile management
+  - Parent authentication
+  - Feeling log mutations and queries
+  - Parent-child linking
+  - Password reset functionality
+
+✓ Database
+  - PostgreSQL database
+  - Character data storage (images as binary)
+  - User account management
+  - Feeling log storage
+  - Parent-child relationship tracking
+
+================================================================================
+ASSUMPTIONS
+================================================================================
+
+USER BEHAVIOR
+-------------
+1. Children will use simple usernames without special characters
+2. Parents have email addresses and can access them for password reset
+3. Users have stable internet connection for GraphQL API calls
+4. Children can read and interact with touch/mouse interfaces
+
+TECHNICAL
+---------
+1. Backend API is always accessible at the configured endpoint
+2. Database connection is stable and reliable
+3. Character data is pre-populated in the database
+4. Audio files are properly encoded and stored in database
+5. CORS is properly configured for production deployment
+6. Local storage is available and functional in the browser/app
+
+PLATFORM
+--------
+1. Web browsers support modern JavaScript and Web APIs
+2. Mobile devices support Flutter framework requirements
+3. Network requests can be made to external API endpoints
+4. File system access is available for native platforms (audio files)
+
+DATA
+----
+1. Character IDs remain consistent or are looked up dynamically
+2. User data persists in local storage between sessions
+3. Database schema matches the expected structure
+4. Character images are properly encoded as base64 strings
+
+================================================================================
+LIMITATIONS
+================================================================================
+
+PLATFORM LIMITATIONS
+--------------------
+1. Web Platform
+   - Audio playback uses data URLs (may have size limitations)
+   - CSV export uses browser download functionality
+   - Limited file system access
+   - Dependent on browser capabilities
+
+2. Native Platforms (iOS/Android/macOS/Linux/Windows)
+   - Audio requires temporary file creation
+   - File system permissions may be required
+   - Platform-specific build requirements
+
+3. Mobile Devices
+   - Screen size constraints for complex UI elements
+   - Touch interaction requirements
+   - Battery and performance considerations
+
+FUNCTIONALITY LIMITATIONS
+--------------------------
+1. Password Security
+   - Passwords are hashed using bcryptjs (10 rounds)
+   - No password strength requirements enforced
+   - No password expiration or rotation
+
+2. Authentication
+   - No JWT token-based session management
+   - Limited session timeout handling
+   - No multi-factor authentication
+
+3. Data Export
+   - CSV export only (no other formats)
+   - Limited data filtering options in export
+
+4. Character Interactions
+   - Fixed set of characters (not dynamically expandable)
+   - Character audio requires pre-upload to database
+
+5. Parent Features
+   - No real-time notifications
+   - Limited data analysis tools
+   - No data comparison between children
+
+6. Games
+   - Limited number of games available
+
+7. Tutorial
+   - Tutorial may not adapt to user's previous experience
+   - No skip functionality for advanced users
+
+TECHNICAL LIMITATIONS
+---------------------
+1. Database
+   - Character images stored as binary (may impact performance)
+   - Limited query optimization
+
+2. API
+   - GraphQL endpoint is single instance (no load balancing)
+   - No rate limiting implemented
+   - Limited error recovery mechanisms
+
+3. Deployment
+   - Frontend and backend are separately deployed
+   - Requires manual coordination for updates
+
+4. Scalability
+   - Single database instance
+   - No caching layer
+   - No CDN for static assets
+   - Limited horizontal scaling options
+
+================================================================================
+PLATFORMS TESTED
+================================================================================
+
+WEB BROWSERS
+------------
+✓ Google Chrome
+  - Version: Latest (tested on Chrome 120+)
+  - Status: Fully functional
+  - Notes: Primary development and testing browser
+  - Audio playback: Working (data URL method)
+  - CSV export: Working (download functionality)
+
+
+OPERATING SYSTEMS (Web)
+-----------------------
+✓ macOS
+  - Version: macOS 13 (Ventura) and later
+  - Browser: Chrome, Firefox, Safari, Edge
+  - Status: Fully functional
+  - Notes: Primary development platform
+
+✓ Windows
+  - Version: Windows 10 and Windows 11
+  - Browser: Chrome, Firefox, Edge
+  - Status: Fully functional
+  - Notes: Tested on multiple Windows versions
+
+
+DEPLOYMENT PLATFORMS
+--------------------
+✓ Netlify (Frontend)
+  - Status: Production deployment active
+  - URL: https://fbiapp1.netlify.app/
+  - Build: Flutter web build
+  - Notes: Automatic deployments configured
+
+✓ Railway (Backend & Database)
+  - Status: Production deployment active
+  - Backend URL: https://tender-wisdom-production-fe18.up.railway.app/graphql
+  - Database: PostgreSQL on Railway
+  - Notes: Automatic deployments from Git repository
+
+TESTING ENVIRONMENT
+-------------------
+✓ Development
+  - Local PostgreSQL database (Docker)
+  - Local Flutter development server
+  - GraphQL Playground for API testing
+
+✓ Production
+  - Railway-hosted PostgreSQL
+  - Railway-hosted Node.js backend
+  - Netlify-hosted Flutter web app
+
+================================================================================
+TESTING STATUS
+================================================================================
+
+UNIT TESTS
+----------
+✓ Backend Tests
+  - Database connection tests
+  - Email configuration tests
+  - Resolver tests (mutations, queries, nested queries)
+  - Test coverage: See backend/coverage/
+
+⚠ Frontend Tests
+  - Child login tests
+  - Child profile tests
+  - Child signup tests
+  - Parent login/signup tests
+  - Parent view child tests
+  - Forgot password tests
+ 
+
+================================================================================
+FUTURE IMPROVEMENTS (Not Currently Implemented)
+================================================================================
+
+SECURITY
+--------
+- Add JWT token authentication
+- Implement session management
+- Add password strength requirements
+- Add rate limiting for API endpoints
+
+FEATURES
+--------
+- Real-time notifications for parents
+- Advanced data analytics and visualization
+- More games and interactive activities
+- Character customization options
+- Multi-language support
+- Offline mode support
+- Data backup and restore functionality
+
+TECHNICAL
+---------
+- Performance optimization
+- Image compression and optimization
+- Caching layer implementation
+- CDN for static assets
+- Load balancing for API
+- Database query optimization
+
+================================================================================
+END OF RELEASE NOTES
+================================================================================
+
