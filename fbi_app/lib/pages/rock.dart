@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import '../services/character_service.dart';
 import 'heartbeat_page.dart';
 
 // Mock Constants (Delete if using separate file)
@@ -29,6 +30,7 @@ class _RickyPageState extends State<RickyPage> {
   static const double _maxWeight = 10.0; 
   bool _isLogging = false;
   bool _allQuestionsCompleted = false;
+  String? _characterId;
   
   int _currentQuestionIndex = 0;
   final List<String> _questions = [
@@ -36,6 +38,27 @@ class _RickyPageState extends State<RickyPage> {
     "How heavy does the rock feel when you **say something mean** by accident?",
     "How heavy does the rock feel when you **don't tell the truth**?",
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCharacterId();
+  }
+
+  Future<void> _loadCharacterId() async {
+    try {
+      final characters = await CharacterService.getCharacters();
+      final ricky = characters.firstWhere(
+        (char) => char.name == 'Ricky the Rock',
+        orElse: () => characters.first,
+      );
+      setState(() {
+        _characterId = ricky.id;
+      });
+    } catch (e) {
+      print('Error loading character ID: $e');
+    }
+  }
 
   // ----------------------------------------------------
   // HELPER: Descriptive Status
@@ -103,10 +126,10 @@ class _RickyPageState extends State<RickyPage> {
 
     try {
       final childId = await UserStateService.getChildId();
-      if (childId != null) {
+      if (childId != null && _characterId != null) {
         await LoggingService.logFeeling(
           childId: childId,
-          characterId: '4', // Assuming Ricky is ID 4
+          characterId: _characterId!, 
           level: level, 
           context: context,
           investigation: [stepName], 

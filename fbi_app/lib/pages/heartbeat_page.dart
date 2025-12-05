@@ -27,6 +27,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
   bool _isLoadingAudio = false;
   bool _isPlayingAudio = false;
   bool _hasPlayedOnce = false;
+  String? _characterId;
 
   @override
   void initState() {
@@ -43,6 +44,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
 
     _controller.repeat(reverse: true);
     _loadCharacterAudio();
+    _loadCharacterId();
   }
 
   @override
@@ -76,6 +78,21 @@ class _HeartbeatPageState extends State<HeartbeatPage>
       setState(() {
         _isLoadingAudio = false;
       });
+    }
+  }
+
+  Future<void> _loadCharacterId() async {
+    try {
+      final characters = await CharacterService.getCharacters();
+      final henry = characters.firstWhere(
+        (char) => char.name == 'Henry the Heartbeat',
+        orElse: () => characters.first,
+      );
+      setState(() {
+        _characterId = henry.id;
+      });
+    } catch (e) {
+      print('Error loading character ID: $e');
     }
   }
 
@@ -218,12 +235,13 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         throw Exception('No child ID found. Please log in first.');
       }
       
-      // For now, hardcode characterId to 1 (Henry the Heartbeat)
-      const characterId = '1';
+      if (_characterId == null) {
+        throw Exception('Character ID not loaded. Please try again.');
+      }
       
       await LoggingService.logFeeling(
         childId: childId,
-        characterId: characterId,
+        characterId: _characterId!,
         level: level,
         context: context,
         // investigation will be added as a feature in the future
