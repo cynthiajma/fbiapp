@@ -28,9 +28,9 @@ class _RickyPageState extends State<RickyPage> {
   
   int _currentQuestionIndex = 0;
   final List<String> _questions = [
-    "How heavy does the rock feel when you **hide a broken toy**?",
-    "How heavy does the rock feel when you **say something mean** by accident?",
-    "How heavy does the rock feel when you **don't tell the truth**?",
+    "How heavy does the rock feel when you hide a broken toy?",
+    "How heavy does the rock feel when you say something mean by accident?",
+    "How heavy does the rock feel when you don't tell the truth?",
   ];
 
   // ----------------------------------------------------
