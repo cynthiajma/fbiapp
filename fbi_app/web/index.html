@@ -17,6 +17,7 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
 
@@ -31,6 +32,53 @@
 
   <title>fbi_app</title>
   <link rel="manifest" href="manifest.json">
+  
+  <!-- Override Flutter's restrictive viewport meta tag for accessibility -->
+  <script>
+    // Function to fix viewport meta tag
+    function fixViewport() {
+      // Find Flutter's injected viewport tag
+      const flutterViewport = document.querySelector('meta[name="viewport"][flt-viewport]');
+      if (flutterViewport) {
+        flutterViewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+      }
+      
+      // Also check for any viewport tag and ensure it's accessible
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0');
+      }
+    }
+    
+    // Run immediately
+    fixViewport();
+    
+    // Run after DOM is ready
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fixViewport);
+    }
+    
+    // Run after Flutter loads (with a delay to catch Flutter's injection)
+    window.addEventListener('load', function() {
+      setTimeout(fixViewport, 100);
+      setTimeout(fixViewport, 500);
+      setTimeout(fixViewport, 1000);
+    });
+    
+    // Use MutationObserver to catch when Flutter injects the viewport tag
+    const observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'childList') {
+          fixViewport();
+        }
+      });
+    });
+    
+    observer.observe(document.head, {
+      childList: true,
+      subtree: true
+    });
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>

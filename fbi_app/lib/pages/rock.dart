@@ -6,6 +6,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import '../services/character_service.dart';
+import 'heartbeat_page.dart';
 
 // Mock Constants (Delete if using separate file)
 class CharacterConstants {
@@ -13,7 +15,9 @@ class CharacterConstants {
 }
 
 class RickyPage extends StatefulWidget {
-  const RickyPage({Key? key}) : super(key: key); 
+  final bool fromCharacterLibrary;
+  
+  const RickyPage({Key? key, this.fromCharacterLibrary = false}) : super(key: key); 
 
   @override
   _RickyPageState createState() => _RickyPageState();
@@ -25,6 +29,8 @@ class _RickyPageState extends State<RickyPage> {
   double _rockWeight = 0.0; 
   static const double _maxWeight = 10.0; 
   bool _isLogging = false;
+  bool _allQuestionsCompleted = false;
+  String? _characterId;
   
   int _currentQuestionIndex = 0;
   final List<String> _questions = [
@@ -32,6 +38,27 @@ class _RickyPageState extends State<RickyPage> {
     "How heavy does the rock feel when you say something mean by accident?",
     "How heavy does the rock feel when you don't tell the truth?",
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCharacterId();
+  }
+
+  Future<void> _loadCharacterId() async {
+    try {
+      final characters = await CharacterService.getCharacters();
+      final ricky = characters.firstWhere(
+        (char) => char.name == 'Ricky the Rock',
+        orElse: () => characters.first,
+      );
+      setState(() {
+        _characterId = ricky.id;
+      });
+    } catch (e) {
+      print('Error loading character ID: $e');
+    }
+  }
 
   // ----------------------------------------------------
   // HELPER: Descriptive Status
@@ -74,9 +101,11 @@ class _RickyPageState extends State<RickyPage> {
       setState(() {
         _currentQuestionIndex++;
         _rockWeight = 0.0; // Reset
+        _allQuestionsCompleted = false;
       });
     } else {
       setState(() {
+        _allQuestionsCompleted = true;
         _currentQuestionIndex = 0; 
         _rockWeight = 0.0;
       });
@@ -97,10 +126,10 @@ class _RickyPageState extends State<RickyPage> {
 
     try {
       final childId = await UserStateService.getChildId();
-      if (childId != null) {
+      if (childId != null && _characterId != null) {
         await LoggingService.logFeeling(
           childId: childId,
-          characterId: '4', // Assuming Ricky is ID 4
+          characterId: _characterId!, 
           level: level, 
           context: context,
           investigation: [stepName], 
@@ -135,6 +164,14 @@ class _RickyPageState extends State<RickyPage> {
         backgroundColor: bgColor, // Dynamic App Bar
         foregroundColor: textColor,
         elevation: 0,
+        leading: widget.fromCharacterLibrary
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            : null, // Default back button behavior
       ),
       body: AnimatedContainer(
         duration: const Duration(milliseconds: 100), // Smooth color transition
@@ -264,27 +301,59 @@ class _RickyPageState extends State<RickyPage> {
               // --- NEXT BUTTON ---
               Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: _isLogging ? null : _nextQuestion,
-                    icon: _isLogging
-                        ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                        : const Icon(Icons.check),
-                    label: Text(_isLogging ? 'LOGGING...' : 'LOG THIS WEIGHT'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: textColor, // Button adapts to theme
-                      foregroundColor: bgColor,   // Text is inverted
-                      padding: const EdgeInsets.symmetric(vertical: 15),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton.icon(
+                        onPressed: _isLogging ? null : _nextQuestion,
+                        icon: _isLogging
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                            : const Icon(Icons.check),
+                        label: Text(_isLogging ? 'LOGGING...' : 'LOG THIS WEIGHT'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: textColor, // Button adapts to theme
+                          foregroundColor: bgColor,   // Text is inverted
+                          padding: const EdgeInsets.symmetric(vertical: 15),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                          textStyle: GoogleFonts.nunito(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          )
+                        ),
                       ),
-                      textStyle: GoogleFonts.nunito(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      )
                     ),
-                  ),
+                    // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
+                    if (_allQuestionsCompleted) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => HeartbeatPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
+                            );
+                          },
+                          icon: const Icon(Icons.arrow_forward),
+                          label: const Text('NEXT CHARACTER'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.grey.shade700,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                            ),
+                            textStyle: GoogleFonts.nunito(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            )
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
             ],

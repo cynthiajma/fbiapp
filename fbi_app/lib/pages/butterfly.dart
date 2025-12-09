@@ -1,6 +1,7 @@
 // lib/butterfly.dart
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'dart:io';
 import 'dart:typed_data';
@@ -13,9 +14,13 @@ import 'package:path_provider/path_provider.dart';
 
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
+import '../services/character_service.dart';
+import 'gerda.dart';
 
 class BettyPage extends StatefulWidget {
-  const BettyPage({Key? key}) : super(key: key); 
+  final bool fromCharacterLibrary;
+  
+  const BettyPage({Key? key, this.fromCharacterLibrary = false}) : super(key: key); 
 
   @override
   _BettyPageState createState() => _BettyPageState();
@@ -28,11 +33,13 @@ class _BettyPageState extends State<BettyPage>
   int _tapCounter = 0; 
   static const int _maxTaps = 10; 
   bool _isLogging = false;
+  bool _allQuestionsCompleted = false;
   final AudioPlayer _audioPlayer = AudioPlayer();
   bool _isPlayingAudio = false;
   bool _hasPlayedOnce = false;
   bool _isLoadingAudio = false;
   Uint8List? _audioBytes;
+  String? _characterId;
   
   // State for the questions
   int _currentQuestionIndex = 0;
@@ -54,6 +61,7 @@ class _BettyPageState extends State<BettyPage>
     )..repeat();
     
     _loadCharacterAudio();
+    _loadCharacterId();
   }
 
   @override
@@ -61,6 +69,21 @@ class _BettyPageState extends State<BettyPage>
     _animationController.dispose();
     _audioPlayer.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadCharacterId() async {
+    try {
+      final characters = await CharacterService.getCharacters();
+      final betty = characters.firstWhere(
+        (char) => char.name == 'Betty Butterfly',
+        orElse: () => characters.first,
+      );
+      setState(() {
+        _characterId = betty.id;
+      });
+    } catch (e) {
+      print('Error loading character ID: $e');
+    }
   }
 
   Future<void> _loadCharacterAudio() async {
@@ -118,8 +141,9 @@ class _BettyPageState extends State<BettyPage>
       
       // Use different approach for web vs native platforms
       if (kIsWeb) {
-        // For web (Chrome): Use AssetSource
-        audioSource = AssetSource('data/audio/betty-butterfly.mp3');
+        // For web: Use data URL (base64) - AssetSource doesn't work on web
+        final base64Audio = base64Encode(_audioBytes!);
+        audioSource = UrlSource('data:audio/mp3;base64,$base64Audio');
       } else {
         // For native platforms (iOS/Android/macOS/Linux/Windows): Use temporary file
         // Create the temp file right before playing (like Henry does)
@@ -214,6 +238,7 @@ class _BettyPageState extends State<BettyPage>
     } else {
       // If all questions are answered, just reset the counter
        setState(() {
+        _allQuestionsCompleted = true;
         _currentQuestionIndex = 0; // Loop back to the first question
         _tapCounter = 0;
       });
@@ -239,10 +264,10 @@ class _BettyPageState extends State<BettyPage>
 
     try {
       final childId = await UserStateService.getChildId();
-      if (childId != null) {
+      if (childId != null && _characterId != null) {
         await LoggingService.logFeeling(
           childId: childId,
-          characterId: '2', 
+          characterId: _characterId!, 
           level: _tapCounter, // Logs the tap count (answer)
           context: context,
           investigation: [stepName], 
@@ -311,7 +336,14 @@ class _BettyPageState extends State<BettyPage>
       appBar: AppBar(
         backgroundColor: const Color(0xfffcefee),
         elevation: 0,
-        leading: BackButton(onPressed: () => Navigator.of(context).pop()),
+        leading: widget.fromCharacterLibrary
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              )
+            : null, // Default back button behavior
         actions: [
           // Audio buttons remain the same
           // ... (Play/Pause and Replay buttons)
@@ -468,6 +500,29 @@ class _BettyPageState extends State<BettyPage>
                         ),
                       ],
                     ),
+                    // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
+                    if (_allQuestionsCompleted) ...[
+                      const SizedBox(height: 10),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(builder: (_) => GerdaPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
+                            );
+                          },
+                          icon: const Icon(Icons.arrow_forward),
+                          label: const Text('NEXT CHARACTER'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.pink.shade600,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 15),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                            textStyle: GoogleFonts.nunito(fontSize: 18, fontWeight: FontWeight.bold)
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),
