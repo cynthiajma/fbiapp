@@ -43,11 +43,20 @@ class _BettyPageState extends State<BettyPage>
   
   // State for the questions
   int _currentQuestionIndex = 0;
-  final List<String> _questions = [
+  
+  // Investigation mode: only the "right now" question
+  static const String _investigateQuestion = "How many butterflies do you feel in your tummy right now?";
+  
+  // Character Library mode: scenario-based questions
+  static const List<String> _libraryQuestions = [
     "How many butterflies would fly out if you were on a swing?",
     "How many butterflies fly out when you are riding a rollercoaster?",
     "How many butterflies fly out when you are alone in a dark room?",
   ];
+  
+  List<String> get _questions => widget.fromCharacterLibrary ? _libraryQuestions : [_investigateQuestion];
+  
+  bool get _isLastQuestion => widget.fromCharacterLibrary && _currentQuestionIndex == _questions.length - 1;
 
   late final AnimationController _animationController;
 
@@ -236,22 +245,67 @@ class _BettyPageState extends State<BettyPage>
         _tapCounter = 0; // Reset counter for the next question
       });
     } else {
-      // If all questions are answered, just reset the counter
-       setState(() {
-        _allQuestionsCompleted = true;
-        _currentQuestionIndex = 0; // Loop back to the first question
-        _tapCounter = 0;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text("You answered all the questions! Starting over."),
-            duration: Duration(seconds: 3),
-            backgroundColor: Colors.pink,
-          ),
+      // All questions completed
+      if (!widget.fromCharacterLibrary) {
+        // Investigation mode: auto-navigate to next character
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const GerdaPage(fromCharacterLibrary: false)),
         );
+      } else {
+        // Character Library mode: show completion dialog
+        _showCompletionDialog();
       }
     }
+  }
+
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.celebration, color: Colors.pink.shade400, size: 32),
+              const SizedBox(width: 10),
+              const Text('Great Job! 🦋'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'data/characters/betty_butterfly.png',
+                height: 100,
+                width: 100,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'You completed all questions with Betty Butterfly!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You learned about the fluttery feeling in your tummy. Keep noticing your butterflies!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 14, color: Colors.grey.shade700),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Go back to library
+              },
+              child: Text('Back to Library', style: TextStyle(color: Colors.pink.shade400)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   /// Corrected function to log the feeling with the proper List<String>? for investigation.
@@ -477,8 +531,8 @@ class _BettyPageState extends State<BettyPage>
                           onPressed: _isLogging || _tapCounter == 0 ? null : _nextQuestion,
                           icon: _isLogging
                               ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                              : Icon(_currentQuestionIndex < _questions.length - 1 ? Icons.arrow_forward : Icons.check_circle_outline),
-                          label: Text(_currentQuestionIndex < _questions.length - 1 ? 'Next Question' : 'Save Final Answer'),
+                              : Icon(_isLastQuestion ? Icons.check_circle : Icons.arrow_forward),
+                          label: Text(_isLogging ? 'Logging...' : (_isLastQuestion ? 'SUBMIT' : 'Next Question')),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.pink.shade400,
                             foregroundColor: Colors.white,
@@ -500,29 +554,6 @@ class _BettyPageState extends State<BettyPage>
                         ),
                       ],
                     ),
-                    // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
-                    if (_allQuestionsCompleted) ...[
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => GerdaPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
-                            );
-                          },
-                          icon: const Icon(Icons.arrow_forward),
-                          label: const Text('NEXT CHARACTER'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.pink.shade600,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                            textStyle: GoogleFonts.nunito(fontSize: 18, fontWeight: FontWeight.bold)
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),

@@ -4,9 +4,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../services/logging_service.dart';
 import '../services/user_state_service.dart';
 import '../services/character_service.dart';
+import 'home_page.dart';
 
 class HeartbeatPage extends StatefulWidget {
   final bool fromCharacterLibrary;
@@ -218,6 +220,56 @@ class _HeartbeatPageState extends State<HeartbeatPage>
     });
   }
 
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.celebration, color: const Color(0xffe67268), size: 32),
+              const SizedBox(width: 10),
+              const Text('Great Job! ❤️'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'data/characters/heart.png',
+                height: 100,
+                width: 100,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'You completed the question with Henry Heartbeat!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You learned to notice how fast your heart is beating. Keep listening to Henry!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 14, color: Colors.grey.shade700),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Go back to library
+              },
+              child: const Text('Back to Library', style: TextStyle(color: Color(0xffe67268))),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future<void> _logFeeling() async {
     if (_isLogging) return;
 
@@ -244,16 +296,28 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         characterId: _characterId!,
         level: level,
         context: context,
-        // investigation will be added as a feature in the future
+        investigation: ['How fast is your heartbeat right now? - Level: $level'],
       );
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Feeling logged successfully!'),
-            backgroundColor: const Color(0xff4a90e2),
-          ),
-        );
+        if (!widget.fromCharacterLibrary) {
+          // Investigation mode: complete the investigation and go back to home
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Investigation complete! Great job detective! 🕵️'),
+              backgroundColor: Color(0xff4a90e2),
+              duration: Duration(seconds: 2),
+            ),
+          );
+          // Navigate back to home page
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) => const HomePage()),
+            (route) => false,
+          );
+        } else {
+          // Library mode: show completion dialog
+          _showCompletionDialog();
+        }
       }
     } catch (e) {
       if (mounted) {

@@ -32,12 +32,20 @@ class _SamanthaPageState extends State<SamanthaPage> {
   String? _characterId;
   
   int _currentQuestionIndex = 0;
-  final List<String> _questions = [
-    "How warm do you feel right now?",
+  
+  // Investigation mode: only the "right now" question
+  static const String _investigateQuestion = "How warm do you feel right now?";
+  
+  // Character Library mode: scenario-based questions (no "right now")
+  static const List<String> _libraryQuestions = [
     "How warm do you feel outside on a very hot summer day?",
     "How warm do you feel after running and playing hard?",
     "How warm do you feel when you are very excited or a little nervous?",
   ];
+  
+  List<String> get _questions => widget.fromCharacterLibrary ? _libraryQuestions : [_investigateQuestion];
+  
+  bool get _isLastQuestion => widget.fromCharacterLibrary && _currentQuestionIndex == _questions.length - 1;
 
   @override
   void initState() {
@@ -116,17 +124,67 @@ class _SamanthaPageState extends State<SamanthaPage> {
         _allQuestionsCompleted = false;
       });
     } else {
-      setState(() {
-        _allQuestionsCompleted = true;
-        _currentQuestionIndex = 0; 
-        _heatLevel = 0;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("All questions answered! Starting over."), duration: Duration(seconds: 2)),
+      // All questions completed
+      if (!widget.fromCharacterLibrary) {
+        // Investigation mode: auto-navigate to next character
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const BettyPage(fromCharacterLibrary: false)),
         );
+      } else {
+        // Character Library mode: show completion dialog
+        _showCompletionDialog();
       }
     }
+  }
+
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.celebration, color: Colors.blue.shade600, size: 32),
+              const SizedBox(width: 10),
+              const Text('Great Job! 🎉'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'data/characters/samantha_sweat.png',
+                height: 100,
+                width: 100,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'You completed all questions with Samantha Sweat!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You learned how your body uses sweat to cool down. Keep listening to your body!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 14, color: Colors.grey.shade700),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Go back to library
+              },
+              child: Text('Back to Library', style: TextStyle(color: Colors.blue.shade600)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _logFeeling(String stepName) async {
@@ -374,8 +432,8 @@ class _SamanthaPageState extends State<SamanthaPage> {
                       onPressed: _isLogging || _heatLevel == 0 ? null : _nextQuestion,
                       icon: _isLogging
                           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                          : const Icon(Icons.arrow_forward),
-                      label: Text(_isLogging ? 'LOGGING...' : 'NEXT QUESTION'),
+                          : Icon(_isLastQuestion ? Icons.check_circle : Icons.arrow_forward),
+                      label: Text(_isLogging ? 'LOGGING...' : (_isLastQuestion ? 'SUBMIT' : 'NEXT QUESTION')),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red.shade600,
                         foregroundColor: Colors.white,
@@ -385,29 +443,6 @@ class _SamanthaPageState extends State<SamanthaPage> {
                       ),
                     ),
                   ),
-                  // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
-                  if (_allQuestionsCompleted) ...[
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: () {
-                          Navigator.of(context).push(
-                            MaterialPageRoute(builder: (_) => BettyPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
-                          );
-                        },
-                        icon: const Icon(Icons.arrow_forward),
-                        label: const Text('NEXT CHARACTER'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade600,
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 15),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-                          textStyle: GoogleFonts.nunito(fontSize: 18, fontWeight: FontWeight.bold)
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
