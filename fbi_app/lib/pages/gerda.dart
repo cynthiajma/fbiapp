@@ -34,11 +34,19 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
   late AnimationController _shakeController;
   
   int _currentQuestionIndex = 0;
-  final List<String> _questions = [
-    "How full does your Gerda tummy feel right now?",
+  
+  // Investigation mode: only the "right now" question
+  static const String _investigateQuestion = "How full does your Gerda tummy feel right now?";
+  
+  // Character Library mode: scenario-based questions (no "right now")
+  static const List<String> _libraryQuestions = [
     "How full does your Gerda feel after drinking a big glass of water?",
     "How full does your Gerda feel when you are playing a game and don't want to stop?",
   ];
+  
+  List<String> get _questions => widget.fromCharacterLibrary ? _libraryQuestions : [_investigateQuestion];
+  
+  bool get _isLastQuestion => widget.fromCharacterLibrary && _currentQuestionIndex == _questions.length - 1;
 
   @override
   void initState() {
@@ -114,18 +122,67 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
         _shakeController.stop();
       });
     } else {
-      setState(() {
-        _allQuestionsCompleted = true;
-        _currentQuestionIndex = 0; 
-        _fillLevel = 0.0;
-        _shakeController.stop();
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("All finished! You listened to your body."), duration: Duration(seconds: 3)),
+      // All questions completed
+      if (!widget.fromCharacterLibrary) {
+        // Investigation mode: auto-navigate to next character
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const RickyPage(fromCharacterLibrary: false)),
         );
+      } else {
+        // Character Library mode: show completion dialog
+        _showCompletionDialog();
       }
     }
+  }
+
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.celebration, color: Colors.amber.shade600, size: 32),
+              const SizedBox(width: 10),
+              const Text('Great Job! 🚽'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'data/characters/gerda_gotta_go.png',
+                height: 100,
+                width: 100,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'You completed all questions with Gerda Gotta Go!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You learned to listen to your body when it needs to go. Great detective work!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 14, color: Colors.grey.shade700),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Go back to library
+              },
+              child: Text('Back to Library', style: TextStyle(color: Colors.amber.shade700)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _logFeeling(String stepName) async {
@@ -333,8 +390,8 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
                             onPressed: _isLogging ? null : _nextQuestion,
                             icon: _isLogging
                                 ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                                : const Icon(Icons.arrow_forward),
-                            label: Text(_isLogging ? 'LOGGING...' : 'NEXT QUESTION'),
+                                : Icon(_isLastQuestion ? Icons.check_circle : Icons.arrow_forward),
+                            label: Text(_isLogging ? 'LOGGING...' : (_isLastQuestion ? 'SUBMIT' : 'NEXT QUESTION')),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: Colors.amber.shade600,
                               foregroundColor: Colors.white,
@@ -349,34 +406,6 @@ class _GerdaPageState extends State<GerdaPage> with SingleTickerProviderStateMix
                             ),
                           ),
                         ),
-                        // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
-                        if (_allQuestionsCompleted) ...[
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              onPressed: () {
-                                Navigator.of(context).push(
-                                  MaterialPageRoute(builder: (_) => RickyPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
-                                );
-                              },
-                              icon: const Icon(Icons.arrow_forward),
-                              label: const Text('NEXT CHARACTER'),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.amber.shade800,
-                                foregroundColor: Colors.white,
-                                padding: const EdgeInsets.symmetric(vertical: 15),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                textStyle: GoogleFonts.nunito(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                )
-                              ),
-                            ),
-                          ),
-                        ],
                       ],
                     ),
                   ),

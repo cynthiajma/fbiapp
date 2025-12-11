@@ -26,20 +26,24 @@ class CharacterRow extends StatelessWidget {
     child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Character name
           Expanded(
-            flex: 2,
-            child: _CharacterLabel(name: c.name),
+            flex: 3,
+            child: Center(child: _CharacterLabel(name: c.name)),
           ),
+          // Level indicator
           Expanded(
             flex: 2,
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 ProgressRing(value: c.progress),
                 const SizedBox(height: 4),
                 Text(
                   'Level: ${c.averageLevel}',
+                  textAlign: TextAlign.center,
                   style: const TextStyle(
                     fontFamily: 'SpecialElite',
                     fontSize: 12,
@@ -50,11 +54,12 @@ class CharacterRow extends StatelessWidget {
               ],
             ),
           ),
+          // Date
           Expanded(
             flex: 2,
             child: Text(
               _date(c.date),
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.center,
               style: const TextStyle(
                 fontFamily: 'SpecialElite',
                 fontSize: 12,
@@ -79,8 +84,7 @@ class _CharacterLabel extends StatelessWidget {
     final badgeColor = Colors.brown.shade300;
 
     return Container(
-      width: 60,
-      height: 60,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF8DC),
         borderRadius: BorderRadius.circular(8),
@@ -93,13 +97,12 @@ class _CharacterLabel extends StatelessWidget {
           ),
         ],
       ),
-      alignment: Alignment.center,
       child: Text(
         name.toUpperCase(),
         textAlign: TextAlign.center,
         style: const TextStyle(
           fontFamily: 'SpecialElite',
-          fontSize: 12,
+          fontSize: 11,
           fontWeight: FontWeight.w700,
           color: Colors.black87,
         ),

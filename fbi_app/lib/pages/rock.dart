@@ -33,11 +33,20 @@ class _RickyPageState extends State<RickyPage> {
   String? _characterId;
   
   int _currentQuestionIndex = 0;
-  final List<String> _questions = [
+  
+  // Investigation mode: only the "right now" question
+  static const String _investigateQuestion = "How heavy does the rock in your tummy feel right now?";
+  
+  // Character Library mode: scenario-based questions
+  static const List<String> _libraryQuestions = [
     "How heavy does the rock feel when you hide a broken toy?",
     "How heavy does the rock feel when you say something mean by accident?",
     "How heavy does the rock feel when you don't tell the truth?",
   ];
+  
+  List<String> get _questions => widget.fromCharacterLibrary ? _libraryQuestions : [_investigateQuestion];
+  
+  bool get _isLastQuestion => widget.fromCharacterLibrary && _currentQuestionIndex == _questions.length - 1;
 
   @override
   void initState() {
@@ -104,17 +113,67 @@ class _RickyPageState extends State<RickyPage> {
         _allQuestionsCompleted = false;
       });
     } else {
-      setState(() {
-        _allQuestionsCompleted = true;
-        _currentQuestionIndex = 0; 
-        _rockWeight = 0.0;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("You weighed all your worries! Great job."), duration: Duration(seconds: 3)),
+      // All questions completed
+      if (!widget.fromCharacterLibrary) {
+        // Investigation mode: auto-navigate to next character
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HeartbeatPage(fromCharacterLibrary: false)),
         );
+      } else {
+        // Character Library mode: show completion dialog
+        _showCompletionDialog();
       }
     }
+  }
+
+  void _showCompletionDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Row(
+            children: [
+              Icon(Icons.celebration, color: Colors.blueGrey.shade600, size: 32),
+              const SizedBox(width: 10),
+              const Text('Great Job! 🪨'),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Image.asset(
+                'data/characters/ricky_the_rock.png',
+                height: 100,
+                width: 100,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'You completed all questions with Ricky the Rock!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'You learned about the heavy feeling of guilt. Remember, talking about it makes the rock lighter!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(fontSize: 14, color: Colors.grey.shade700),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close dialog
+                Navigator.of(context).pop(); // Go back to library
+              },
+              child: Text('Back to Library', style: TextStyle(color: Colors.blueGrey.shade600)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Future<void> _logFeeling(String stepName) async {
@@ -309,8 +368,8 @@ class _RickyPageState extends State<RickyPage> {
                         onPressed: _isLogging ? null : _nextQuestion,
                         icon: _isLogging
                             ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                            : const Icon(Icons.check),
-                        label: Text(_isLogging ? 'LOGGING...' : 'LOG THIS WEIGHT'),
+                            : Icon(_isLastQuestion ? Icons.check_circle : Icons.arrow_forward),
+                        label: Text(_isLogging ? 'LOGGING...' : (_isLastQuestion ? 'SUBMIT' : 'NEXT QUESTION')),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: textColor, // Button adapts to theme
                           foregroundColor: bgColor,   // Text is inverted
@@ -325,34 +384,6 @@ class _RickyPageState extends State<RickyPage> {
                         ),
                       ),
                     ),
-                    // --- NEXT CHARACTER BUTTON (only show after all questions completed) ---
-                    if (_allQuestionsCompleted) ...[
-                      const SizedBox(height: 10),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.of(context).push(
-                              MaterialPageRoute(builder: (_) => HeartbeatPage(fromCharacterLibrary: widget.fromCharacterLibrary)),
-                            );
-                          },
-                          icon: const Icon(Icons.arrow_forward),
-                          label: const Text('NEXT CHARACTER'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.grey.shade700,
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 15),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(30),
-                            ),
-                            textStyle: GoogleFonts.nunito(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                            )
-                          ),
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),
