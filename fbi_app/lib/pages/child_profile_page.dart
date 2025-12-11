@@ -19,6 +19,8 @@ class ChildProfilePage extends StatefulWidget {
 class _ChildProfilePageState extends State<ChildProfilePage> {
   String _childName = 'Loading...';
   List<Character> _characters = [];
+  int _totalInvestigations = 0;
+  int _totalStars = 0;
   bool _isLoading = true;
   String? _errorMessage;
 
@@ -55,7 +57,7 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
       final logEntries = ChildDataService.processLogsToIndividualEntries(childLogs, characterLibrary);
       
       // Convert to Character objects for display
-      final characters = logEntries.map((entry) {
+      final allCharacters = logEntries.map((entry) {
         final character = entry['character'] as Map<String, dynamic>;
         final characterName = entry['characterName'] as String;
         final level = entry['level'] as int;
@@ -72,7 +74,9 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
       }).toList();
 
       setState(() {
-        _characters = characters;
+        _totalInvestigations = allCharacters.length;
+        _totalStars = allCharacters.fold(0, (sum, char) => sum + char.averageLevel);
+        _characters = allCharacters.take(30).toList(); // Display only 30 most recent
         _isLoading = false;
       });
     } catch (e) {
@@ -301,7 +305,7 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
                               children: [
                                 Expanded(
                                   child: _PinnedStatsNote(
-                                    number: _characters.length,
+                                    number: _totalInvestigations,
                                     label: 'Investigations',
                                     rotation: 1.5,
                                   ),
@@ -309,7 +313,7 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: _PinnedStatsNote(
-                                    number: _calculateTotalStars(),
+                                    number: _totalStars,
                                     label: 'Stars',
                                     rotation: -2,
                                   ),
@@ -318,11 +322,11 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
                             ),
                             const SizedBox(height: 32),
 
-                            // My Characters Section
+                            // Log History Section
                             if (_characters.isNotEmpty) ...[
-                              Transform.rotate(
-                                angle: 1 * 3.1416 / 180,
+                              Center(
                                 child: Container(
+                                  width: double.infinity,
                                   padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.95),
@@ -335,44 +339,34 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
                                       ),
                                     ],
                                   ),
-                                  child: Stack(
+                                  child: Column(
                                     children: [
-                                      const Positioned(
-                                        top: 8,
-                                        left: 10,
-                                        child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 24),
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'MY CHARACTERS',
-                                              style: TextStyle(
-                                                fontFamily: 'SpecialElite',
-                                                fontWeight: FontWeight.w700,
-                                                fontSize: 18,
-                                                color: Colors.black87,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 16),
-                                            for (int i = 0; i < _characters.length; i++) ...[
-                                              CharacterRow(c: _characters[i]),
-                                              if (i != _characters.length - 1)
-                                                const SizedBox(height: 12),
-                                            ],
-                                          ],
+                                      const Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+                                      const SizedBox(height: 8),
+                                      const Text(
+                                        'LOG HISTORY',
+                                        style: TextStyle(
+                                          fontFamily: 'SpecialElite',
+                                          fontWeight: FontWeight.w700,
+                                          fontSize: 18,
+                                          color: Colors.black87,
                                         ),
+                                        textAlign: TextAlign.center,
                                       ),
+                                      const SizedBox(height: 16),
+                                      for (int i = 0; i < _characters.length; i++) ...[
+                                        CharacterRow(c: _characters[i]),
+                                        if (i != _characters.length - 1)
+                                          const SizedBox(height: 12),
+                                      ],
                                     ],
                                   ),
                                 ),
                               ),
                             ] else
-                              Transform.rotate(
-                                angle: -0.5 * 3.1416 / 180,
+                              Center(
                                 child: Container(
+                                  width: double.infinity,
                                   padding: const EdgeInsets.all(24),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.95),
@@ -385,41 +379,32 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
                                       ),
                                     ],
                                   ),
-                                  child: Stack(
+                                  child: Column(
                                     children: [
-                                      const Positioned(
-                                        top: 8,
-                                        left: 10,
-                                        child: Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.only(top: 24),
-                                        child: Column(
-                                          children: [
-                                            Icon(Icons.emoji_emotions_outlined,
-                                                size: 48, color: Colors.grey[400]),
-                                            const SizedBox(height: 16),
-                                            Text(
-                                              'Start your first investigation!',
-                                              style: TextStyle(
-                                                fontFamily: 'SpecialElite',
-                                                color: Colors.grey[700],
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              'Log your feelings to see them here',
-                                              style: TextStyle(
-                                                fontFamily: 'SpecialElite',
-                                                color: Colors.grey[500],
-                                                fontSize: 14,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                            ),
-                                          ],
+                                      const Icon(Icons.push_pin, color: Colors.redAccent, size: 20),
+                                      const SizedBox(height: 16),
+                                      Icon(Icons.emoji_emotions_outlined,
+                                          size: 48, color: Colors.grey[400]),
+                                      const SizedBox(height: 16),
+                                      Text(
+                                        'Start your first investigation!',
+                                        style: TextStyle(
+                                          fontFamily: 'SpecialElite',
+                                          color: Colors.grey[700],
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
                                         ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        'Log your feelings to see them here',
+                                        style: TextStyle(
+                                          fontFamily: 'SpecialElite',
+                                          color: Colors.grey[500],
+                                          fontSize: 14,
+                                        ),
+                                        textAlign: TextAlign.center,
                                       ),
                                     ],
                                   ),
@@ -435,12 +420,6 @@ class _ChildProfilePageState extends State<ChildProfilePage> {
     );
   }
 
-  int _calculateTotalStars() {
-    return _characters.fold(
-      0,
-      (sum, character) => sum + character.averageLevel,
-    );
-  }
 }
 
 class _PinnedStatsNote extends StatelessWidget {
