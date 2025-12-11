@@ -194,12 +194,20 @@ LOCAL DEVELOPMENT SETUP
 
 BACKEND SETUP
 -------------
+OPTION 1: Automated Rebuild (Recommended)
+Use the rebuild script for complete automated setup:
+  ./rebuild-server.sh
+
+This script handles all setup steps automatically. See REBUILD_SERVER_GUIDE.md
+for detailed instructions.
+
+OPTION 2: Manual Setup
 1. Navigate to backend directory: cd backend
 2. Install dependencies: npm install
 3. Create .env file with database connection string
 4. Start with Docker Compose: docker compose up -d
 5. Initialize database: npm run init-db
-6. Seed test data: npm run seed-test-data
+6. Seed test data: npm run seed-test-data (optional)
 7. Populate characters: npm run populate-characters
 8. Upload audio: npm run upload-audio
 

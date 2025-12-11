@@ -20,6 +20,9 @@ pids/
 
 # Environment variables file
 .env
+.env.docker
+.env.*
+!.env.example
 
 # Docker files to exclude if needed (optional)
 docker-compose.override.yml
