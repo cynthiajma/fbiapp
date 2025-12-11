@@ -1,0 +1,265 @@
+================================================================================
+FBI APP - PRODUCT BACKLOG
+================================================================================
+This file tracks future features, improvements, and known issues for the
+Feelings and Body Investigation (FBI) App.
+
+Last Updated: December 2025
+================================================================================
+
+================================================================================
+HIGH PRIORITY - KNOWN ISSUES
+================================================================================
+
+1. INVESTIGATION VS LOGGING DATA CLARITY
+   Priority: HIGH
+   Status: TODO
+   Description: The current logging system stores a feeling level for each investigation question.
+    This makes it unclear what data represents what.
+   
+   Proposed Solutions:
+   - Option A: Separate investigation data into its own table/field with clear 
+               distinction from feeling level logs
+   - Option B: Add UI indicators to clearly show the difference between 
+               investigation words and feeling level in loggin chart. 
+   
+   Impact: Affects data clarity for parents viewing child data and may impact 
+           data analysis accuracy.
+
+================================================================================
+FEATURE BACKLOG - CHARACTER CONTENT
+================================================================================
+
+2. COMPLETE AUDIO FILES FOR ALL CHARACTERS
+   Priority: HIGH
+   Status: IN PROGRESS (2/5 complete)
+   Description: Currently only Henry the Heartbeat and Samantha Sweat have instructional audio. All other 
+                characters need audio files created and uploaded.
+
+   Implementation Notes:
+   - Audio files should be in MP3 format
+   - Store in: fbi_app/data/audio/
+   - Update backend/scripts/upload-audio.js to include all characters
+   - Run npm run upload-audio after adding files
+
+3. ADD MORE CHARACTERS
+   Priority: HIGH
+   Status: TODO
+   Description: Expand the character library to cover more body systems and 
+                sensations. 
+   
+   Implementation Steps:
+   - Create character images (PNG format)
+   - Add character descriptions
+   - Create audio files for new characters
+   - Update populate-characters.js script
+   - Create character interaction pages (Dart files)
+   - Update character library page
+
+================================================================================
+FEATURE BACKLOG - GAMES & ACTIVITIES
+================================================================================
+
+4. ADD MORE GAMES
+   Priority: HIGH
+   Status: TODO
+   Description: Currently only one game exists (Memory Game). Add more 
+                educational games to help children learn about their bodies.
+   
+   
+   Proposed New Games:
+   - Body Parts Matching Game: Match body parts to their functions
+   - Feeling Word Scramble: Unscramble words related to feelings/body
+   - Character Quiz: Answer questions about what each character represents
+   - Breathing Exercise Game: Interactive breathing exercises
+   - Body Scan Meditation: Guided body awareness activity
+   
+   Implementation Notes:
+   - Games should be educational and age-appropriate
+   - Games should reinforce character learning
+   - Add games to games_selection_page.dart
+   - Create individual game pages following memory_game_page.dart pattern
+
+5. ENHANCE EXISTING GAMES
+   Priority: LOW
+   Status: TODO
+   Description: Improve the existing Memory Game with additional features.
+   
+   Potential Enhancements:
+   - Difficulty levels (easy, medium, hard)
+   - Timer mode
+   - Score tracking and leaderboards
+   - Character-specific memory games (only show certain characters)
+   - Potentially track completion of games in the feelings logging chart
+
+================================================================================
+FEATURE BACKLOG - USER EXPERIENCE
+================================================================================
+
+6. IMPROVE CHARACTER INTERACTION PAGES
+   Priority: MEDIUM
+   Status: TODO
+   Description: Enhance the character-specific pages (butterfly, gerda, 
+                heartbeat, rock, sweat) with more interactive elements.
+   
+   Potential Improvements:
+   - Add more interactive questions/prompts
+   - Add character animations
+   - Include educational facts about each body system
+
+7. ENHANCE PARENT DASHBOARD
+   Priority: MEDIUM
+   Status: TODO
+   Description: Improve the parent view of child data with better 
+                visualizations and insights.
+   
+   Potential Features:
+   - Trend analysis over time
+   - Pattern recognition (e.g., "Your child logs more feelings on weekdays")
+   - Export data in multiple formats (CSV, PDF, JSON)
+   - Filter logs by character, date range, feeling level
+   - Alert system for concerning patterns
+   - Weekly/monthly summary reports
+
+
+9. IMPROVE DATA VISUALIZATION
+   Priority: MEDIUM
+   Status: TODO
+   Description: Enhance charts and graphs in parent view with more options 
+                and better clarity.
+   
+   Potential Improvements:
+   - Interactive charts (zoom, pan, hover details)
+   - More chart types (pie charts, heatmaps, etc.)
+   - Export charts as images
+
+================================================================================
+FEATURE BACKLOG - TECHNICAL IMPROVEMENTS
+================================================================================
+
+10. DATABASE SCHEMA IMPROVEMENTS
+    Priority: MEDIUM
+    Status: TODO
+    Description: Enhance database structure for better data organization.
+    
+    Potential Changes:
+    - Separate investigation table from logging table
+    - Consider adding character interaction history
+    - Add game play history tracking
+
+11. API ENHANCEMENTS
+    Priority: LOW
+    Status: TODO
+    Description: Add new GraphQL queries and mutations for enhanced 
+                 functionality.
+    
+    Potential Additions:
+    - Query for investigation data separately from logs
+    - Mutation for updating character descriptions
+    - Query for game statistics
+    - Mutation for saving game progress
+    - Query for data export in various formats
+    - Subscription for real-time updates (if needed)
+
+
+14. ACCESSIBILITY IMPROVEMENTS
+    Priority: MEDIUM
+    Status: TODO
+    Description: Make the app more accessible for users with disabilities.
+    
+    Potential Improvements:
+    - Light/dark mode
+    - Text size adjustments
+    - Audio descriptions
+    - Color-blind friendly color schemes
+
+15. MOBILE APP DEPLOYMENT
+    Priority: HIGH
+    Status: TODO
+    Description: Package the Flutter app as native mobile apps for iOS and 
+                 Android.
+    
+    Implementation Steps:
+    - Configure iOS app settings
+    - Configure Android app settings
+    - Test on physical devices
+    - Submit to App Store (iOS)
+    - Submit to Google Play Store (Android)
+    - Handle platform-specific features (notifications, etc.)
+
+================================================================================
+FEATURE BACKLOG - SECURITY & PRIVACY
+================================================================================
+
+16. ENHANCE SECURITY FEATURES
+    Priority: MEDIUM
+    Status: TODO
+    Description: Add additional security measures to protect user data.
+    
+    Potential Features:
+    - Rate limiting on API endpoints
+    - Input sanitization
+    - SQL injection prevention (verify current implementation)
+
+
+================================================================================
+FEATURE BACKLOG - TESTING & QUALITY ASSURANCE
+================================================================================
+
+18. EXPAND TEST COVERAGE
+    Priority: HIGH
+    Status: PARTIAL
+    Description: Increase test coverage for both frontend and backend.
+    
+    
+    Needed:
+    - More comprehensive backend API tests
+    - Frontend integration tests
+
+19. CROSS-PLATFORM TESTING
+    Priority: HIGH
+    Status: TODO
+    Description: Test application across different browsers and devices.
+    
+    Testing Needed:
+    - Chrome, Firefox, Safari, Edge browsers
+    - Different screen sizes (mobile, tablet, desktop)
+    - Different operating systems
+    - Different network conditions
+    - Accessibility testing tools
+
+================================================================================
+FEATURE BACKLOG - ANALYTICS & INSIGHTS
+================================================================================
+
+22. USAGE ANALYTICS
+    Priority: LOW
+    Status: TODO
+    Description: Add analytics to understand how users interact with the app.
+    
+    Potential Metrics:
+    - Most used characters
+    - Most played games
+    - Average session length
+    - Feature usage statistics
+    - Error rates
+    - User retention metrics
+    
+    Note: Must comply with privacy regulations (COPPA, etc.)
+
+23. INSIGHTS FOR PARENTS
+    Priority: LOW
+    Status: TODO
+    Description: Provide AI-powered or rule-based insights for parents about 
+                 their child's patterns.
+    
+    Potential Features:
+    - Pattern detection (e.g., "Your child logs more feelings in the morning")
+    - Recommendations based on data
+    - Alert system for concerning patterns
+    - Weekly summary emails
+
+===========================================================
+END OF BACKLOG
+================================================================================
+
