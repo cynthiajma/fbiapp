@@ -30,6 +30,23 @@ class _HeartbeatPageState extends State<HeartbeatPage>
   bool _isPlayingAudio = false;
   bool _hasPlayedOnce = false;
   String? _characterId;
+  
+  // Question tracking for library mode
+  int _currentQuestionIndex = 0;
+  
+  // Investigation mode: only the "right now" question
+  static const String _investigateQuestion = "How fast is your heartbeat going right now?";
+  
+  // Character Library mode: scenario-based questions
+  static const List<String> _libraryQuestions = [
+    "How fast does your heart beat when you run really fast?",
+    "How fast does your heart beat when you're watching a scary movie?",
+    "How fast does your heart beat when you're resting or about to fall asleep?",
+  ];
+  
+  List<String> get _questions => widget.fromCharacterLibrary ? _libraryQuestions : [_investigateQuestion];
+  
+  bool get _isLastQuestion => widget.fromCharacterLibrary && _currentQuestionIndex == _questions.length - 1;
 
   @override
   void initState() {
@@ -220,6 +237,75 @@ class _HeartbeatPageState extends State<HeartbeatPage>
     });
   }
 
+  void _nextQuestion() {
+    _logCurrentQuestion();
+    
+    if (_currentQuestionIndex < _questions.length - 1) {
+      setState(() {
+        _currentQuestionIndex++;
+        _heartbeatSpeed = 0.5; // Reset slider
+        _updateSpeed(0.5);
+      });
+    } else {
+      // All questions completed
+      if (!widget.fromCharacterLibrary) {
+        // Investigation mode: complete the investigation and go back to home
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Investigation complete! Great job detective! 🕵️'),
+            backgroundColor: Color(0xff4a90e2),
+            duration: Duration(seconds: 2),
+          ),
+        );
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+          (route) => false,
+        );
+      } else {
+        // Character Library mode: show completion dialog
+        _showCompletionDialog();
+      }
+    }
+  }
+
+  Future<void> _logCurrentQuestion() async {
+    if (_isLogging) return;
+
+    setState(() {
+      _isLogging = true;
+    });
+
+    try {
+      final level = (_heartbeatSpeed * 10).round();
+      final childId = await UserStateService.getChildId();
+      
+      if (childId != null && _characterId != null) {
+        await LoggingService.logFeeling(
+          childId: childId,
+          characterId: _characterId!,
+          level: level,
+          context: context,
+          investigation: ['Q${_currentQuestionIndex + 1}: ${_questions[_currentQuestionIndex]} - Level: $level'],
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error logging feeling: $e'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLogging = false;
+        });
+      }
+    }
+  }
+
   void _showCompletionDialog() {
     showDialog(
       context: context,
@@ -244,7 +330,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
               ),
               const SizedBox(height: 16),
               Text(
-                'You completed the question with Henry Heartbeat!',
+                'You completed all questions with Henry Heartbeat!',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(fontSize: 16, fontWeight: FontWeight.w600),
               ),
@@ -268,73 +354,6 @@ class _HeartbeatPageState extends State<HeartbeatPage>
         );
       },
     );
-  }
-
-  Future<void> _logFeeling() async {
-    if (_isLogging) return;
-
-    setState(() {
-      _isLogging = true;
-    });
-
-    try {
-      // Convert slider value (0-1) to level (0-10)
-      final level = (_heartbeatSpeed * 10).round();
-      
-      // Get childId from user state
-      final childId = await UserStateService.getChildId();
-      if (childId == null) {
-        throw Exception('No child ID found. Please log in first.');
-      }
-      
-      if (_characterId == null) {
-        throw Exception('Character ID not loaded. Please try again.');
-      }
-      
-      await LoggingService.logFeeling(
-        childId: childId,
-        characterId: _characterId!,
-        level: level,
-        context: context,
-        investigation: ['How fast is your heartbeat right now? - Level: $level'],
-      );
-
-      if (mounted) {
-        if (!widget.fromCharacterLibrary) {
-          // Investigation mode: complete the investigation and go back to home
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Investigation complete! Great job detective! 🕵️'),
-              backgroundColor: Color(0xff4a90e2),
-              duration: Duration(seconds: 2),
-            ),
-          );
-          // Navigate back to home page
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const HomePage()),
-            (route) => false,
-          );
-        } else {
-          // Library mode: show completion dialog
-          _showCompletionDialog();
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error logging feeling: $e'),
-            backgroundColor: Colors.orange,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLogging = false;
-        });
-      }
-    }
   }
 
   @override
@@ -448,6 +467,25 @@ class _HeartbeatPageState extends State<HeartbeatPage>
               else
                 const SizedBox(height: 16),
               const SizedBox(height: 10),
+              // Character intro
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Text(
+                  "I'm HENRY HEARTBEAT! I live in your chest and beat faster when you're excited or scared, and slower when you're calm.",
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.nunito(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xffe67268),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              // Current question
               Container(
                 padding:
                     const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
@@ -455,11 +493,11 @@ class _HeartbeatPageState extends State<HeartbeatPage>
                   color: const Color(0xffe67268),
                   borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  'HOW FAST IS YOUR\nHENRY HEARTBEAT GOING?',
+                child: Text(
+                  _questions[_currentQuestionIndex],
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 22,
+                  style: const TextStyle(
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -541,7 +579,7 @@ class _HeartbeatPageState extends State<HeartbeatPage>
               ),
               const SizedBox(height: 30),
               ElevatedButton.icon(
-                onPressed: _isLogging ? null : _logFeeling,
+                onPressed: _isLogging ? null : _nextQuestion,
                 icon: _isLogging
                     ? const SizedBox(
                         width: 20,
@@ -551,8 +589,8 @@ class _HeartbeatPageState extends State<HeartbeatPage>
                           valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                         ),
                       )
-                    : const Icon(Icons.save),
-                label: Text(_isLogging ? 'Saving...' : 'Save'),
+                    : Icon(_isLastQuestion ? Icons.check_circle : Icons.arrow_forward),
+                label: Text(_isLogging ? 'Saving...' : (_isLastQuestion ? 'SUBMIT' : 'NEXT QUESTION')),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: _isLogging
                       ? Colors.grey
